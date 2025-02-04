@@ -23,7 +23,7 @@ export const Results = (props: {artists: Artist[]}) => {
                 return (
                     <ArtistCard 
                         key={artist.id} 
-                        name={artist.name} 
+                        artist={artist}
                         img={image.url} 
                         width={image.width} 
                         height={image.height}

@@ -1,8 +1,7 @@
 import { SearchBar } from "./components/search";
 import { Results } from "./components/results";
 
-const clientId = 'ac76abd6e9a24fe4b125eefafff0561f'
-const clientSecret = '51a002435a0a4356b7b0014a02feee0f'
+import useArtistStore from "@/stores/artist";
 
 interface Image {
     url: string;
@@ -68,8 +67,14 @@ export default async function Search(props: {
         artist?: string;
     }>;
 }){
+
     /* Spotify API Functions. */
-    async function getToken(clientId: string, clientSecret: string): Promise<string> {
+    async function getToken(clientId: string | undefined, clientSecret: string | undefined): Promise<string | null> {
+
+        if(clientId === undefined || clientId === undefined){
+            return null;
+        }
+
         /* Encode auth string into base 64. */
         const authString = `${clientId}:${clientSecret}`;
         const authBase64 = btoa(authString); // Works in both Node.js (with global `btoa`) and browser
@@ -225,7 +230,9 @@ export default async function Search(props: {
             return;
         }
         
-        const token: string = await getToken(clientId, clientSecret);
+        const token: string | null = await getToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
+
+        if(!token) return;
 
         const artists: Artist[] | undefined = await searchForArtist(token, searchString);
 
@@ -237,7 +244,9 @@ export default async function Search(props: {
 
         const artistId: string = artist.id;
 
-        const token: string = await getToken(clientId, clientSecret);
+        const token: string | null = await getToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
+
+        if(!token) return;
 
         if(artistId && artist) {
             const albums: SpotifyAlbumsTracksResponse = await getAlbumsByArtistName(token, artistId);
@@ -267,11 +276,10 @@ export default async function Search(props: {
     return (
         <main className="flex justify-center items-center flex-col">
             {artist && 
-                <p className="">
+                <p className="my-[1.25rem]">
                     Showing results for: <strong>{artist}</strong>
                 </p>
             }
-            <SearchBar placeholder="Search for artist..."></SearchBar>
             <Results artists={artists}></Results>
         </main>
     )

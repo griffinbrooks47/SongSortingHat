@@ -3,14 +3,27 @@
 import Image from "next/image"
 import { useRouter } from 'next/navigation'
 
-export const ArtistCard = (props: {name: string, img: string, width: number, height: number}) => {
+interface Artist {
+    id: string;
+    name: string;
+    images: Image[];
+}
+interface Image {
+    width: number;
+    height: number;
+    url: string;
+}
+
+export const ArtistCard = (props: {artist: Artist, img: string, width: number, height: number}) => {
 
     const router = useRouter();
 
     return (
         <div className="w-[15rem] h-[15rem] overflow-hidden cursor-pointer"
             onClick={() => {
-                router.push(`/rank/${props.name}`)
+                /* Add selected artist to local storage cache. */                
+                localStorage.setItem(`${props.artist.name}`, JSON.stringify(props.artist))
+                router.push(`/artist/${props.artist.name}`)
             }}
         >
             <Image
