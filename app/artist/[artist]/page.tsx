@@ -140,8 +140,6 @@ export default async function Artist({
 
         const artist: Artist = await getArtist(token, artistId);
 
-        console.log(artist);
-
         return artist;
     }
 
