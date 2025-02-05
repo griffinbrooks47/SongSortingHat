@@ -1,4 +1,3 @@
-import { IconSearch } from "@tabler/icons-react";
 
 import Link from 'next/link'
 
@@ -21,7 +20,7 @@ export default function RootLayout({
           <nav className="flex justify-between items-center px-[0rem] h-[4rem] pt-[1rem]">
 
             <div>
-              <Link className="mr-[0.5rem] ml-[0.5rem] cursor-pointer font-semibold" href="/">Song Sorting Hat</Link>
+              <Link className="mr-[0.5rem] ml-[1.5rem] cursor-pointer font-semibold" href="/">Song Sorting Hat</Link>
             </div>
 
             <SearchBar placeholder="Search for artist..."></SearchBar>

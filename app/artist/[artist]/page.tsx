@@ -1,8 +1,9 @@
 import Image from "next/image"
 
-import { IconHeart, IconArrowBadgeRight, IconBrandSpotify,IconUser } from "@tabler/icons-react";
+import { IconHeart, IconBrandSpotify } from "@tabler/icons-react";
 
 import { AlbumCard } from "./components/albumCard";
+import RankButton from "./components/RankButton";
 
 /* 
     Spotify API artist endpoint return object
@@ -177,20 +178,30 @@ export default async function Artist({
                     >
                     </Image>
                 </figure>
-                <div className="flex flex-col justify-center items-center mx-[4rem]">
-                    <p className="text-[2.5rem] font-bold">{artist.name}</p>
+                <div className="flex flex-col justify-center items-center mx-[2rem] min-w-[27.5rem] max-w-[27.5rem]">
+                    <p
+                        className="text-[2.75rem] font-bold text-center break-words overflow-hidden 
+                                line-clamp-2 text-ellipsis max-w-full mb-[0.25rem] px-2 leading-[3rem]"
+                        style={{
+                            display: "-webkit-box",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 2,
+                            whiteSpace: "normal",
+                        }}
+                    >
+                        {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
+                    </p>
                     <div className="flex justify-center items-center flex-col mb-[0.5rem]">
+                        <p className="text-[0.9rem]">
+                            Listeners:
+                        </p>
                         <div className="badge badge-lg badge-secondary">
-                            <IconUser className="h-[65%] w-[65%] font-bold mr-[0.15rem]" />
-                            <p className="pl-[0.05rem] pr-[0.20rem]">{artist.followers.total.toLocaleString()}</p>
+                            <p className="px-[1rem] text-[0.9rem]">{artist.followers.total.toLocaleString()}</p>
                         </div>
                     </div>
-                    <div className="flex justify-center items-center mt-[0.5rem]">
-                        <button className="btn btn-outline rounded-md mx-[0.25rem]">
-                            <p className="pl-[0.5rem]">Rank this artist</p>
-                            <IconArrowBadgeRight />
-                        </button>
-                        <button className="btn btn-outline btn-square mx-[0.25rem]">
+                    <div className="flex justify-center items-center mt-[0.75rem]">
+                        <RankButton artist={artist} albums={albums}/>
+                        <button className="btn btn-outline btn-square mx-[0.25rem] rounded-lg">
                             <IconBrandSpotify />
                         </button>
                         <button className="btn btn-outline btn-square mx-[0.25rem]">
@@ -204,7 +215,7 @@ export default async function Artist({
                     {albums?.map((album) => (
                         <AlbumCard
                             image={album.images[0]}
-                            name={artist.name}
+                            name={album.name}
                             key={album.id}
                         >
                         </AlbumCard>

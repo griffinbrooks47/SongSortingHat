@@ -3,7 +3,7 @@
 import { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form";
 
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { IconSearch } from "@tabler/icons-react";
 
@@ -14,7 +14,6 @@ interface ArtistFormInput {
 export const SearchBar = ({ placeholder }: { placeholder: string }) => {
 
     const searchParams = useSearchParams();
-    const pathname = usePathname();
     const { replace } = useRouter();
     
     /* Artist Search Function */
@@ -33,7 +32,9 @@ export const SearchBar = ({ placeholder }: { placeholder: string }) => {
                     type="text" 
                     placeholder={placeholder}
                     defaultValue={searchParams.get('query')?.toString()}
-                    className="input input-bordered input-ghost input-md w-[30rem] h-[3rem] mb-[1rem] mt-[1rem] pl-[4rem] rounded-[0.75rem] text-[1rem]"
+                    className="input input-bordered input-ghost input-md 
+                        w-[30rem] h-[3rem] mb-[1rem] mt-[1rem] pl-[4rem] 
+                        rounded-[0.75rem] text-[1rem] bg-base-300"
                 />
                 <button className="absolute left-[1rem] opacity-30">
                     <IconSearch className=""/>

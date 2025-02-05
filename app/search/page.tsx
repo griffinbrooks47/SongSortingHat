@@ -15,48 +15,10 @@ interface Image {
     height: number;
     url: string;
 }
-interface TrackJSON {
-    id: string;
-    name: string;
-    artists: Artist[];
-}
-interface AlbumJSON {
-    id: string;
-    name: string;
-    album_type: "album" | "single" | "compilation";
-    images: Image[];
-    artists: Artist[];
-    tracks: { items: TrackJSON[] };
-}
 interface SpotifySearchResponse {
     artists: {
         items: Artist[];
     };
-}
-interface SpotifyAlbumsResponse {
-    items: AlbumJSON[];
-}
-interface SpotifyAlbumsTracksResponse {
-    albums: AlbumJSON[];
-}
-interface Album {
-    id: string;
-    name: string;
-    album_type: "album" | "compilation" | "single";
-    cover: string;
-    artists: Artist[];
-    tracks: Track[];
-}
-interface Track {
-    id: string;
-    name: string;
-    cover: string;
-    artists: Artist[];
-}
-interface ArtistData {
-    artist: Artist;
-    albums: Album[];
-    singles: Track[];
 }
 
 export default async function Search(props: {
@@ -133,88 +95,6 @@ export default async function Search(props: {
         return jsonResult.artists?.items;
     }
     
-    async function getAlbumsByArtistName(token: string, artistId: string): Promise<SpotifyAlbumsTracksResponse> {
-        const headers = await getAuthHeaders(token);
-        
-        // Fetch artist albums
-        const albumsResponse = await fetch(`https://api.spotify.com/v1/artists/${artistId}/albums`, { headers });
-        if (!albumsResponse.ok) {
-            throw new Error(`Error fetching albums: ${albumsResponse.statusText}`);
-        }
-    
-        const albumsJson: SpotifyAlbumsResponse = await albumsResponse.json();
-
-
-        const albumIds = albumsJson.items.map(album => album.id).join(",");
-    
-        if (!albumIds) {
-            throw new Error(`No albums found for artist ID: ${artistId}`);
-        }
-    
-        // Fetch tracks in the albums
-        const tracksResponse = await fetch(`https://api.spotify.com/v1/albums?ids=${albumIds}`, { headers });
-        if (!tracksResponse.ok) {
-            throw new Error(`Error fetching tracks: ${tracksResponse.statusText}`);
-        }
-    
-        return await tracksResponse.json() as SpotifyAlbumsTracksResponse;
-    }
-
-    function parseJson(data: SpotifyAlbumsTracksResponse) {
-        const albums: Album[] = [];
-        const singles: Track[] = [];
-      
-        for (const album of data.albums) {
-            const id = album.id;
-            const name = album.name;
-            const albumType = album.album_type;
-            const cover = album.images[0]?.url ?? "";
-            const artists = album.artists;
-
-            const trackJSONs: TrackJSON[] = album.tracks.items;
-            
-            // Assuming you want to keep track of artists for the album and tracks
-            const albumArtists: Artist[] = album.artists;
-        
-            if (albumType === "album" || albumType === "compilation") {
-
-                const tracks: Track[] = [];
-                for(const trackJSON of trackJSONs) {
-                    const track: Track = {
-                        id: trackJSON.id,
-                        name: trackJSON.name,
-                        cover: cover, 
-                        artists: trackJSON.artists,
-                    }
-                    tracks.push(track)
-                }
-
-                // Parse tracks for albums
-                const albumData: Album = {
-                    id,
-                    name,
-                    album_type: albumType,
-                    cover: cover,
-                    artists: albumArtists,  // Properly assign artists as an array of Artist objects
-                    tracks: tracks
-                };
-                albums.push(albumData);
-            } else {
-                // Parse singles
-                const track: Track = {
-                    id,
-                    name,
-                    cover: cover,
-                    artists: artists,
-                };
-                singles.push(track);
-            }
-        }
-        
-        return { albums, singles}; // Return the parsed albums and singles
-        
-    }
-    
 
     const search = async (): Promise<Artist[] | undefined>  => {
 
@@ -236,44 +116,14 @@ export default async function Search(props: {
         return artists;
     }
 
-    /* After user specifies the artist, process the selection. */
-    const selectArtist = async (artist: Artist) => {
-
-        const artistId: string = artist.id;
-
-        const token: string | null = await getToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
-
-        if(!token) return;
-
-        if(artistId && artist) {
-            const albums: SpotifyAlbumsTracksResponse = await getAlbumsByArtistName(token, artistId);
-            const dataParse: {
-                albums: Album[]; 
-                singles: Track[] } 
-            = parseJson(albums)
-
-            const artistData: ArtistData = {
-                albums: dataParse.albums,
-                singles: dataParse.singles,
-                artist: artist
-            };
-
-            console.log(artistData)
-
-            return artistData;
-        }
-    }
-
     const artist: string | undefined = (await props.searchParams)?.artist;
     const results: Artist[] | undefined = await search();
     const artists: Artist[] = results ?? [];
-
-    console.log(artists);
     
     return (
         <main className="flex justify-center items-center flex-col">
             {artist && 
-                <p className="my-[1.25rem]">
+                <p className="mt-[2.5rem] mb-[1.25rem]">
                     Showing results for: <strong>{artist}</strong>
                 </p>
             }
