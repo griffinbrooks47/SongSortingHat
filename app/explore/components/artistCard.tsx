@@ -23,7 +23,7 @@ export const ArtistCard = (props: {artist: Artist, img: string, width: number, h
             onClick={() => {
                 /* Add selected artist to local storage cache. */                
                 localStorage.setItem(`${props.artist.name}`, JSON.stringify(props.artist))
-                router.push(`/artist/${props.artist.name}`)
+                router.push(`/artist/${props.artist.id}`)
             }}
         >
             <Image

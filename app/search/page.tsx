@@ -1,7 +1,4 @@
-import { SearchBar } from "./components/search";
 import { Results } from "./components/results";
-
-import useArtistStore from "@/stores/artist";
 
 interface Image {
     url: string;

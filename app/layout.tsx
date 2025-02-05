@@ -16,7 +16,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" data-theme="cupcake">
-      <body className="w-[95%] mx-auto">
+      <body className="w-[100%] px-[1rem]">
 
           <nav className="flex justify-between items-center px-[0rem] h-[4rem] pt-[1rem]">
 
