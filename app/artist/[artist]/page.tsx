@@ -22,12 +22,10 @@ interface Image {
     height: number;
     url: string;
 }
-
 interface AlbumResponse {
     total: number;
     items: Album[];
 }
-
 interface Album {
     album_type: string;
     total_tracks: number;
@@ -37,6 +35,35 @@ interface Album {
     release_date: string;
     type: string;
     artists: Artist[];
+}
+
+/* 
+    Spotify API Albums endpoint return objects
+*/
+
+interface DetailedAlbumResponse {
+    albums: DetailedAlbum[];
+}
+interface DetailedAlbum {
+    total_tracks: number;
+    external_urls: {
+        spotify: "string"
+    },
+    id: string;
+    images: Image[];
+    name: string;
+    release_date: string;
+    artists: Artist[];
+    tracks: {
+        total: number;
+        items: Track[];
+    }
+}
+interface Track {
+    artists: Artist[];
+    id: string;
+    name: string;
+    track_number: number;
 }
 
 export default async function Artist({
@@ -131,6 +158,28 @@ export default async function Artist({
         return jsonResult;
     }
 
+    /* Includes tracks. */
+    async function getDetailedAlbums(token: string, albumIds: string[]): Promise<DetailedAlbumResponse> {
+
+        let albumQuery = "";
+        for (const albumId of albumIds.slice(0, 20)) { // Limit to 20 iterations
+            albumQuery += albumId + ",";
+        }
+        albumQuery = albumQuery.slice(0, -1);
+
+        const url = `https://api.spotify.com/v1/albums?ids=${albumQuery}`;
+
+        const headers = await getAuthHeaders(token);
+
+        const response = await fetch(`${url}`, { headers });
+        if (!response.ok) {
+            throw new Error(`Error fetching artist: ${response.statusText}`);
+        }
+        const jsonResult: DetailedAlbumResponse = await response.json();
+
+        return jsonResult;
+    }
+
 
     const artistLookup = async (artistId: string): Promise<Artist | undefined> => {
         
@@ -152,6 +201,17 @@ export default async function Artist({
         const albums: AlbumResponse = await getAlbums(token, artistId);
 
         return albums.items;
+    }
+
+    const detailedAlbumsLookup = async (albumIds: string[]): Promise<DetailedAlbum[] | undefined> => {
+
+        const token: string | null = await getToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
+
+        if(!token) return;
+
+        const detailedAlbums: DetailedAlbumResponse = await getDetailedAlbums(token, albumIds);
+
+        return detailedAlbums.albums;
 
     }
 
@@ -162,6 +222,15 @@ export default async function Artist({
     const albums: Album[] | undefined = await albumsLookup(artistId);
 
     if(!albums) return;
+
+    const albumIds: string[] = [];
+    for (const album of albums) {
+        albumIds.push(album.id);
+    }
+
+    const detailedAlbums: DetailedAlbum[] | undefined = await detailedAlbumsLookup(albumIds);
+
+    if(!detailedAlbums) return;
 
     return (
         <main className="flex justify-center items-center flex-col">
@@ -198,7 +267,7 @@ export default async function Artist({
                         </div>
                     </div>
                     <div className="flex justify-center items-center mt-[0.75rem]">
-                        <RankButton artist={artist} albums={albums}/>
+                        <RankButton artist={artist} albums={albums} detailedAlbums={detailedAlbums}/>
                         <button className="btn btn-outline btn-square mx-[0.25rem] rounded-lg">
                             <IconBrandSpotify />
                         </button>

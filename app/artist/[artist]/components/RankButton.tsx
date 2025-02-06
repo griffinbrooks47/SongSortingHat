@@ -27,8 +27,29 @@ interface Album {
     type: string;
     artists: Artist[];
 }
+interface DetailedAlbum {
+    total_tracks: number;
+    external_urls: {
+        spotify: "string"
+    },
+    id: string;
+    images: Image[];
+    name: string;
+    release_date: string;
+    artists: Artist[];
+    tracks: {
+        total: number;
+        items: Track[];
+    }
+}
+interface Track {
+    artists: Artist[];
+    id: string;
+    name: string;
+    track_number: number;
+}
 
-export default function RankButton(props: {artist: Artist, albums: Album[]}) {
+export default function RankButton(props: {artist: Artist, albums: Album[], detailedAlbums: DetailedAlbum[]}) {
 
     /* Dynamic url redirect to current artist. */
     const redirectUrl: string = "/rank/" + props.artist.id
@@ -37,6 +58,7 @@ export default function RankButton(props: {artist: Artist, albums: Album[]}) {
     const onClick = () => {
         localStorage.setItem("artist", JSON.stringify(props.artist));
         localStorage.setItem("albums", JSON.stringify(props.albums));
+        localStorage.setItem("detailedAlbums", JSON.stringify(props.detailedAlbums));
     }
 
     return (
