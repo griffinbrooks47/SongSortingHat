@@ -1,5 +1,7 @@
 'use client'
 
+import * as _ from 'underscore';
+
 import { useEffect, useState } from "react";
 
 import Image from "next/image";
@@ -121,7 +123,7 @@ export default function Rank() {
             }
         }
 
-        setSongs(songs);
+        setSongs( _.shuffle(songs));
         // Set stage active. 
         setStageActive(true);
     }

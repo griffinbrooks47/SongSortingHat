@@ -63,7 +63,7 @@ export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, det
                     className="absolute flex justify-center items-center inset-0 bg-black bg-opacity-90 rounded-md cursor-pointer"
                     initial={{ opacity: 0 }}
                     whileHover={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.1 }}
                     onClick={() => {
                         props.onClick(props.track.track.id, props.track)
                         setIsSelected(!isSelected);
