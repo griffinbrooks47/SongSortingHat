@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from "react";
 
+import Image from "next/image";
+
 import { IconArrowsShuffle } from "@tabler/icons-react";
 import { SongCard } from "./components/SongCard";
 
 interface Artist {
     id: string;
     name: string;
-    images: Image[];
+    images: Img[];
     external_urls: {spotify: string};
     followers: {total: number};
     genres: string[];
     popularity: number;
 }
-interface Image {
+interface Img {
     width: number;
     height: number;
     url: string;
@@ -23,7 +25,7 @@ interface Album {
     album_type: string;
     total_tracks: number;
     id: string;
-    images: Image[];
+    images: Img[];
     name: string;
     release_date: string;
     type: string;
@@ -35,7 +37,7 @@ interface DetailedAlbum {
         spotify: "string"
     },
     id: string;
-    images: Image[];
+    images: Img[];
     name: string;
     release_date: string;
     artists: Artist[];
@@ -50,6 +52,10 @@ interface Track {
     name: string;
     track_number: number;
 }
+interface DetailedTrack {
+    track: Track;
+    cover: Img;
+}
 
 export default function Rank() {
 
@@ -58,7 +64,32 @@ export default function Rank() {
     const [albums, setAlbums] = useState<Album[] | undefined>();
     const [detailedAlbums, setDetailedAlbums] = useState<DetailedAlbum[] | undefined>();
 
-    const [songs, setSongs] = useState<Track[] | undefined>();
+    const [songs, setSongs] = useState<DetailedTrack[] | undefined>();
+
+
+    /* 
+        Stage One Hashmap 
+        Includes songs that should be adding to the ranking pool. 
+    */
+    const [idToSong, setIdToSong] = useState<Record<string, DetailedTrack>>({});
+    const toggleSong = (id: string, detailedTrack: DetailedTrack) => {
+
+        if (idToSong[id]) {
+            console.log("Removing: " + detailedTrack.track.name)
+            setIdToSong((prev) => {
+                const newMap = { ...prev }; // Create a shallow copy
+                delete newMap[id]; // Remove the key
+                return newMap; // Update state
+            })
+        } else {
+            console.log("Adding: " + detailedTrack.track.name)
+            setIdToSong((prev) => ({
+                ...prev, // Copy previous state
+                [id]: detailedTrack, // Add new key-value pair
+            }));
+        }
+    }
+
 
     const [stage, setStage] = useState<number>(1);
     const [stageActive, setStageActive] = useState<boolean>(false);
@@ -77,11 +108,17 @@ export default function Rank() {
 
         if(!detailedAlbums) return;
 
-        const songs: Track[] = [];
+        const songs: DetailedTrack[] = [];
 
         /* Iterate over albums, create array of all artist's songs. */
         for(const detailedAlbum of detailedAlbums) {
-            songs.push(...detailedAlbum.tracks.items)
+            for(const track of detailedAlbum.tracks.items) {
+                const detailedTrack: DetailedTrack = {
+                    track: track,
+                    cover: detailedAlbum.images[0]
+                }
+                songs.push(detailedTrack);
+            }
         }
 
         setSongs(songs);
@@ -117,11 +154,22 @@ export default function Rank() {
     }, []);
 
     return (
-        <main className="flex justify-center items-center flex-col">
+        <main className="flex justify-center items-center flex-col h-[calc(100vh-5.5rem)]">
             {/* Render info card between stages. */}
             {!stageActive && 
-                <section className="card bg-base-100 min-w-[50rem] flex justify-center items-center border-neutral mt-[5rem]">
-                    <p className="text-[2rem] font-bold mt-[3rem]">
+                <section className="card bg-base-100 min-w-[50rem] flex justify-center items-center border-neutral mt-[4rem]">
+                    <figure className="w-[12.5rem] h-[12.5rem] rounded-full">
+                        {artist &&
+                            <Image 
+                                src={artist.images[0].url}
+                                width={artist.images[0].width}
+                                height={artist.images[0].height}
+                                alt={artist.name}
+                                className=""
+                            />
+                        }
+                    </figure>
+                    <p className="text-[2rem] font-bold mt-[2rem]">
                         Current Progress
                     </p>
                     <div className="card-body w-[100%] mt-[-1rem]">
@@ -160,10 +208,12 @@ export default function Rank() {
             }
             {/* Stage 1 */}
             {stageActive && (stage == 1) && songs && 
-                <section className="grid grid-cols-4">
-                    {songs.map((song: Track) => {
+                <section className="grid grid-cols-4 gap-3 mt-[3rem] overflow-hidden">
+                    {songs.map((song: DetailedTrack) => {
                         return (
-                            <SongCard {...song} key={song.id}/>
+                            <SongCard key={song.track.id} track={song}
+                                onClick={toggleSong}
+                            />
                         )
                     })}
                 </section>
