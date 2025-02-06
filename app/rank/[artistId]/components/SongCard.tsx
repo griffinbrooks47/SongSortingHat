@@ -39,7 +39,7 @@ export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, det
     return (
         <main className="relative">
             <motion.div 
-                className={`relative card rounded-md cursor-pointer w-[12.5rem] h-[12.5rem] p-[0.5rem] 
+                className={`relative card rounded-md w-[12.5rem] h-[12.5rem] p-[0.5rem] cursor-pointer 
                     ${(isSelected) ? `bg-secondary border-2 border-neutral` : `bg-base-100 border-2 border-neutral`}`}
             >
                 <figure className="h-[100%] w-auto aspect-[1/1] rounded-md border-2 border-neutral">

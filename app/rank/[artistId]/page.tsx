@@ -1,13 +1,12 @@
 'use client'
 
 import * as _ from 'underscore';
-
-import { useEffect, useState } from "react";
-
 import Image from "next/image";
 
-import { IconArrowsShuffle } from "@tabler/icons-react";
-import { SongCard } from "./components/SongCard";
+import { useEffect, useRef, useState } from "react";
+import { IconArrowsShuffle, IconCircleArrowRight, IconCircleArrowLeft } from "@tabler/icons-react";
+
+import SongGrid from './components/songGrid';
 
 interface Artist {
     id: string;
@@ -68,6 +67,28 @@ export default function Rank() {
 
     const [songs, setSongs] = useState<DetailedTrack[] | undefined>();
 
+    const countPerSlide = 12;
+    const chunkArray = (arr: DetailedTrack[], size: number) => {
+        return arr.reduce((acc: DetailedTrack[][], _, i) => {
+          if (i % size === 0) acc.push(arr.slice(i, i + size));
+          return acc;
+        }, []);
+    };
+    const carouselRef = useRef<HTMLDivElement>(null);
+    const scrollToItem = (index: number) => {
+        setSlideIndex(index)
+        if (carouselRef.current) {
+            const items = carouselRef.current.children;
+            if (items[index]) {
+                items[index].scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+        }
+    };
+    const [slideIndex, setSlideIndex] = useState<number>(0)
+
+
+    const [songChunks, setSongChunks] = useState<DetailedTrack[][] | undefined>();
+
 
     /* 
         Stage One Hashmap 
@@ -110,7 +131,7 @@ export default function Rank() {
 
         if(!detailedAlbums) return;
 
-        const songs: DetailedTrack[] = [];
+        let songs: DetailedTrack[] = [];
 
         /* Iterate over albums, create array of all artist's songs. */
         for(const detailedAlbum of detailedAlbums) {
@@ -122,8 +143,10 @@ export default function Rank() {
                 songs.push(detailedTrack);
             }
         }
+        songs = _.shuffle(songs)
+        setSongs(songs);
 
-        setSongs( _.shuffle(songs));
+        setSongChunks(songs ? chunkArray(songs, countPerSlide) : [])
         // Set stage active. 
         setStageActive(true);
     }
@@ -209,16 +232,26 @@ export default function Rank() {
                 </section>
             }
             {/* Stage 1 */}
-            {stageActive && (stage == 1) && songs && 
-                <section className="grid grid-cols-4 gap-3 mt-[3rem] overflow-hidden">
-                    {songs.map((song: DetailedTrack) => {
-                        return (
-                            <SongCard key={song.track.id} track={song}
-                                onClick={toggleSong}
-                            />
-                        )
-                    })}
-                </section>
+            {stageActive && (stage == 1) && songs && songChunks && 
+                <main className='w-full relative'>
+                    <section ref={carouselRef} className="carousel w-full">
+                        {songChunks.map((songChunk: DetailedTrack[], key: number) => {
+                                return (
+                                    <main key={key} id="item1" className="carousel-item w-full">
+                                        
+                                        <SongGrid tracks={songChunk} count={countPerSlide} toggleSong={toggleSong} />
+
+                                    </main>
+                                )
+                        })}
+                    </section>
+                    <button className="btn btn-outline btn-circle no-animation left-5 absolute top-1/2 -translate-y-1/2" onClick={() => scrollToItem(slideIndex-1)}>
+                        <IconCircleArrowLeft />
+                    </button>
+                    <button className="btn btn-outline btn-circle no-animation right-5 absolute top-1/2 -translate-y-1/2" onClick={() => scrollToItem(slideIndex+1)}>
+                            <IconCircleArrowRight />
+                    </button>
+                </main>
             }
             {/* Stage 2 */}
             {stageActive && (stage == 2) && 
