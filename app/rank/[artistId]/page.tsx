@@ -66,29 +66,32 @@ export default function Rank() {
     const [detailedAlbums, setDetailedAlbums] = useState<DetailedAlbum[] | undefined>();
 
     const [songs, setSongs] = useState<DetailedTrack[] | undefined>();
+    const [songChunks, setSongChunks] = useState<DetailedTrack[][] | undefined>();
 
-    const countPerSlide = 12;
+    const countPerSlide = 15;
     const chunkArray = (arr: DetailedTrack[], size: number) => {
         return arr.reduce((acc: DetailedTrack[][], _, i) => {
           if (i % size === 0) acc.push(arr.slice(i, i + size));
           return acc;
         }, []);
     };
+    const [slideIndex, setSlideIndex] = useState<number>(0)
+
     const carouselRef = useRef<HTMLDivElement>(null);
     const scrollToItem = (index: number) => {
-        setSlideIndex(index)
+
+        if (!carouselRef.current || !songChunks) return;
+        
+        if (index < 0 || index >= songChunks.length) return;
+        
         if (carouselRef.current) {
             const items = carouselRef.current.children;
             if (items[index]) {
                 items[index].scrollIntoView({ behavior: "smooth", block: "nearest" });
             }
         }
+        setSlideIndex(index)
     };
-    const [slideIndex, setSlideIndex] = useState<number>(0)
-
-
-    const [songChunks, setSongChunks] = useState<DetailedTrack[][] | undefined>();
-
 
     /* 
         Stage One Hashmap 
@@ -233,7 +236,7 @@ export default function Rank() {
             }
             {/* Stage 1 */}
             {stageActive && (stage == 1) && songs && songChunks && 
-                <main className='w-full relative'>
+                <main className='w-full relative flex flex-col justify-center items-center'>
                     <section ref={carouselRef} className="carousel w-full">
                         {songChunks.map((songChunk: DetailedTrack[], key: number) => {
                                 return (
@@ -245,12 +248,23 @@ export default function Rank() {
                                 )
                         })}
                     </section>
-                    <button className="btn btn-outline btn-circle no-animation left-5 absolute top-1/2 -translate-y-1/2" onClick={() => scrollToItem(slideIndex-1)}>
-                        <IconCircleArrowLeft />
-                    </button>
-                    <button className="btn btn-outline btn-circle no-animation right-5 absolute top-1/2 -translate-y-1/2" onClick={() => scrollToItem(slideIndex+1)}>
+                    <nav className='flex justify-center items-center mt-[1.25rem] w-full'>
+                        <button className="btn btn-outline border-2 mx-[0.25rem]" onClick={() => scrollToItem(slideIndex-1)}>
+                            <IconCircleArrowLeft />
+                            Prev
+                        </button>
+                        {songChunks.map((songChunk, index) => (
+                            <button 
+                                className={`btn btn-sm btn-circle btn-outline border-2 mx-[0.25rem]`}
+                                key={index} onClick={() => scrollToItem(index)}>
+                                {index+1}
+                            </button>
+                        ))}
+                        <button className="btn btn-outline border-2 mx-[0.25rem]" onClick={() => scrollToItem(slideIndex+1)}>
+                            Next
                             <IconCircleArrowRight />
-                    </button>
+                        </button>
+                    </nav>
                 </main>
             }
             {/* Stage 2 */}

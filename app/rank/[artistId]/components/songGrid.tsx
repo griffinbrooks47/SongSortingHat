@@ -28,7 +28,7 @@ interface DetailedTrack {
 
 export default function songGrid(props: { tracks: DetailedTrack[], count: number, toggleSong: (id: string, detailedTrack: DetailedTrack) => void }) {
     return (
-        <section className="grid grid-cols-4 gap-3 mt-[3rem] mx-auto overflow-hidden relative">
+        <section className="grid grid-cols-5 grid-rows-3 gap-3 mx-auto overflow-hidden relative">
             {props.tracks.map((song: DetailedTrack) => {
                 return (
                     <SongCard key={song.track.id} track={song}
