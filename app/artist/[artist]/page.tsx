@@ -262,22 +262,22 @@ export default async function Artist({
                         <p className="text-[0.9rem]">
                             Listeners:
                         </p>
-                        <div className="badge badge-lg badge-secondary">
-                            <p className="px-[1rem] text-[0.9rem]">{artist.followers.total.toLocaleString()}</p>
+                        <div className="badge badge-lg badge-primary">
+                            <p className="px-[1.5rem] text-[0.9rem]">{artist.followers.total.toLocaleString()}</p>
                         </div>
                     </div>
                     <div className="flex justify-center items-center mt-[0.75rem]">
                         <RankButton artist={artist} albums={albums} detailedAlbums={detailedAlbums}/>
-                        <button className="btn btn-outline btn-square mx-[0.25rem] rounded-lg">
+                        <button className="btn btn-outline btn-square mx-[0.25rem] rounded-lg border-2">
                             <IconBrandSpotify />
                         </button>
-                        <button className="btn btn-outline btn-square mx-[0.25rem]">
+                        <button className="btn btn-outline btn-square mx-[0.25rem] border-2">
                             <IconHeart />
                         </button>
                     </div>
                 </div>
             </div>
-            <section className="flex justify-base items-base flex-col mt-[6rem]">
+            <section className="flex justify-base items-base flex-col mt-[5rem]">
                 <div className="grid grid-cols-4 gap-3">
                     {albums?.map((album) => (
                         <AlbumCard

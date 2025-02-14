@@ -62,7 +62,7 @@ export default function RankButton(props: {artist: Artist, albums: Album[], deta
     }
 
     return (
-        <Link href={redirectUrl} onClick={() => {onClick()}} className="btn btn-outline rounded-md mr-[0.25rem]">
+        <Link href={redirectUrl} onClick={() => {onClick()}} className="btn btn-outline border-2 rounded-md mr-[0.25rem]">
             <p className="pl-[0.75rem]">Rank this artist</p>
             <IconArrowBadgeRight className="ml-[-0.25rem]" />
         </Link>

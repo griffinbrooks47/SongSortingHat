@@ -3,7 +3,6 @@ import Image from "next/image";
 
 import { motion } from "motion/react";
 
-import { IconX } from "@tabler/icons-react";
 import { useState } from "react";
 
 interface Artist {
@@ -32,17 +31,17 @@ interface DetailedTrack {
     cover: Img;
 }
 
-export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, detailedTrack: DetailedTrack) => void}) => {
+export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, detailedTrack: DetailedTrack) => void }) => {
 
     const [isSelected, setIsSelected] = useState<boolean>(false);
 
     return (
-        <motion.main className="relative h-[10rem]"
+        <motion.main className="relative h-[11rem] w-[11rem]"
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 500, damping: 20 }}
         >
             <div 
-                className={`relative card rounded-md w-[10rem] h-[100%] p-[0.5rem] cursor-pointer 
+                className={`relative card rounded-md w-[11rem] h-[100%] p-[0.5rem] cursor-pointer 
                     ${(isSelected) ? `bg-primary border-2 border-neutral` : `bg-base-100 border-2 border-neutral`}`}
             >
                 <figure className="h-[100%] w-auto aspect-[1/1] rounded-md border-2 border-neutral">
@@ -64,12 +63,13 @@ export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, det
             {/* Opaque overlay */}
             <motion.div
                     className="absolute h-[100%] flex justify-center items-center inset-0 bg-black bg-opacity-90 rounded-md cursor-pointer"
-                    initial={{ opacity: 0 }}
+                    initial={{ opacity: 0, backgroundColor: "black" }}
                     whileHover={{ opacity: 1 }}
-                    transition={{ duration: 0.1 }}
+                    transition={{ duration: 0.025 }}
+
                     onClick={() => {
                         props.onClick(props.track.track.id, props.track)
-                        setIsSelected(!isSelected);
+                        setIsSelected(!isSelected)
                     }}
                 >
                     <div className="text-white flex items-center justify-center">

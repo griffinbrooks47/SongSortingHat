@@ -3,11 +3,13 @@
 import * as _ from 'underscore';
 import Image from "next/image";
 
-import { useEffect, useRef, useState } from "react";
-import { IconArrowsShuffle, IconCircleArrowRight, IconCircleArrowLeft } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { IconArrowsShuffle } from "@tabler/icons-react";
 
-import SongGrid from './components/songGrid';
+import { SongCarousel } from './components/SongCarousel';
+import RankCard from './components/RankCard';
 
+/* Artist Data*/
 interface Artist {
     id: string;
     name: string;
@@ -58,16 +60,39 @@ interface DetailedTrack {
     cover: Img;
 }
 
+
+/* Ranking Object Interface. */
+interface Ranker {
+    init(): void;
+    runAlgorithm(): void;
+    makeChoice(): void;
+    iterate(): void;
+}
+
 export default function Rank() {
 
-    /* Current Artist Data */
+    /* init */
     const [artist, setArtist] = useState<Artist | undefined>();
-    const [albums, setAlbums] = useState<Album[] | undefined>();
+    const [, setAlbums] = useState<Album[] | undefined>();
     const [detailedAlbums, setDetailedAlbums] = useState<DetailedAlbum[] | undefined>();
-
     const [songs, setSongs] = useState<DetailedTrack[] | undefined>();
-    const [songChunks, setSongChunks] = useState<DetailedTrack[][] | undefined>();
 
+    const [stage, setStage] = useState<number>(1);
+    const [stageActive, setStageActive] = useState<boolean>(false);
+    const text: string[] = [
+        "First, select the songs you like!",
+        "Now, choose the better songs!",
+        "Compile the results!"
+    ]
+
+    /* Abstraction function to pass to child components for updating state. */
+    const compileSongs = (tracks: DetailedTrack[]) => {
+        setSongs(tracks);
+    }
+
+
+    /* Stage One */
+    const [songChunks, setSongChunks] = useState<DetailedTrack[][] | undefined>();
     const countPerSlide = 15;
     const chunkArray = (arr: DetailedTrack[], size: number) => {
         return arr.reduce((acc: DetailedTrack[][], _, i) => {
@@ -75,28 +100,6 @@ export default function Rank() {
           return acc;
         }, []);
     };
-    const [slideIndex, setSlideIndex] = useState<number>(0)
-
-    const carouselRef = useRef<HTMLDivElement>(null);
-    const scrollToItem = (index: number) => {
-
-        if (!carouselRef.current || !songChunks) return;
-        
-        if (index < 0 || index >= songChunks.length) return;
-        
-        if (carouselRef.current) {
-            const items = carouselRef.current.children;
-            if (items[index]) {
-                items[index].scrollIntoView({ behavior: "smooth", block: "nearest" });
-            }
-        }
-        setSlideIndex(index)
-    };
-
-    /* 
-        Stage One Hashmap 
-        Includes songs that should be adding to the ranking pool. 
-    */
     const [idToSong, setIdToSong] = useState<Record<string, DetailedTrack>>({});
     const toggleSong = (id: string, detailedTrack: DetailedTrack) => {
 
@@ -115,30 +118,23 @@ export default function Rank() {
             }));
         }
     }
-
-
-    const [stage, setStage] = useState<number>(1);
-    const [stageActive, setStageActive] = useState<boolean>(false);
-
-    const text: string[] = [
-        "First, select the songs you like!",
-        "Now, choose the better songs!",
-        "Compile the results!"
-    ]
-
-    /* 
-        Exectutes the first ranking stage.
-        Parses all albums & singles and makes a comprehensive list of songs. 
-    */
     const startStageOne = () => {
 
         if(!detailedAlbums) return;
 
         let songs: DetailedTrack[] = [];
+        const titles: Set<string> = new Set();
 
         /* Iterate over albums, create array of all artist's songs. */
         for(const detailedAlbum of detailedAlbums) {
             for(const track of detailedAlbum.tracks.items) {
+
+                /* Don't add to pool if a duplicate title. */
+                if(titles.has(track.name)) {
+                    continue;
+                }
+
+                titles.add(track.name);
                 const detailedTrack: DetailedTrack = {
                     track: track,
                     cover: detailedAlbum.images[0]
@@ -153,16 +149,38 @@ export default function Rank() {
         // Set stage active. 
         setStageActive(true);
     }
+
+    
+    /* Stage Two */
+    const [ranker, setRanker] = useState<Ranker>();
+    const [leftChoice, setLeftChoice] = useState<DetailedTrack>()
+    const [rightChoice, setRightChoice] = useState<DetailedTrack>()
+    const handleLeftChoice = (): void => {
+
+    }
+    const handleRightChoice = (): void => {
+
+    }
     const startStageTwo = () => {
+        
+        
+        
+        
+        
+        
         // Set stage active. 
         setStageActive(true);
     }
+
+
+    /* Stage Three */
     const startStageThree = () => {
         // Set stage active. 
         setStageActive(true);
     }
 
 
+    /* Update state with localstorage if reloaded. */
     useEffect(() => {
         const storedArtist = localStorage.getItem("artist");
         const storedAlbums = localStorage.getItem("albums");
@@ -185,7 +203,7 @@ export default function Rank() {
         <main className="flex justify-center items-center flex-col h-[calc(100vh-5.5rem)]">
             {/* Render info card between stages. */}
             {!stageActive && 
-                <section className="card bg-base-100 min-w-[50rem] flex justify-center items-center border-neutral mt-[4rem]">
+                <section className="card bg-base-100 min-w-[50rem] flex justify-center items-center border-neutral mt-[0rem]">
                     <figure className="w-[12.5rem] h-[12.5rem] rounded-full">
                         {artist &&
                             <Image 
@@ -197,8 +215,8 @@ export default function Rank() {
                             />
                         }
                     </figure>
-                    <p className="text-[2rem] font-bold mt-[2rem]">
-                        Current Progress
+                    <p className="text-[2rem] font-bold mt-[1rem]">
+                        {artist?.name}
                     </p>
                     <div className="card-body w-[100%] mt-[-1rem]">
                         <ul className="steps w-[90%] mx-auto text-[0.9rem]">
@@ -207,7 +225,7 @@ export default function Rank() {
                                 <p className={(stage == 1 ? "font-semibold" : "")}>Assemble the Lineup</p></li>
                             <li className={(stage > 2 ? "step step-primary" : (stage == 2 ? "step step-primary" : "step step"))}
                                 data-content={(stage > 2 ? "✓" : 2)}>
-                                <p className={(stage == 2 ? "font-semibold" : "")}>Songs Showdown</p></li>
+                                <p className={(stage == 2 ? "font-semibold" : "")}>Song Showdown</p></li>
                             <li className={(stage > 3 ? "step step-primary" : (stage == 3 ? "step step-primary" : "step step"))}
                                 data-content={(stage > 3 ? "✓" : 3)}>
                                 <p className={(stage == 3 ? "font-semibold" : "")}>Crown the Best!</p></li>
@@ -217,7 +235,7 @@ export default function Rank() {
                         <div className="flex justify-center flex-col text-center mb-[0.5rem]">
                             <p>{text[stage-1]}</p>
                         </div>
-                        <button className="btn btn-outline btn-primary max-w-[30rem] mx-auto"
+                        <button className="btn btn-outline border-2 btn-primary max-w-[30rem] mx-auto"
                             onClick={() => {
                                 if(stage == 1){
                                     startStageOne();
@@ -236,41 +254,28 @@ export default function Rank() {
             }
             {/* Stage 1 */}
             {stageActive && (stage == 1) && songs && songChunks && 
-                <main className='w-full relative flex flex-col justify-center items-center'>
-                    <section ref={carouselRef} className="carousel w-full">
-                        {songChunks.map((songChunk: DetailedTrack[], key: number) => {
-                                return (
-                                    <main key={key} id="item1" className="carousel-item w-full">
-                                        
-                                        <SongGrid tracks={songChunk} count={countPerSlide} toggleSong={toggleSong} />
-
-                                    </main>
-                                )
-                        })}
-                    </section>
-                    <nav className='flex justify-center items-center mt-[1.25rem] w-full'>
-                        <button className="btn btn-outline border-2 mx-[0.25rem]" onClick={() => scrollToItem(slideIndex-1)}>
-                            <IconCircleArrowLeft />
-                            Prev
-                        </button>
-                        {songChunks.map((songChunk, index) => (
-                            <button 
-                                className={`btn btn-sm btn-circle btn-outline border-2 mx-[0.25rem]`}
-                                key={index} onClick={() => scrollToItem(index)}>
-                                {index+1}
-                            </button>
-                        ))}
-                        <button className="btn btn-outline border-2 mx-[0.25rem]" onClick={() => scrollToItem(slideIndex+1)}>
-                            Next
-                            <IconCircleArrowRight />
-                        </button>
-                    </nav>
+                <main className='h-full w-full relative flex flex-col justify-center items-center mt-[2rem]'>
+                    <SongCarousel 
+                        songChunks={songChunks} 
+                        count={countPerSlide}
+                        toggleSong={toggleSong}
+                        onEnd={() => {
+                            /* Compile user selected songs. */
+                            const selectedSongs: DetailedTrack[] = Object.values(idToSong);
+                            compileSongs(selectedSongs);
+                            /* Increment current stage. */
+                            setStage(2);
+                            setStageActive(false);
+                        }}
+                    ></SongCarousel>
                 </main>
             }
             {/* Stage 2 */}
             {stageActive && (stage == 2) && 
                 <section>
-
+                    <div>
+                        
+                    </div>
                 </section>
             }
             {/* Stage 3 */}
