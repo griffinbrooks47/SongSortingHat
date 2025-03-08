@@ -5,7 +5,6 @@ class MatchupQueue {
     /* Array of string pairs. */
     private matchups: [string, string][];
 
-
     /* Instantiate empty queue. */
     constructor() {
         this.matchups = [];

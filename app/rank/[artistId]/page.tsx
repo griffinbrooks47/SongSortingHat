@@ -7,67 +7,10 @@ import { useEffect, useState } from "react";
 import { IconArrowsShuffle } from "@tabler/icons-react";
 
 import { SongCarousel } from './components/SongCarousel';
-import RankCard from './components/RankCard';
+import Ranker from './objects/rank';
 
-/* Artist Data*/
-interface Artist {
-    id: string;
-    name: string;
-    images: Img[];
-    external_urls: {spotify: string};
-    followers: {total: number};
-    genres: string[];
-    popularity: number;
-}
-interface Img {
-    width: number;
-    height: number;
-    url: string;
-}
-interface Album {
-    album_type: string;
-    total_tracks: number;
-    id: string;
-    images: Img[];
-    name: string;
-    release_date: string;
-    type: string;
-    artists: Artist[];
-}
-interface DetailedAlbum {
-    total_tracks: number;
-    external_urls: {
-        spotify: "string"
-    },
-    id: string;
-    images: Img[];
-    name: string;
-    release_date: string;
-    artists: Artist[];
-    tracks: {
-        total: number;
-        items: Track[];
-    }
-}
-interface Track {
-    artists: Artist[];
-    id: string;
-    name: string;
-    track_number: number;
-}
-interface DetailedTrack {
-    track: Track;
-    cover: Img;
-}
-
-
-/* Ranking Object Interface. */
-interface Ranker {
-    init(): void;
-    runAlgorithm(): void;
-    makeChoice(): void;
-    iterate(): void;
-}
+/* Interface imports. */
+import { Artist, Album, DetailedAlbum, DetailedTrack } from "../types/artist";
 
 export default function Rank() {
 
@@ -84,6 +27,7 @@ export default function Rank() {
         "Now, choose the better songs!",
         "Compile the results!"
     ]
+    const [ranker, setRanker] = useState<Ranker>(new Ranker());
 
     /* Abstraction function to pass to child components for updating state. */
     const compileSongs = (tracks: DetailedTrack[]) => {
@@ -100,24 +44,24 @@ export default function Rank() {
           return acc;
         }, []);
     };
-    const [idToSong, setIdToSong] = useState<Record<string, DetailedTrack>>({});
+    const [idToSong, setIdToSong] = useState<Map<string, DetailedTrack>>(new Map());
     const toggleSong = (id: string, detailedTrack: DetailedTrack) => {
-
-        if (idToSong[id]) {
-            console.log("Removing: " + detailedTrack.track.name)
+        if (idToSong.has(id)) {
+            console.log("Removing: " + detailedTrack.track.name);
             setIdToSong((prev) => {
-                const newMap = { ...prev }; // Create a shallow copy
-                delete newMap[id]; // Remove the key
+                const newMap = new Map(prev); // Create a new Map from the previous state
+                newMap.delete(id); // Remove the key
                 return newMap; // Update state
-            })
+            });
         } else {
-            console.log("Adding: " + detailedTrack.track.name)
-            setIdToSong((prev) => ({
-                ...prev, // Copy previous state
-                [id]: detailedTrack, // Add new key-value pair
-            }));
+            console.log("Adding: " + detailedTrack.track.name);
+            setIdToSong((prev) => {
+                const newMap = new Map(prev); // Create a new Map from the previous state
+                newMap.set(id, detailedTrack); // Add new key-value pair
+                return newMap; // Update state
+            });
         }
-    }
+    };
     const startStageOne = () => {
 
         if(!detailedAlbums) return;
@@ -152,22 +96,38 @@ export default function Rank() {
 
     
     /* Stage Two */
-    const [ranker, setRanker] = useState<Ranker>();
     const [leftChoice, setLeftChoice] = useState<DetailedTrack>()
     const [rightChoice, setRightChoice] = useState<DetailedTrack>()
-    const handleLeftChoice = (): void => {
+    const handleChoice = (id: string) : void => {
 
-    }
-    const handleRightChoice = (): void => {
+        console.log("Choice: " + id);
 
+        if(!ranker) {
+            console.log("ranker not defined");
+            return;
+        }
+        const newMatchup: [string, string] | undefined = ranker.makeChoice(id);
+        if(!newMatchup) {
+            // End
+            return;
+        }
+        setLeftChoice(idToSong.get(newMatchup[0]));
+        setRightChoice(idToSong.get(newMatchup[1]));
     }
     const startStageTwo = () => {
-        
-        
-        
-        
-        
-        
+
+        /* Initialize ranker songs. */
+        ranker.initSongs(new Set(idToSong.keys()))
+        setRanker(ranker);
+
+        /* Display first matchup. */
+        const firstMatchup: [string, string] | undefined = ranker.runAlgorithm();
+
+        console.log(firstMatchup);
+
+        setLeftChoice(idToSong.get(firstMatchup[0]));
+        setRightChoice(idToSong.get(firstMatchup[1]));
+
         // Set stage active. 
         setStageActive(true);
     }
@@ -272,10 +232,34 @@ export default function Rank() {
             }
             {/* Stage 2 */}
             {stageActive && (stage == 2) && 
-                <section>
-                    <div>
+                <section className='h-full w-full flex justify-center items-center'>
+                    {leftChoice && rightChoice &&
+                        <>
+                            <div className="h-[15rem] w-[15rem] mx-[1rem] cursor-pointer"
+                                onClick={() => handleChoice(leftChoice.track.id)}
+                            >
+                                <Image
+                                    src={leftChoice.cover.url}
+                                    alt={leftChoice.track.name}
+                                    width={leftChoice.cover.width}
+                                    height={leftChoice.cover.height}
+                                ></Image>
+                                {leftChoice?.track.name}
+                            </div>
+                            <div className="h-[15rem] w-[15rem] mx-[1rem] cursor-pointer"
+                                onClick={() => handleChoice(rightChoice.track.id)}
+                            >
+                                <Image
+                                    src={rightChoice.cover.url}
+                                    alt={rightChoice.track.name}
+                                    width={rightChoice.cover.width}
+                                    height={rightChoice.cover.height}
+                                ></Image>
+                                {rightChoice?.track.name}
+                            </div>
+                        </>
                         
-                    </div>
+                    }
                 </section>
             }
             {/* Stage 3 */}
