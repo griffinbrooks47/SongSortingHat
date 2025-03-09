@@ -9,8 +9,10 @@ import { IconArrowsShuffle } from "@tabler/icons-react";
 import { SongCarousel } from './components/SongCarousel';
 import Ranker from './objects/rank';
 
+import Showdown from '../stages/Showdown';
+
 /* Interface imports. */
-import { Artist, Album, DetailedAlbum, DetailedTrack } from "../types/artist";
+import { Artist, Album, DetailedAlbum, DetailedTrack } from "@/types/artist";
 
 export default function Rank() {
 
@@ -94,40 +96,7 @@ export default function Rank() {
         setStageActive(true);
     }
 
-    
-    /* Stage Two */
-    const [leftChoice, setLeftChoice] = useState<DetailedTrack>()
-    const [rightChoice, setRightChoice] = useState<DetailedTrack>()
-    const handleChoice = (id: string) : void => {
-
-        console.log("Choice: " + id);
-
-        if(!ranker) {
-            console.log("ranker not defined");
-            return;
-        }
-        const newMatchup: [string, string] | undefined = ranker.makeChoice(id);
-        if(!newMatchup) {
-            // End
-            return;
-        }
-        setLeftChoice(idToSong.get(newMatchup[0]));
-        setRightChoice(idToSong.get(newMatchup[1]));
-    }
     const startStageTwo = () => {
-
-        /* Initialize ranker songs. */
-        ranker.initSongs(new Set(idToSong.keys()))
-        setRanker(ranker);
-
-        /* Display first matchup. */
-        const firstMatchup: [string, string] | undefined = ranker.runAlgorithm();
-
-        console.log(firstMatchup);
-
-        setLeftChoice(idToSong.get(firstMatchup[0]));
-        setRightChoice(idToSong.get(firstMatchup[1]));
-
         // Set stage active. 
         setStageActive(true);
     }
@@ -232,35 +201,9 @@ export default function Rank() {
             }
             {/* Stage 2 */}
             {stageActive && (stage == 2) && 
-                <section className='h-full w-full flex justify-center items-center'>
-                    {leftChoice && rightChoice &&
-                        <>
-                            <div className="h-[15rem] w-[15rem] mx-[1rem] cursor-pointer"
-                                onClick={() => handleChoice(leftChoice.track.id)}
-                            >
-                                <Image
-                                    src={leftChoice.cover.url}
-                                    alt={leftChoice.track.name}
-                                    width={leftChoice.cover.width}
-                                    height={leftChoice.cover.height}
-                                ></Image>
-                                {leftChoice?.track.name}
-                            </div>
-                            <div className="h-[15rem] w-[15rem] mx-[1rem] cursor-pointer"
-                                onClick={() => handleChoice(rightChoice.track.id)}
-                            >
-                                <Image
-                                    src={rightChoice.cover.url}
-                                    alt={rightChoice.track.name}
-                                    width={rightChoice.cover.width}
-                                    height={rightChoice.cover.height}
-                                ></Image>
-                                {rightChoice?.track.name}
-                            </div>
-                        </>
-                        
-                    }
-                </section>
+                <Showdown 
+                    itemMap={idToSong}
+                />
             }
             {/* Stage 3 */}
             {stageActive && (stage == 3) && 
