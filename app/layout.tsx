@@ -21,7 +21,15 @@ export default function RootLayout({
           <nav className="flex justify-between items-center px-[0rem] h-[4rem] pt-[1rem]">
 
             <div>
-              <Link className="mr-[0.5rem] ml-[1.5rem] cursor-pointer font-semibold" href="/">Song Sorting Hat</Link>
+              <Link href="/" className="mr-[1.5rem] ml-[1.5rem] cursor-pointer font-semibold">
+                Song Sorting Hat
+              </Link>
+              <Link href='/search' className='mx-[1rem] cursor-pointer'>
+                Explore
+              </Link>
+              <Link href="/tierlist" className='mx-[1rem] cursor-pointer'>
+                Tierlists
+              </Link>
             </div>
 
             <SearchBar placeholder="Search for artist..."></SearchBar>

@@ -18,12 +18,23 @@ import { Artist, Album, DetailedAlbum, DetailedTrack } from "@/types/artist";
 
 export default function Rank() {
 
-    /* init */
+    /* Loaded data cached initially in localStorage. */
     const [artist, setArtist] = useState<Artist | undefined>();
     const [, setAlbums] = useState<Album[] | undefined>();
     const [detailedAlbums, setDetailedAlbums] = useState<DetailedAlbum[] | undefined>();
     const [songs, setSongs] = useState<DetailedTrack[] | undefined>();
 
+    /* Abstraction used to update current song pool between stages. */
+    const compileSongs = (tracks: DetailedTrack[]) => {
+        setSongs(tracks);
+    }
+
+    /* 
+        Ranking stage state.
+        ~ 1: Assemble the Lineup
+        ~ 2: Song Showdown
+        ~ 3: Crown the Best!
+    */
     const [stage, setStage] = useState<number>(1);
     const [stageActive, setStageActive] = useState<boolean>(false);
     const text: string[] = [
@@ -31,13 +42,8 @@ export default function Rank() {
         "Now, choose the better songs!",
         "Compile the results!"
     ]
-    /* Abstraction function to pass to child components for updating state. */
-    const compileSongs = (tracks: DetailedTrack[]) => {
-        setSongs(tracks);
-    }
 
-
-    /* Stage One */
+    /* Chunked array used to display songs in stage 1. */
     const [songChunks, setSongChunks] = useState<DetailedTrack[][] | undefined>();
     const countPerSlide = 15;
     const chunkArray = (arr: DetailedTrack[], size: number) => {
@@ -47,23 +53,40 @@ export default function Rank() {
         }, []);
     };
 
-    /* Maps song IDs to DetailedTrack info. */
+    /* 
+        Map of all selected songs.
+        ~ Key: Spotify track ID
+        ~ Value: DetailedTrack object
+    */
     const [idToSong, setIdToSong] = useState<Map<string, DetailedTrack>>(new Map());
     const toggleSong = (id: string, detailedTrack: DetailedTrack) => {
         if (idToSong.has(id)) {
             setIdToSong((prev) => {
-                const newMap = new Map(prev); // Create a new Map from the previous state
-                newMap.delete(id); // Remove the key
-                return newMap; // Update state
+                const newMap = new Map(prev); 
+                newMap.delete(id);
+                return newMap;
             });
         } else {
             setIdToSong((prev) => {
-                const newMap = new Map(prev); // Create a new Map from the previous state
-                newMap.set(id, detailedTrack); // Add new key-value pair
-                return newMap; // Update state
+                const newMap = new Map(prev);
+                newMap.set(id, detailedTrack);
+                return newMap;
             });
         }
     };
+
+    /* 
+        Users final ranking of songs.
+        ~ Array of DetailedTrack objects.
+    */
+    const [finalRanking, setFinalRanking] = useState<DetailedTrack[] | undefined>();
+    const compileFinalRanking = (ranking: DetailedTrack[]) => {
+        setFinalRanking(ranking);
+    }
+
+    /* 
+        Functions used to compile each stage. 
+    */
     const startStageOne = () => {
 
         if(!detailedAlbums) return;
@@ -97,23 +120,14 @@ export default function Rank() {
         // Set stage active. 
         setStageActive(true);
     }
-
     const startStageTwo = () => {
         // Set stage active. 
         setStageActive(true);
-    }
-
-
-    /* Stage Three */
-    const [finalRanking, setFinalRanking] = useState<DetailedTrack[] | undefined>();
-    const compileFinalRanking = (ranking: DetailedTrack[]) => {
-        setFinalRanking(ranking);
     }
     const startStageThree = () => {
         // Set stage active. 
         setStageActive(true);
     }
-
 
     /* Update state with localstorage if reloaded. */
     useEffect(() => {
@@ -136,7 +150,7 @@ export default function Rank() {
 
     return (
         <main className="flex justify-center items-center flex-col h-[calc(100vh-5.5rem)]">
-            {/* Render info card between stages. */}
+            {/* Interface between ranking stages. */}
             {!stageActive && 
                 <section className="card bg-base-100 min-w-[50rem] flex justify-center items-center border-neutral mt-[0rem]">
                     <figure className="w-[12.5rem] h-[12.5rem] rounded-full">
@@ -187,6 +201,7 @@ export default function Rank() {
                     </div>
                 </section>
             }
+
             {/* Stage 1 */}
             {stageActive && (stage == 1) && songs && songChunks && 
                 <main className='h-full w-full relative flex flex-col justify-center items-center mt-[2rem]'>
@@ -195,9 +210,12 @@ export default function Rank() {
                         count={countPerSlide}
                         toggleSong={toggleSong}
                         onEnd={() => {
+
                             /* Compile user selected songs. */
                             const selectedSongs: DetailedTrack[] = Object.values(idToSong);
                             compileSongs(selectedSongs);
+
+                            console.log(selectedSongs);
 
                             /* Increment current stage. */
                             setStage(2);
@@ -206,6 +224,7 @@ export default function Rank() {
                     ></SongCarousel>
                 </main>
             }
+
             {/* Stage 2 */}
             {stageActive && (stage == 2) && 
                 <Showdown 
@@ -223,26 +242,36 @@ export default function Rank() {
                     }}
                 />
             }
+
             {/* Stage 3 */}
             {stageActive && (stage == 3) && finalRanking && 
-                <section className='max-h-[calc(100vh-5.5rem)] w-full flex justify-center items-center'>
-                    <ul className='list bg-base-100 shadow-md w-[40rem] pt-[1rem] px-[0rem]'>
+                <section className='w-full min-h-full flex justify-center mt-[2rem]'>
+                    <ul className='list bg-base-100 shadow-sm w-[35rem] py-[0.25rem] px-[0rem] border-2 rounded-sm'>
+                        <div className='flex flex-row justify-center items-center h-[4rem]'>
+                            <div>
+                                <p className='text-[1.25rem] leading-[1.2rem]'>{`${artist?.name}'s Top Ten`}</p>
+                                <p className='opacity-70 text-center'>{`Curated by [username]`}</p>
+                            </div>
+                        </div>
                         {finalRanking.map((detailedTrack: DetailedTrack, index: number) => {
                             return (
-                                    <li key={index} className='list-row flex flex-row items-center h-[2.5rem] my-[0.6rem]'>
-                                        <div className="text-md text-center font-medium opacity-90 tabular-nums mx-[1rem] min-w-[1.5rem]">{index+1}</div>
-                                        <Image
-                                            src={detailedTrack.cover.url}
-                                            alt={detailedTrack.track.name}
-                                            width={detailedTrack.cover.width}
-                                            height={detailedTrack.cover.height}
-                                            className='w-[2.35rem] h-[2.35rem] border'
-                                        ></Image>
-                                        <div className='pl-[1.75rem]'>
-                                            <div className='text-[0.925rem] leading-[1.1rem]'>{detailedTrack.track.name}</div>
-                                            <div className="text-[0.75rem] uppercase font-semibold opacity-50">{detailedTrack.album_title}</div>
+                                    <li key={index} className='list-row'>
+                                        <hr className='w-[95%] mx-auto'></hr>
+                                        <div className='flex flex-row items-center h-[2.5rem] my-[0.5rem]'>
+                                            <div className="text-md text-center font-medium opacity-90 tabular-nums mx-[1.25rem] min-w-[1.5rem]">{index+1}</div>
+                                            <Image
+                                                src={detailedTrack.cover.url}
+                                                alt={detailedTrack.track.name}
+                                                width={detailedTrack.cover.width}
+                                                height={detailedTrack.cover.height}
+                                                className='w-[2.35rem] h-[2.35rem] border'
+                                            ></Image>
+                                            <div className='pl-[1.75rem]'>
+                                                <div className='text-[0.925rem] leading-[1.1rem] truncate max-w-[25ch]'>{detailedTrack.track.name}</div>
+                                                <div className="text-[0.75rem] uppercase font-semibold opacity-50 truncate max-w-[25ch]">{detailedTrack.album_title}</div>
+                                            </div>
                                         </div>
-                                    </li>
+                                    </li>   
                             )
                         })}
                     </ul>
