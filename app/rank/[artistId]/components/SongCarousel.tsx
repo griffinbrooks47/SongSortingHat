@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMap } from "react"
+import React, { useState } from "react"
 import { useKeenSlider } from 'keen-slider/react' // import from 'keen-slider/react.es' for to get an ES module
 
 import { SongCard } from "./SongCard";
@@ -8,30 +8,7 @@ import { SongCard } from "./SongCard";
 import 'keen-slider/keen-slider.min.css'
 import { IconCircleArrowLeft, IconCircleArrowRight } from "@tabler/icons-react";
 
-interface Artist {
-    id: string;
-    name: string;
-    images: Img[];
-    external_urls: {spotify: string};
-    followers: {total: number};
-    genres: string[];
-    popularity: number;
-}
-interface Img {
-    width: number;
-    height: number;
-    url: string;
-}
-interface Track {
-    artists: Artist[];
-    id: string;
-    name: string;
-    track_number: number;
-}
-interface DetailedTrack {
-    track: Track;
-    cover: Img;
-}
+import { DetailedTrack } from "@/types/artist";
 
 export const SongCarousel = (
   props: { 
@@ -61,9 +38,6 @@ export const SongCarousel = (
                 <section key={slideIdx} className={`keen-slider__slide`}>
                     <main className='grid grid-cols-5 grid-rows-3 gap-4 w-[fit-content] mx-auto'>
                         {songChunk.map((song: DetailedTrack) => {
-
-                          
-
                           return (
                               <SongCard key={song.track.id} track={song}
                                   onClick={props.toggleSong}
@@ -88,7 +62,7 @@ export const SongCarousel = (
             <button 
                 className={`
                   btn btn-sm btn-circle border-2 mx-[0.25rem]
-                  ${(currentSlide == index) ? 'btn-primary font-bold' : 'btn-outline'}
+                  ${(currentSlide == index) ? 'btn-base-300 border font-bold' : 'btn-outline'}
                 
                   `}
                 key={index} onClick={() =>
@@ -100,7 +74,7 @@ export const SongCarousel = (
         <button 
           className={`btn border-2 mx-[0.25rem]
               ${(props.onEnd && (instanceRef.current?.slides.length) == (currentSlide + 1)) 
-                ? 'btn-accent' 
+                ? 'btn-base-content' 
                 : 'btn-outline'}
             `}
           onClick={(e: any) => {

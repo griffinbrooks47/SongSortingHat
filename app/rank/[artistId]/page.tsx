@@ -7,12 +7,14 @@ import { useEffect, useState } from "react";
 import { IconArrowsShuffle } from "@tabler/icons-react";
 
 import { SongCarousel } from './components/SongCarousel';
-import Ranker from './objects/rank';
 
 import Showdown from '../stages/Showdown';
 
 /* Interface imports. */
 import { Artist, Album, DetailedAlbum, DetailedTrack } from "@/types/artist";
+
+/* Import sample data. */
+//import sampleMap from './objects/sampleMap';
 
 export default function Rank() {
 
@@ -29,8 +31,6 @@ export default function Rank() {
         "Now, choose the better songs!",
         "Compile the results!"
     ]
-    const [ranker, setRanker] = useState<Ranker>(new Ranker());
-
     /* Abstraction function to pass to child components for updating state. */
     const compileSongs = (tracks: DetailedTrack[]) => {
         setSongs(tracks);
@@ -46,17 +46,17 @@ export default function Rank() {
           return acc;
         }, []);
     };
+
+    /* Maps song IDs to DetailedTrack info. */
     const [idToSong, setIdToSong] = useState<Map<string, DetailedTrack>>(new Map());
     const toggleSong = (id: string, detailedTrack: DetailedTrack) => {
         if (idToSong.has(id)) {
-            console.log("Removing: " + detailedTrack.track.name);
             setIdToSong((prev) => {
                 const newMap = new Map(prev); // Create a new Map from the previous state
                 newMap.delete(id); // Remove the key
                 return newMap; // Update state
             });
         } else {
-            console.log("Adding: " + detailedTrack.track.name);
             setIdToSong((prev) => {
                 const newMap = new Map(prev); // Create a new Map from the previous state
                 newMap.set(id, detailedTrack); // Add new key-value pair
@@ -83,11 +83,13 @@ export default function Rank() {
                 titles.add(track.name);
                 const detailedTrack: DetailedTrack = {
                     track: track,
+                    album_title: detailedAlbum.name,
                     cover: detailedAlbum.images[0]
                 }
                 songs.push(detailedTrack);
             }
         }
+
         songs = _.shuffle(songs)
         setSongs(songs);
 
@@ -103,6 +105,10 @@ export default function Rank() {
 
 
     /* Stage Three */
+    const [finalRanking, setFinalRanking] = useState<DetailedTrack[] | undefined>();
+    const compileFinalRanking = (ranking: DetailedTrack[]) => {
+        setFinalRanking(ranking);
+    }
     const startStageThree = () => {
         // Set stage active. 
         setStageActive(true);
@@ -192,6 +198,7 @@ export default function Rank() {
                             /* Compile user selected songs. */
                             const selectedSongs: DetailedTrack[] = Object.values(idToSong);
                             compileSongs(selectedSongs);
+
                             /* Increment current stage. */
                             setStage(2);
                             setStageActive(false);
@@ -203,12 +210,42 @@ export default function Rank() {
             {stageActive && (stage == 2) && 
                 <Showdown 
                     itemMap={idToSong}
+                    onEnd={(finalRanking: DetailedTrack[]) => {
+
+                        console.log(finalRanking)
+
+                        /* Set the final ranking. */
+                        compileFinalRanking(finalRanking);
+
+                        /* Increment current stage. */
+                        setStage(3);
+                        setStageActive(false);
+                    }}
                 />
             }
             {/* Stage 3 */}
-            {stageActive && (stage == 3) && 
-                <section>
-
+            {stageActive && (stage == 3) && finalRanking && 
+                <section className='max-h-[calc(100vh-5.5rem)] w-full flex justify-center items-center'>
+                    <ul className='list bg-base-100 shadow-md w-[40rem] pt-[1rem] px-[0rem]'>
+                        {finalRanking.map((detailedTrack: DetailedTrack, index: number) => {
+                            return (
+                                    <li key={index} className='list-row flex flex-row items-center h-[2.5rem] my-[0.6rem]'>
+                                        <div className="text-md text-center font-medium opacity-90 tabular-nums mx-[1rem] min-w-[1.5rem]">{index+1}</div>
+                                        <Image
+                                            src={detailedTrack.cover.url}
+                                            alt={detailedTrack.track.name}
+                                            width={detailedTrack.cover.width}
+                                            height={detailedTrack.cover.height}
+                                            className='w-[2.35rem] h-[2.35rem] border'
+                                        ></Image>
+                                        <div className='pl-[1.75rem]'>
+                                            <div className='text-[0.925rem] leading-[1.1rem]'>{detailedTrack.track.name}</div>
+                                            <div className="text-[0.75rem] uppercase font-semibold opacity-50">{detailedTrack.album_title}</div>
+                                        </div>
+                                    </li>
+                            )
+                        })}
+                    </ul>
                 </section>
             }
         </main>

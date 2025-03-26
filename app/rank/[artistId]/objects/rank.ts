@@ -1,4 +1,9 @@
 
+/* 
+    LEGACY CODE
+    Not optimized for a react environment.
+*/
+
 import MatchupQueue from "./matchupQueue";
 import TrackNode from "./TrackNode";
 

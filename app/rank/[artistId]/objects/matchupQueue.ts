@@ -26,6 +26,16 @@ class MatchupQueue {
         return this.matchups.length;
     }
 
+    public toStringArray(): string[] {
+
+        const stringArray: string[] = [];
+
+        for (const matchup of this.matchups) {
+            stringArray.push(matchup[0] + " vs " + matchup[1]);
+        }
+        return stringArray;
+    }
+
     /* Check if the matchup already exists in the queue. */
     private checkIfDupe(matchup: [string, string]): boolean {
         return this.matchups.some(existing => this.compareMatchups(existing, matchup));

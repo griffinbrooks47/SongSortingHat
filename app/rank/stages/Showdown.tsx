@@ -1,14 +1,12 @@
 'use client'
 
-/* Graph library for node visualization. */
-import { applyNodeChanges, ReactFlow } from "@xyflow/react";
 import '@xyflow/react/dist/style.css';
 
 /* Interface imports. */
 import { DetailedTrack } from "@/types/artist";
 
 /* React imports. */
-import { useState, useReducer, useCallback } from "react";
+import { useState, useReducer } from "react";
 import Image from "next/image";
 
 /* Data structure imports. */
@@ -64,14 +62,6 @@ interface SetChoiceCacheAction {
 }
 type RankerAction = SetNodeMapAction | SetScoreMapAction | SetReverseScoreMapAction | SetChoiceCacheAction;
 
-/* Define node interface for ReactFlow */
-interface Node {
-    id: string;
-    data: {
-        label: string;
-    };
-    position: { x: number, y: number };
-}
 
 /* Reducer function for updating ranker state between user choices. */
 const rankerReducer = (state: RankerState, action: RankerAction) => {
@@ -97,21 +87,17 @@ const rankerReducer = (state: RankerState, action: RankerAction) => {
     }
 }
 
-export default function Showdown(props: { itemMap: Map<string, DetailedTrack> }) {
+export default function Showdown(props: { 
+    itemMap: Map<string, DetailedTrack>, 
+    onEnd: (finalRanking: DetailedTrack[]) => void 
+}) {
+
+    console.log(props.itemMap);
 
     /* Throw an error if the ranking pool isn't properly defined. */
     if(props.itemMap.size < 2) {
         throw new Error("Ranking pool contains too few elements.")
     }
-
-    /* ReactFlow Nodes */
-    const [nodes, setNodes] = useState<Node[]>([]);
-    /* 
-    const onNodesChange = useCallback(
-        (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-        [],
-    )
-    */
 
     /* Grab all item IDs. */
     const itemMapKeys: string[] = Array.from(props.itemMap.keys());
@@ -172,10 +158,6 @@ export default function Showdown(props: { itemMap: Map<string, DetailedTrack> })
         /* Get results for next iteration. */
         const newMatchupData: MatchupData = ranker.getNewMatchups();
 
-        if(newMatchupData.isComplete) {
-            console.log("Ranking finished.")
-        }
-
         /* Set next iteration data. */
         setCurrMatchup(newMatchupData.currMatchup);
         setMatchups(newMatchupData.matchups);
@@ -193,54 +175,39 @@ export default function Showdown(props: { itemMap: Map<string, DetailedTrack> })
             newMatchupData.currMatchup[1]
         ))
 
-        /* Update graph visual. */
-        const nodes: Node[] = [];
-        const visitedItems: Set<string> = new Set();
+        /* Trigger next stage if complete. */
+        if(newMatchupData.isComplete) {
+            /* Convert the map to an array and sort by score in descending order */
+            const finalRanking: DetailedTrack[] = Array.from(newMatchupData.reverseScoreMap.entries())
+                .sort(([scoreA], [scoreB]) => scoreB - scoreA) // Sort scores in descending order
+                .flatMap(([, names]) => Array.from(names).map(name => props.itemMap.get(name)!)); // Replace name with DetailedTrack from itemMap
 
-        /* Step 1: Get node with highest score (top of tree). */
-        const topScore: number = Math.max(...Array.from(newMatchupData.reverseScoreMap.keys()));
-        const topNodes: Set<string> | undefined = newMatchupData.reverseScoreMap.get(topScore);
+            console.log(finalRanking.length, props.itemMap.size);
 
-        /* Step 2: Traverse tree recursively.  */
-        const recurseTree = (nodeID: string, prevY: number): void => {
-            /* Ensure node exists or hasn't been visited yet. */
-            if(visitedItems.has(nodeID) || !newMatchupData.nodeMap.has(nodeID)) {
-                return;
-            }
-            visitedItems.add(nodeID);
-            const node: TrackNode = newMatchupData.nodeMap.get(nodeID)!;
-            const x: number = 0;
-            const y: number = prevY + 100;
-            nodes.push({
-                id: nodeID,
-                data: {
-                    label: props.itemMap.get(nodeID)!.track.name
-                },
-                position: {
-                    x: x,
-                    y: y
-                }
-            });
-            node.getBelow().forEach((childNode: TrackNode) => {
-                recurseTree(childNode.getID(), y);
-            });
-        }
-        if(topNodes){
-            topNodes.forEach((nodeID: string) => {
-                recurseTree(nodeID, -1);
-            });
+            /* Draw final order from reverse score map values. */
+            props.onEnd(finalRanking);
         }
 
-        /* Update graph. */
-        setNodes(nodes);
+        /* DEBUGGING
+        console.log("_________________________")
+        newMatchupData.reverseScoreMap.forEach((value, key) => {
+            const set = new Set();
+            value.forEach((item) => {
+                set.add(props.itemMap.get(item)?.track.name);
+            });
+            console.log(`Final Score: ${key} - ${Array.from(set)}`);
+        });
+        console.log("")
+        console.log("")
+        */
     }
 
     return (
         <section className='h-full w-full flex justify-center items-center'>
             {leftChoice && rightChoice &&
             <>
-                <main>
-                    <div className="h-[15rem] w-[15rem] my-[3rem] cursor-pointer"
+                <main className='flex justify-center items-center flex-row'>
+                    <div className="flex flex-col items-center h-[21rem] w-[17rem] pt-[1rem] mx-[2rem] cursor-pointer bg-base-100 border-2 border-neutral rounded-sm"
                         onClick={() => {
                             makeChoice(leftChoice.track.id, rightChoice.track.id)
                         }}
@@ -250,10 +217,18 @@ export default function Showdown(props: { itemMap: Map<string, DetailedTrack> })
                             alt={leftChoice.track.name}
                             width={leftChoice.cover.width}
                             height={leftChoice.cover.height}
+                            className='h-[15rem] w-[15rem] border-2 border-neutral rounded-sm'
                         ></Image>
-                        {leftChoice?.track.name}
+                        <div className='flex flex-col items-center pt-[0.75rem]'>
+                            <div className='text-[1.05rem] font-semibold truncate max-w-[18ch]'>
+                                {leftChoice?.track.name}
+                            </div>
+                            <div className='text-[0.9rem] uppercase font-semibold opacity-70 truncate max-w-[18ch]'>
+                                {leftChoice?.album_title}
+                            </div>
+                        </div>
                     </div>
-                    <div className="h-[15rem] w-[15rem] my-[3rem] cursor-pointer"
+                    <div className="flex flex-col items-center h-[21rem] w-[17rem] pt-[1rem] mx-[2rem] cursor-pointer bg-base-100 border-2 border-neutral rounded-sm"
                         onClick={() => {
                             makeChoice(rightChoice.track.id, leftChoice.track.id)
                         }}
@@ -263,16 +238,18 @@ export default function Showdown(props: { itemMap: Map<string, DetailedTrack> })
                             alt={rightChoice.track.name}
                             width={rightChoice.cover.width}
                             height={rightChoice.cover.height}
+                            className='h-[15rem] w-[15rem] border-2 border-neutral rounded-sm'
                         ></Image>
-                        {rightChoice?.track.name}
+                        <div className='flex flex-col items-center pt-[0.75rem]'>
+                            <div className='text-[1.05rem] font-semibold truncate max-w-[18ch]'>
+                                {rightChoice?.track.name}
+                            </div>
+                            <div className='text-[0.9rem] uppercase font-semibold opacity-70 truncate max-w-[18ch]'>
+                                {rightChoice?.album_title}
+                            </div>
+                        </div>
                     </div>
                 </main>
-                <div className="h-full w-[30rem]">
-                    <ReactFlow 
-                        nodes={nodes}
-                        fitView
-                    />
-                </div>
             </>
             }
         </section>

@@ -1,4 +1,10 @@
 
+/* 
+    Version 1.0.0 Ranking Algorithm
+    Future Optimizations
+    ~ Implement a more efficient method for selecting the next matchup, utilizing a win/loss ratio. 
+*/
+
 import MatchupQueue from "./matchupQueue";
 import TrackNode from "./TrackNode";
 
@@ -70,7 +76,9 @@ export default class Ranker {
         prevNodeMap: Map<string, TrackNode>, 
         prevScoreMap: Map<string, number>, 
         prevReverseScoreMap: Map<number, Set<string>>, 
-        prevChoiceCache: Map<string, Set<string>>
+        prevChoiceCache: Map<string, Set<string>>,
+        top10flag?: boolean,
+
     ) {
         /* Init data structures for previous iteration. */
         this.currMatchup = prevMatchup;
@@ -84,9 +92,12 @@ export default class Ranker {
         this.choiceCache = prevChoiceCache;
     }
 
-    public makeChoice(winnerID: string, loserID: string) {
+    /* Ranker Interface */
 
-        console.log("USER SELECTS ", winnerID, " OVER: ", loserID)
+    /* 
+        Updates the current rankings given the winner and loser of current matchup. 
+    */
+    public makeChoice(winnerID: string, loserID: string) {
 
         /* Throw error if no matchup has been set. */
         if(!this.currMatchup) {
@@ -173,6 +184,8 @@ export default class Ranker {
         return matchupData
     }
 
+    /* PRIVATE METHODS */
+
     private scoreTree(): void {
 
         if(!this.trackIDs) {
@@ -200,27 +213,28 @@ export default class Ranker {
         const children: Set<TrackNode> = track.getBelow();
         const id: string = track.getID();
 
-        /* Base Case: No children, return 0. */
-        if(children.size <= 0) {
-            this.scoreMap.set(id, 0);
-            this.addToReverseScoreMap(0, id);
-            
-            return 0;
+        /* Base Case: Score aleady calculated, return score. */
+        if(this.scoreMap.has(id)) {
+            return this.scoreMap.get(id)!;
         } 
 
-        /* Base Case: Score aleady calculated, return score. */
-        else if(this.scoreMap.has(id)) {
-            return this.scoreMap.get(id)!;
+        /* Base Case: No children, return 0. */
+        else if(children.size <= 0) {
+            this.scoreMap.set(id, 0);
+            this.addToReverseScoreMap(0, id);
+            return 0;
         } 
 
         /* Step Case: Recursively calculate child score to find current node score. */
         else {
+
             let maxChildScore: number = 0;
 
             /* Find the largest score of the current child nodes. */
             for(const child of children) {
                 /* Recursively calculate score. */
                 const currChildScore: number = this.scoreTreeBelow(child);
+
                 /* Set is as new highest score if larger than current max. */
                 maxChildScore = currChildScore > maxChildScore ? currChildScore : maxChildScore;
             }
@@ -229,7 +243,7 @@ export default class Ranker {
             this.scoreMap.set(id, maxChildScore + 1); // Largest child score + 1 = parent score
             this.addToReverseScoreMap(maxChildScore + 1, id);
 
-            return maxChildScore;
+            return maxChildScore + 1;
         }
     }
 
@@ -289,8 +303,6 @@ export default class Ranker {
                     edgesToRemove.add(child)
                 }
             }
-
-            //console.log(parent, "removes edges: ", edgesToRemove)
 
             /* Remove edges. */
             for(const child of edgesToRemove) {

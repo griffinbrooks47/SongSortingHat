@@ -5,31 +5,7 @@ import { motion } from "motion/react";
 
 import { useState } from "react";
 
-interface Artist {
-    id: string;
-    name: string;
-    images: Img[];
-    external_urls: {spotify: string};
-    followers: {total: number};
-    genres: string[];
-    popularity: number;
-}
-interface Img {
-    width: number;
-    height: number;
-    url: string;
-}
-
-interface Track {
-    artists: Artist[];
-    id: string;
-    name: string;
-    track_number: number;
-}
-interface DetailedTrack {
-    track: Track;
-    cover: Img;
-}
+import { DetailedTrack } from "@/types/artist";
 
 export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, detailedTrack: DetailedTrack) => void }) => {
 
@@ -41,10 +17,10 @@ export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, det
             transition={{ type: "spring", stiffness: 500, damping: 20 }}
         >
             <div 
-                className={`relative card rounded-md w-[11rem] h-[100%] p-[0.5rem] cursor-pointer 
-                    ${(isSelected) ? `bg-primary border-2 border-neutral` : `bg-base-100 border-2 border-neutral`}`}
+                className={`relative card w-[11rem] h-[100%] p-[0.5rem] cursor-pointer
+                    ${(isSelected) ? `bg-accent border-2 border-accent rounded-md` : `bg-base-100 border-2 border-neutral rounded-sm`}`}
             >
-                <figure className="h-[100%] w-auto aspect-[1/1] rounded-md border-2 border-neutral">
+                <figure className="h-[100%] w-auto aspect-[1/1] rounded-sm border-2 border-neutral">
                     <Image 
                         src={props.track.cover.url}
                         width={props.track.cover.width}

@@ -1,30 +1,7 @@
 
 import { SongCard } from "./SongCard";
 
-interface Artist {
-    id: string;
-    name: string;
-    images: Img[];
-    external_urls: {spotify: string};
-    followers: {total: number};
-    genres: string[];
-    popularity: number;
-}
-interface Img {
-    width: number;
-    height: number;
-    url: string;
-}
-interface Track {
-    artists: Artist[];
-    id: string;
-    name: string;
-    track_number: number;
-}
-interface DetailedTrack {
-    track: Track;
-    cover: Img;
-}
+import { DetailedTrack } from "@/types/artist";
 
 export default function SongGrid(props: { tracks: DetailedTrack[], count: number, toggleSong: (id: string, detailedTrack: DetailedTrack) => void }) {
     return (
