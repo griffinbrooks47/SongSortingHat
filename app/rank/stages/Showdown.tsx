@@ -206,8 +206,8 @@ export default function Showdown(props: {
         <section className='h-full w-full flex justify-center items-center'>
             {leftChoice && rightChoice &&
             <>
-                <main className='flex justify-center items-center flex-row'>
-                    <div className="flex flex-col items-center h-[21rem] w-[17rem] pt-[1rem] mx-[1rem] cursor-pointer bg-base-100 border-2 border-neutral rounded-sm"
+                <main className='flex justify-center items-center flex-row mb-[2rem]'>
+                    <div className="flex flex-col items-center h-[21rem] w-[17rem] pt-[1rem] mx-[1rem] cursor-pointer bg-base-100 border-2 border-neutral rounded-sm shadow-md"
                         onClick={() => {
                             makeChoice(leftChoice.track.id, rightChoice.track.id)
                         }}
@@ -228,7 +228,7 @@ export default function Showdown(props: {
                             </div>
                         </div>
                     </div>
-                    <div className="flex flex-col items-center h-[21rem] w-[17rem] pt-[1rem] mx-[1rem] cursor-pointer bg-base-100 border-2 border-neutral rounded-sm"
+                    <div className="flex flex-col items-center h-[21rem] w-[17rem] pt-[1rem] mx-[1rem] cursor-pointer bg-base-100 border-2 border-neutral rounded-sm shadow-md"
                         onClick={() => {
                             makeChoice(rightChoice.track.id, leftChoice.track.id)
                         }}

@@ -33,7 +33,7 @@ export const SearchBar = ({ placeholder }: { placeholder: string }) => {
                     placeholder={placeholder}
                     defaultValue={searchParams.get('query')?.toString()}
                     className=" 
-                            w-[30rem] h-[3rem] mb-[1rem] mt-[1rem] pl-[4rem] 
+                            w-full h-[3rem] mb-[1rem] mt-[1rem] pl-[4rem] 
                             rounded-md text-[1rem] bg-base-200
                             no-animation
                         "

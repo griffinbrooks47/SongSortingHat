@@ -18,7 +18,7 @@ export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, det
         >
             <div 
                 className={`relative card w-[11rem] h-[100%] p-[0.5rem] cursor-pointer
-                    ${(isSelected) ? `bg-accent border-2 border-accent rounded-md` : `bg-base-100 border-2 border-neutral rounded-sm`}`}
+                    ${(isSelected) ? `bg-accent border-2 border-accent rounded-sm shadow-lg` : `bg-base-100 border-2 border-neutral rounded-sm shadow-md`}`}
             >
                 <figure className="h-[100%] w-auto aspect-[1/1] rounded-sm border-2 border-neutral">
                     <Image 

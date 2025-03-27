@@ -149,11 +149,11 @@ export default function Rank() {
     }, []);
 
     return (
-        <main className="flex justify-center items-center flex-col h-[calc(100vh-5.5rem)]">
+        <main className="flex justify-center items-center flex-col h-[calc(100vh-4rem)] bg-base-200">
             {/* Interface between ranking stages. */}
             {!stageActive && 
-                <section className="card bg-base-100 min-w-[50rem] flex justify-center items-center border-neutral mt-[0rem]">
-                    <figure className="w-[12.5rem] h-[12.5rem] rounded-full">
+                <section className="card bg-base-100 min-w-[50rem] flex justify-center items-center rounded-md shadow-sm mb-[1rem]">
+                    <figure className="w-[12.5rem] h-[12.5rem] rounded-full mt-[3rem]">
                         {artist &&
                             <Image 
                                 src={artist.images[0].url}
@@ -204,7 +204,7 @@ export default function Rank() {
 
             {/* Stage 1 */}
             {stageActive && (stage == 1) && songs && songChunks && 
-                <main className='h-full w-full relative flex flex-col justify-center items-center mt-[2rem]'>
+                <main className='h-full w-full relative flex flex-col justify-center items-center mt-[1rem]'>
                     <SongCarousel 
                         songChunks={songChunks} 
                         count={countPerSlide}

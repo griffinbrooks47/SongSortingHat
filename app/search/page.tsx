@@ -121,7 +121,7 @@ export default async function Search(props: {
     const artists: Artist[] = results ?? [];
     
     return (
-        <main className="flex justify-center items-center flex-col">
+        <main className="flex justify-center items-center flex-col bg-base-200">
             {artist && 
                 <p className="mt-[2.5rem] mb-[1.25rem]">
                     Showing results for: <strong>{artist}</strong>
