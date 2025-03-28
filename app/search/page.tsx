@@ -1,21 +1,8 @@
 import { Results } from "./components/results";
 import { SearchBar } from "./components/search";
 
-interface Image {
-    url: string;
-    height: number;
-    width: number;
-}
-interface Artist {
-    id: string;
-    name: string;
-    images: Image[];
-}
-interface Image {
-    width: number;
-    height: number;
-    url: string;
-}
+import { Artist } from "@/types/artist";
+
 interface SpotifySearchResponse {
     artists: {
         items: Artist[];

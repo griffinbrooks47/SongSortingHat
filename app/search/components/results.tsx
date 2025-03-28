@@ -1,15 +1,6 @@
-import { ArtistCard } from "@/app/explore/components/artistCard";
+import { ArtistCard } from "@/app/search/components/artistCard";
 
-interface Artist {
-    id: string;
-    name: string;
-    images: Image[];
-}
-interface Image {
-    width: number;
-    height: number;
-    url: string;
-}
+import { Artist } from "@/types/artist";
 
 export const Results = (props: {artists: Artist[]}) => {
 

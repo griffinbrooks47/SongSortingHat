@@ -24,6 +24,7 @@ model User {
   /* Sortings data. */
   accounts  Account[]
   sortings  Sorting[]
+  communities CommunityUser[]  // Changed to the join model
 }
 
 /* Account authorization data. */
@@ -48,23 +49,27 @@ enum Role {
 
 model Artist {
   id          String    @id @default(uuid())
+  spotifyId   String    @unique
   name        String
-  spotifyId   String?   @unique
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   sortings    Sorting[]
   songs       Song[]
+
+  @@index([spotifyId])
 }
 model Song {
   id          String    @id @default(uuid())
+  spotifyId   String    @unique
   title       String
-  spotifyId   String?   @unique
   artistId    String
   artist      Artist    @relation(fields: [artistId], references: [id])
   sortings    Sorting[] @relation("SortingToSong")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([spotifyId])
 }
 model Sorting {
   id          String   @id @default(uuid())
@@ -74,6 +79,7 @@ model Sorting {
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  published   Boolean  @default(true)
   
   // User relationship
   userId      String
@@ -88,4 +94,26 @@ model Sorting {
 
   @@index([userId])
   @@index([artistId])
+}
+
+/* Communities */
+
+model Community {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  members     CommunityUser[]  // Changed to the join model
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+model CommunityUser {
+  userId      String
+  communityId String
+  role        Role     @default(USER) // Reusing your existing Role enum
+  joinedAt    DateTime @default(now())
+  
+  user      User      @relation(fields: [userId], references: [id])
+  community Community @relation(fields: [communityId], references: [id])
+  
+  @@id([userId, communityId])  // Composite primary key
 }
