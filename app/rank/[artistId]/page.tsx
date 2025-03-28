@@ -231,10 +231,16 @@ export default function Rank() {
                     itemMap={idToSong}
                     onEnd={(finalRanking: DetailedTrack[]) => {
 
-                        console.log(finalRanking)
+                        let topTen: DetailedTrack[];
+                        /* For now, just cut off songs past 10. */
+                        if(finalRanking.length > 10) {
+                            topTen = finalRanking.slice(0, 10);
+                        } else {
+                            topTen = finalRanking;
+                        }
 
                         /* Set the final ranking. */
-                        compileFinalRanking(finalRanking);
+                        compileFinalRanking(topTen);
 
                         /* Increment current stage. */
                         setStage(3);

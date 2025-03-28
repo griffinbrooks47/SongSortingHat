@@ -233,7 +233,7 @@ export default async function Artist({
     if(!detailedAlbums) return;
 
     return (
-        <main className="flex justify-center items-center flex-col bg-base-200">
+        <main className="page flex justify-center items-center flex-col bg-base-200">
             <div className="flex flex-row justify-center items-center rounded-md w-[80%] mt-[5rem] flex justify-center">
                 <figure className="w-[15rem] h-[15rem] overflow-hidden rounded-full shadow-xl">
                     <Image

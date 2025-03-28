@@ -1,4 +1,5 @@
 import { Results } from "./components/results";
+import { SearchBar } from "./components/search";
 
 interface Image {
     url: string;
@@ -121,12 +122,21 @@ export default async function Search(props: {
     const artists: Artist[] = results ?? [];
     
     return (
-        <main className="flex justify-center items-center flex-col bg-base-200">
-            {artist && 
-                <p className="mt-[2.5rem] mb-[1.25rem]">
-                    Showing results for: <strong>{artist}</strong>
-                </p>
-            }
+        <main className="bg-base-200 min-h-[calc(100vh)] pt-[5rem] flex justify-center items-center flex-col">
+            <section className={`w-[45rem] mt-[0rem] mb-[1rem] ${!artist ? "min-h-[20rem]" : ""}`}>
+                {!artist && 
+                    <p className="text-[1.25rem] mt-[0rem] mb-[0.5rem]">
+                        Search for an artist to start ranking.
+                    </p>
+                }
+                {artist && 
+                    <p className="text-[1.25rem] mt-[2rem] mb-[0.5rem]">
+                        Showing results for: <strong>{artist}</strong>
+                    </p>
+                }
+                <hr className="border-black opacity-10"></hr>
+                <SearchBar placeholder="Search for an artist..."/>
+            </section>
             <Results artists={artists}></Results>
         </main>
     )

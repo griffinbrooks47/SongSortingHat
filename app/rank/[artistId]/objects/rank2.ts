@@ -77,8 +77,6 @@ export default class Ranker {
         prevScoreMap: Map<string, number>, 
         prevReverseScoreMap: Map<number, Set<string>>, 
         prevChoiceCache: Map<string, Set<string>>,
-        top10flag?: boolean,
-
     ) {
         /* Init data structures for previous iteration. */
         this.currMatchup = prevMatchup;
@@ -159,6 +157,8 @@ export default class Ranker {
                 }
             }
         }
+
+
         /* Return matchup to view. */
         return this.currMatchup;
     }
@@ -186,6 +186,9 @@ export default class Ranker {
 
     /* PRIVATE METHODS */
 
+    /* 
+        Score the entire tree, first clearing maps then deferring to helper method. 
+    */
     private scoreTree(): void {
 
         if(!this.trackIDs) {
@@ -207,6 +210,9 @@ export default class Ranker {
         }
     }
 
+    /* 
+        Recursively score a node by calculating scores of its child nodes. 
+    */
     private scoreTreeBelow(track: TrackNode): number {
 
         /* Get the tracks ranked below track.  */
@@ -247,6 +253,9 @@ export default class Ranker {
         }
     }
 
+    /* 
+        Create the next matchup, introducing a new item. 
+    */
     private genChoice(): void {
 
         if(!this.trackIDs) {
@@ -271,6 +280,11 @@ export default class Ranker {
         }
     }
 
+    /* 
+        Scans the entire graph:
+        1. Fix Transitive connections (i.e. A > B && B > C -> if edge A > C exists, remove it. )
+        2. Add matchups between songs of same rank (i.e. A > C && B > C, add A vs B matchup. )
+    */
     private resolveBranches(): void {
 
         if(!this.nodeMap) {
@@ -331,8 +345,13 @@ export default class Ranker {
         }
     }
 
-    /* Helper Methods. */
+    /* 
+    Helper Methods. 
+    */
 
+    /* 
+        Given a matchup, automatically resolve it if the choice has been made explicitly by user already. 
+    */
     private tryToResolve(matchup: [string, string]): boolean {
 
         /* Grab the matchup IDs. */
@@ -349,8 +368,11 @@ export default class Ranker {
         }
 
         return false;
-        
     }
+
+    /* 
+        
+    */
     private checkSafeMatchup(matchup: [string, string]): boolean {
 
         /* Grab the matchup IDs. */
@@ -375,6 +397,10 @@ export default class Ranker {
         /* WRITE BETTER METHOD IN FUTURE */
         return this.scoreMap.keys().next().value!;
     }
+
+    /* 
+        Maps a song title to its new score. 
+    */
     private addToReverseScoreMap(score: number, title: string): void {
 
         /* If score bucket exists, put title inside. */

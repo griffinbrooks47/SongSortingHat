@@ -20,7 +20,7 @@ export const ArtistCard = (props: {artist: Artist, img: string, width: number, h
     const router = useRouter();
 
     return (
-        <div className="w-[15rem] h-[15rem] overflow-hidden cursor-pointer relative group cursor-pointer"
+        <div className="w-[15rem] h-[15rem] overflow-hidden cursor-pointer relative group cursor-pointer rounded-sm shadow-md"
             onClick={() => {
                 /* Add selected artist to local storage cache. */                
                 localStorage.setItem(`${props.artist.name}`, JSON.stringify(props.artist))

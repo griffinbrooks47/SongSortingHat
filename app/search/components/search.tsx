@@ -33,9 +33,9 @@ export const SearchBar = ({ placeholder }: { placeholder: string }) => {
                     placeholder={placeholder}
                     defaultValue={searchParams.get('query')?.toString()}
                     className=" 
-                            w-full h-[3rem] mb-[1rem] mt-[1rem] pl-[4rem] 
-                            rounded-md text-[1rem] bg-base-200
-                            no-animation
+                            w-full h-[2.75rem] mb-[1rem] mt-[1rem] pl-[3.5rem] 
+                            rounded-md text-[1rem] bg-base-100 shadow-sm
+                            focus:outline-none focus:ring-0 focus:border-transparent
                         "
                 />
                 <button className="absolute left-[1rem] opacity-30">
