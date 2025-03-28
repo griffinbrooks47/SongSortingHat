@@ -7,3 +7,7 @@
     padding-top: 4rem;
     z-index: 0;
 }
+
+.shape-circle {
+    shape-outside: circle(50% at 50% 50%);
+}

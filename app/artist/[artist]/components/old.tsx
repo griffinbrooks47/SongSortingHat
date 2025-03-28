@@ -1,5 +1,10 @@
 import Image from "next/image"
 
+import { IconHeart, IconBrandSpotify } from "@tabler/icons-react";
+
+import { AlbumCard } from "./components/albumCard";
+import RankButton from "./components/RankButton";
+
 /* 
     Spotify API artist endpoint return object
 */
@@ -228,46 +233,62 @@ export default async function Artist({
     if(!detailedAlbums) return;
 
     return (
-        <main className="page flex justify-center items-center flex-col">
-            <div className="flex flex-row justify-between items-start rounded-md h-[17.5] flex justify-center">
-                <section className="h-full pt-[0rem] flex flex-row min-w-[20rem]">
-                    <div className="border-l-2 border-black opacity-20"></div>
-                    <div className="ml-[1rem] pr-[5rem] pt-[1rem]">
-                        <p
-                            className="text-[2.5rem] font-bold break-words overflow-hidden 
-                                    line-clamp-2 text-ellipsis max-w-full mb-[0.25rem] leading-[2.75rem]"
-                            style={{
-                                display: "-webkit-box",
-                                WebkitBoxOrient: "vertical",
-                                WebkitLineClamp: 2,
-                                whiteSpace: "normal",
-                            }}
-                        >
-                            {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
-                        </p>
-                        <p className="text-[1.15rem] font-semibold opacity-80 truncate max-w-[40ch] leading-[1.25rem]">
-                            {artist.followers.total.toLocaleString() + " listeners"}
-                        </p>
-                        <p className="text-[0.85rem] uppercase font-semibold opacity-75 truncate max-w-[40ch]">
-                            {artist.genres.slice(0, 3).join(", ")}
-                        </p>
-                    </div>
-                </section>
-                <div className="">
-                    <figure className="w-[17.5rem] h-[17.5rem] z-10">
-                        <Image
+        <main className="page flex justify-center items-center flex-col bg-base-200">
+            <div className="flex flex-row justify-center items-center rounded-md w-[80%] mt-[5rem] flex justify-center">
+                <figure className="w-[15rem] h-[15rem] overflow-hidden rounded-full shadow-xl">
+                    <Image
                         src={artist.images[0].url}
-                        width={280} 
-                        height={280}
+                        width={artist.images[0].width}
+                        height={artist.images[0].height}
                         alt={artist.name}
-                        className="w-full h-full rounded-full shadow-xl object-cover"
-                        />
-                    </figure>
+                        className="w-full h-full"
+                    >
+                    </Image>
+                </figure>
+                <div className="flex flex-col justify-center items-center mx-[2rem] min-w-[27.5rem] max-w-[27.5rem]">
+                    <p
+                        className="text-[2.75rem] font-bold text-center break-words overflow-hidden 
+                                line-clamp-2 text-ellipsis max-w-full mb-[0.25rem] px-2 leading-[3rem]"
+                        style={{
+                            display: "-webkit-box",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 2,
+                            whiteSpace: "normal",
+                        }}
+                    >
+                        {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
+                    </p>
+                    <div className="flex justify-center items-center flex-col mb-[0.5rem]">
+                        <p className="text-[0.9rem]">
+                            Listeners:
+                        </p>
+                        <div className="badge badge-lg badge-primary">
+                            <p className="px-[1.5rem] text-[0.9rem]">{artist.followers.total.toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <div className="flex justify-center items-center mt-[0.75rem]">
+                        <RankButton artist={artist} albums={albums} detailedAlbums={detailedAlbums}/>
+                        <button className="btn btn-outline btn-square mx-[0.25rem] rounded-lg border-2">
+                            <IconBrandSpotify />
+                        </button>
+                        <button className="btn btn-outline btn-square mx-[0.25rem] border-2">
+                            <IconHeart />
+                        </button>
+                    </div>
                 </div>
             </div>
-            <ul>
-                Button
-            </ul>
+            <section className="flex justify-base items-base flex-col mt-[5rem]">
+                <div className="grid grid-cols-4 gap-3">
+                    {albums?.map((album) => (
+                        <AlbumCard
+                            image={album.images[0]}
+                            name={album.name}
+                            key={album.id}
+                        >
+                        </AlbumCard>
+                    ))}
+                </div>
+            </section>
         </main>
     )
 }
