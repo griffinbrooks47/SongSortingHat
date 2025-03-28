@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/* Unique user profile storing sortings data. */
+model User {
+  /* Data about user. */
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?  // Null if using OAuth
+  name      String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /* Sortings data. */
+  accounts  Account[]
+  sortings  Sorting[]
+}
+
+/* Account authorization data. */
+model Account {
+  id               String  @id @default(uuid())
+  userId           String
+  provider         String  // e.g., "google", "github", "email"
+  providerAccountId String  @unique // Unique identifier from provider
+  accessToken      String?
+  refreshToken     String?
+  expiresAt        Int?
+  createdAt        DateTime @default(now())
+  
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+enum Role {
+  USER
+  ADMIN
+}
+
+/* Sortings Data */
+
+model Artist {
+  id          String    @id @default(uuid())
+  name        String
+  spotifyId   String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  sortings    Sorting[]
+  songs       Song[]
+}
+model Song {
+  id          String    @id @default(uuid())
+  title       String
+  spotifyId   String?   @unique
+  artistId    String
+  artist      Artist    @relation(fields: [artistId], references: [id])
+  sortings    Sorting[] @relation("SortingToSong")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+model Sorting {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  config      Json     // Stores the sorting configuration
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // User relationship
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  // Artist relationship
+  artistId    String
+  artist      Artist   @relation(fields: [artistId], references: [id])
+  
+  // Many-to-many with Songs
+  songs       Song[]   @relation("SortingToSong")
+
+  @@index([userId])
+  @@index([artistId])
+}
