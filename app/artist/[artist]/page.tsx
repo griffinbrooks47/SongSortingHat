@@ -3,9 +3,10 @@ import Image from "next/image"
 import { Artist, Album, DetailedAlbum } from "@/types/artist";
 
 /* Sample data. */
-import { sampleArtist, sampleDetailedAlbums } from "./objects/sampleArtist";
-import { IconBrandSpotify, IconHeart } from "@tabler/icons-react";
+//import { sampleArtist, sampleDetailedAlbums } from "./objects/sampleArtist";
+import { IconBrandSpotify, IconHeart, IconSwitch } from "@tabler/icons-react";
 import { AlbumCard } from "./components/albumCard";
+import Link from "next/link";
 
 /* 
     Spotify API artist endpoint return object
@@ -160,6 +161,13 @@ export default async function ArtistPage({
     params: Promise<{ artist: string }>
   }) {
 
+    /* Lookup Artist 
+        1. Perform DB lookup using URL artist param. 
+        2. If data is less than a day old, use DB artist profile. 
+        3. Otherwise, perform spotify lookup, and update DB data. 
+        4. Finally, load data onto UI. 
+    */
+
     /* Artist ID */
     const artistId = (await params).artist
 
@@ -189,7 +197,7 @@ export default async function ArtistPage({
         <main className="page flex justify-center items-center flex-col">
             <div className="mt-[7.5rem]">
                 <div className="relative h-[17.5rem] mb-[2rem] flex flex-row justify-between items-start rounded-md">
-                    <section className="pt-[0rem] mt-[0.5rem] mb-[2rem] flex flex-row min-w-[25rem]">
+                    <section className="pt-[0rem] mt-[0.5rem] mb-[2rem] flex flex-row min-w-[30rem]">
                         
                         <div className="ml-[1.5rem] pr-[5rem] my-auto">
                             <p
@@ -204,7 +212,7 @@ export default async function ArtistPage({
                             >
                                 {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
                             </p>
-                            <p className="text-[1.25rem] mt-[-0.5rem] font-semibold opacity-80 truncate max-w-[40ch] leading-[1.5rem]">
+                            <p className="text-[1.15rem] mt-[0rem] font-semibold opacity-80 truncate max-w-[40ch] leading-[1.25rem]">
                                 {artist.followers.total.toLocaleString() + " followers"}
                             </p>
                             <p className="text-[0.95rem] my-[0.25rem] font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1rem]">
@@ -213,9 +221,6 @@ export default async function ArtistPage({
                             <div className="flex">
                                 <button className="mr-[0.5rem] my-[0.5rem] w-[3.25rem] h-[3.25rem] border-2 border-neutral opacity-80 flex rounded-full justify-center items-center">
                                     <IconHeart className="w-8 h-8" />
-                                </button>
-                                <button className="my-[0.5rem] w-[3.25rem] h-[3.25rem] border-2 border-neutral opacity-80 flex rounded-lg justify-center items-center">
-                                    <IconBrandSpotify className="w-8 h-8" />
                                 </button>
                             </div>
                         </div>
@@ -233,9 +238,27 @@ export default async function ArtistPage({
                     </div>
                 </div>
             </div>
-            <section className="flex justify-center items-end flex-col mt-[1rem]">
-                <div className="flex ml-[1rem]">
-                    <ul className="mr-auto my-[1rem] bg-base-100 shadow-sm rounded-md flex justify-center items-center py-[0.25rem]">
+            <section className="relative">
+                
+            </section>
+            <section className="flex justify-center items-start flex-col mt-[0.5rem]">
+                <hr className="border-black opacity-10 w-[95%] mr-auto my-[0.05rem]"></hr>
+                <ul className="flex justify-center items-center w-full">
+                    <li className="mx-[0.25rem]">
+                        <Link href={`/rank/${artist.id}`} className="mt-auto px-[0.75rem] py-[0.5rem] border-2 bg-accent border-neutral shadow-sm opacity-80 flex rounded-md justify-center items-center">
+                            <p className="font-semibold text-[1rem] color-accent">Start Sorting</p>
+                            <IconSwitch className="w-8 h-8" />
+                        </Link>
+                    </li>
+                    <li className="mx-[0.25rem]">
+                        <button className="my-[0.5rem] w-[3.25rem] h-[3.25rem] border-2 border-neutral bg-success opacity-80 flex rounded-lg justify-center items-center">
+                            <IconBrandSpotify className="w-8 h-8" />
+                        </button>
+                    </li>
+                </ul>
+                <hr className="border-black opacity-10 w-[95%] ml-auto my-[0.05rem]"></hr>
+                <div className="flex ml-[1rem] flex justify between w-full">
+                    <ul className="ml-auto my-[1rem] mr-[2rem] bg-base-100 shadow-sm rounded-md flex justify-center items-center py-[0.25rem]">
                         <li>
                             <a className="h-[2.5rem] rounded-sm flex justify-center items-center px-[1rem] ml-[0.25rem] mr-[0.25rem] bg-base-200">
                                 Albums
@@ -252,7 +275,6 @@ export default async function ArtistPage({
                             </a>
                         </li>
                     </ul>
-                    
                 </div>
                 <div className="grid grid-cols-4 gap-3">
                     {detailedAlbums?.map((album) => (
