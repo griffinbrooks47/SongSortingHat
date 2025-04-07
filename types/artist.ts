@@ -1,55 +1,73 @@
 
 /* 
-    Interfaces used to handle spotify artist data. 
+    Images
 */
-
-export interface Artist {
-    id: string;
-    name: string;
-    images: Img[];
-    external_urls: {spotify: string};
-    followers: {total: number};
-    genres: string[];
-    popularity: number;
-}
 export interface Img {
     width: number;
     height: number;
     url: string;
 }
-export interface Album {
-    album_type: string;
-    total_tracks: number;
-    id: string;
-    images: Img[];
+
+/* 
+    Artist
+*/
+export interface Artist {
+    spotifyId: string;
     name: string;
-    release_date: string;
-    type: string;
-    artists: Artist[];
+    images: Img[];
+    external_urls: {
+        spotify: string;
+    };
+    followers: number;
+    genres: Genre[];
+    albums: Album[];
+    tracks: Track[];
+};
+
+/* 
+    Genre
+*/
+export interface Genre {
+    id?: string;
+    name: string;
 }
-export interface DetailedAlbum {
+  
+
+/* 
+    Album
+*/
+export interface Album {
+    spotifyId: string;
     total_tracks: number;
     external_urls: {
         spotify: "string"
     },
-    id: string;
-    images: Img[];
     name: string;
     release_date: string;
+
+    images: Img[];
     artists: Artist[];
     tracks: {
         total: number;
         items: Track[];
     }
 }
+
+/* 
+    Track
+*/
 export interface Track {
     artists: Artist[];
-    id: string;
+    spotifyId: string;
     name: string;
     track_number: number;
-}
-export interface DetailedTrack {
-    track: Track;
     album_title: string;
-    cover: Img;
+    images: Img[];
 }
+
+/* 
+    Sorting
+export interface Sorting {
+
+}
+*/

@@ -1,159 +1,26 @@
-import Image from "next/image"
 
-import { Artist, Album, DetailedAlbum } from "@/types/artist";
+/* Next Imports. */
+import Link from "next/link";
+import Image from "next/image"
 
 /* Sample data. */
 //import { sampleArtist, sampleDetailedAlbums } from "./objects/sampleArtist";
+
+/* UI Components. */
 import { IconBrandSpotify, IconHeart, IconSwitch } from "@tabler/icons-react";
-import { AlbumCard } from "./components/albumCard";
-import Link from "next/link";
+//import { AlbumCard } from "./components/albumCard";
 
-/* 
-    Spotify API artist endpoint return object
-*/
-interface AlbumResponse {
-    total: number;
-    items: Album[];
-}
-interface DetailedAlbumResponse {
-    albums: DetailedAlbum[];
-}
+/* Custom Types */
+import { Artist, Album } from "@/types/artist";
 
-/* 
-    Spotify API Functions. 
-*/
-async function getToken(clientId: string | undefined, clientSecret: string | undefined): Promise<string | null> {
+/* Music data types. */
 
-    if(clientId === undefined || clientId === undefined){
-        return null;
-    }
 
-    /* Encode auth string into base 64. */
-    const authString = `${clientId}:${clientSecret}`;
-    const authBase64 = btoa(authString); // Works in both Node.js (with global `btoa`) and browser
+/* Spotify API Wrapper. */
+import spotify from "@/clients/spotify/spotify";
 
-    const url = "https://accounts.spotify.com/api/token";
+/* Database Wrapper. */
 
-    /* Add the authString to the request headers. */
-    const headers = {
-        'Authorization': `Basic ${authBase64}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
-    };
-
-    /* Properly format the request body */
-    const data = new URLSearchParams();
-    data.append("grant_type", "client_credentials");
-
-    /* Initiate token post request. */
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: headers,
-            body: data.toString(), // Corrected encoding
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const jsonResult = await response.json();
-        const token: string = jsonResult["access_token"];
-        return token;
-    } catch (error) {
-        console.error("Error fetching token:", error);
-        throw error; // Ensure caller knows an error occurred
-    }
-}      
-async function getAuthHeaders(token: string): Promise<HeadersInit> {
-    return {
-        'Authorization': `Bearer ${token}`
-    };
-}
-/* 
-    Requests artist information from spotify API
-    Input: Spotify API token (string), artist ID (string)
-    Returns: Artist (Artist object)
-*/
-async function getArtist(token: string, artistId: string): Promise<Artist> {
-
-    const url = "https://api.spotify.com/v1/artists/" + artistId;
-    const headers = await getAuthHeaders(token);
-
-    const response = await fetch(`${url}`, { headers });
-    if (!response.ok) {
-        throw new Error(`Error fetching artist: ${response.statusText}`);
-    }
-
-    const jsonResult: Artist = await response.json();
-
-    return jsonResult;
-}
-async function getAlbums(token: string, artistId: string): Promise<AlbumResponse>{
-
-    const url = "https://api.spotify.com/v1/artists/" + artistId + "/albums";
-    const headers = await getAuthHeaders(token);
-
-    const response = await fetch(`${url}`, { headers });
-    if (!response.ok) {
-        throw new Error(`Error fetching artist: ${response.statusText}`);
-    }
-
-    const jsonResult: AlbumResponse = await response.json();
-
-    return jsonResult;
-}
-/* Includes tracks. */
-async function getDetailedAlbums(token: string, albumIds: string[]): Promise<DetailedAlbumResponse> {
-
-    let albumQuery = "";
-    for (const albumId of albumIds.slice(0, 20)) { // Limit to 20 iterations
-        albumQuery += albumId + ",";
-    }
-    albumQuery = albumQuery.slice(0, -1);
-
-    const url = `https://api.spotify.com/v1/albums?ids=${albumQuery}`;
-
-    const headers = await getAuthHeaders(token);
-
-    const response = await fetch(`${url}`, { headers });
-    if (!response.ok) {
-        throw new Error(`Error fetching artist: ${response.statusText}`);
-    }
-    const jsonResult: DetailedAlbumResponse = await response.json();
-
-    return jsonResult;
-}
-const artistLookup = async (artistId: string): Promise<Artist | undefined> => {
-    
-    const token: string | null = await getToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
-
-    if(!token) return;
-
-    const artist: Artist = await getArtist(token, artistId);
-
-    return artist;
-}
-const albumsLookup = async (artistId: string): Promise<Album[] | undefined> => {
-
-    const token: string | null = await getToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
-
-    if(!token) return;
-
-    const albums: AlbumResponse = await getAlbums(token, artistId);
-
-    return albums.items;
-}
-const detailedAlbumsLookup = async (albumIds: string[]): Promise<DetailedAlbum[] | undefined> => {
-
-    const token: string | null = await getToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
-
-    if(!token) return;
-
-    const detailedAlbums: DetailedAlbumResponse = await getDetailedAlbums(token, albumIds);
-
-    return detailedAlbums.albums;
-
-}
 
 export default async function ArtistPage({
     params,
@@ -161,44 +28,43 @@ export default async function ArtistPage({
     params: Promise<{ artist: string }>
   }) {
 
-    /* Lookup Artist 
-        1. Perform DB lookup using URL artist param. 
-        2. If data is less than a day old, use DB artist profile. 
-        3. Otherwise, perform spotify lookup, and update DB data. 
-        4. Finally, load data onto UI. 
-    */
-
     /* Artist ID */
-    const artistId = (await params).artist
+    const artistId = (await params).artist;
 
-    /* */
-    const artist: Artist | undefined = await artistLookup(artistId);
+    /* Artist profile data. */
+    let artist: Artist | null = null;
+    let albums: Album[] | null = null;
 
-    if(!artist) return;
+    /* Query DB for artist. */
+    
 
-    const albums: Album[] | undefined = await albumsLookup(artistId);
 
-    if(!albums) return;
-
-    const albumIds: string[] = [];
-    for (const album of albums) {
-        albumIds.push(album.id);
+    /* If DB returns artist, query albums. */
+    if(artist) {
+        
+    }
+    /* If DB doesn't return an artist, request it from Spotify API. */
+    else {
+        /* Get artist data. */
+        artist = await spotify.getArtist(artistId)
+        albums = artist?.albums || null;
+        if(!albums || !artist) {
+            throw new Error("Artist or albums not found.");
+        }
     }
 
-    const detailedAlbums: DetailedAlbum[] | undefined = await detailedAlbumsLookup(albumIds);
-
-    if(!detailedAlbums) return;
-
-    //const artist = sampleArtist;
-    //const detailedAlbums = sampleDetailedAlbums;
-
+    /* If artist & albums are undefined, return null. */
+    if(!artist) {
+        console.log("Artist & Albums not fetched from spotify.")
+        return;
+    }
 
     return (
         <main className="page flex justify-center items-center flex-col">
-            <div className="mt-[7.5rem]">
+            
+            <div className="mt-[5rem]">
                 <div className="relative h-[17.5rem] mb-[2rem] flex flex-row justify-between items-start rounded-md">
                     <section className="pt-[0rem] mt-[0.5rem] mb-[2rem] flex flex-row min-w-[30rem]">
-                        
                         <div className="ml-[1.5rem] pr-[5rem] my-auto">
                             <p
                                 className="text-[2.75rem] font-bold break-words overflow-hidden 
@@ -213,10 +79,10 @@ export default async function ArtistPage({
                                 {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
                             </p>
                             <p className="text-[1.15rem] mt-[0rem] font-semibold opacity-80 truncate max-w-[40ch] leading-[1.25rem]">
-                                {artist.followers.total.toLocaleString() + " followers"}
+                                {artist.followers + " followers"}
                             </p>
                             <p className="text-[0.95rem] my-[0.25rem] font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1rem]">
-                                {detailedAlbums.length + " projects"}
+                                {" projects"}
                             </p>
                             <div className="flex">
                                 <button className="mr-[0.5rem] my-[0.5rem] w-[3.25rem] h-[3.25rem] border-2 border-neutral opacity-80 flex rounded-full justify-center items-center">
@@ -245,7 +111,7 @@ export default async function ArtistPage({
                 <hr className="border-black opacity-10 w-[95%] mr-auto my-[0.05rem]"></hr>
                 <ul className="flex justify-center items-center w-full">
                     <li className="mx-[0.25rem]">
-                        <Link href={`/rank/${artist.id}`} className="mt-auto px-[0.75rem] py-[0.5rem] border-2 bg-accent border-neutral shadow-sm opacity-80 flex rounded-md justify-center items-center">
+                        <Link href={`/rank/${artist.spotifyId}`} className="mt-auto px-[0.75rem] py-[0.5rem] border-2 bg-accent border-neutral shadow-sm opacity-80 flex rounded-md justify-center items-center">
                             <p className="font-semibold text-[1rem] color-accent">Start Sorting</p>
                             <IconSwitch className="w-8 h-8" />
                         </Link>
@@ -276,17 +142,23 @@ export default async function ArtistPage({
                         </li>
                     </ul>
                 </div>
-                <div className="grid grid-cols-4 gap-3">
-                    {detailedAlbums?.map((album) => (
-                        <AlbumCard
-                            image={album.images[0]}
-                            name={album.name}
-                            key={album.id}
-                        >
-                        </AlbumCard>
-                    ))}
-                </div>
+                
             </section>
         </main>
     )
 }
+
+/* 
+
+<div className="grid grid-cols-4 gap-3">
+                    {albums?.map((album) => (
+                        <AlbumCard
+                            image={album.images[0]}
+                            name={album.name}
+                            key={album.spotifyId}
+                        >
+                        </AlbumCard>
+                    ))}
+                </div>
+
+*/

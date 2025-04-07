@@ -10,9 +10,9 @@ import { useState, useReducer } from "react";
 import Image from "next/image";
 
 /* Data structure imports. */
-import Ranker from "../[artistId]/objects/rank2";
-import MatchupQueue from "../[artistId]/objects/matchupQueue";
-import TrackNode from "../[artistId]/objects/TrackNode";
+import Ranker from '../../[artistId]/objects/rank2';
+import MatchupQueue from '../../[artistId]/objects/matchupQueue';
+import TrackNode from '../../[artistId]/objects/TrackNode';
 
 /* Return type for Ranker object during iterations. */
 interface MatchupData {

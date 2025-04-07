@@ -4,25 +4,34 @@ import * as _ from 'underscore';
 import Image from "next/image";
 
 import { useEffect, useState } from "react";
-import { IconArrowsShuffle } from "@tabler/icons-react";
 
 import { SongCarousel } from './components/SongCarousel';
 
-import Showdown from '../stages/Showdown';
+import Showdown from '../stages/stage2/Showdown';
 
 /* Interface imports. */
 import { Artist, Album, DetailedAlbum, DetailedTrack } from "@/types/artist";
+import Dashboard from '../stages/Dashboard';
 
 /* Import sample data. */
 //import sampleMap from './objects/sampleMap';
 
 export default function Rank() {
 
+    /* 
+        From URL param, query DB for:
+        ~ Artist
+        ~ Detailed Albums
+        ~ Tracks
+        If artist undefined in DB or last updated over a day ago:
+        ~ Redirect to artist page to trigger database updates. 
+    */
+
     /* Loaded data cached initially in localStorage. */
     const [artist, setArtist] = useState<Artist | undefined>();
     const [, setAlbums] = useState<Album[] | undefined>();
     const [detailedAlbums, setDetailedAlbums] = useState<DetailedAlbum[] | undefined>();
-    const [songs, setSongs] = useState<DetailedTrack[] | undefined>();
+    const [songs, setSongs] = useState<DetailedTrack[]>([]);
 
     /* Abstraction used to update current song pool between stages. */
     const compileSongs = (tracks: DetailedTrack[]) => {
@@ -36,22 +45,7 @@ export default function Rank() {
         ~ 3: Crown the Best!
     */
     const [stage, setStage] = useState<number>(1);
-    const [stageActive, setStageActive] = useState<boolean>(false);
-    const text: string[] = [
-        "First, select the songs you like!",
-        "Now, choose the better songs!",
-        "Compile the results!"
-    ]
-
-    /* Chunked array used to display songs in stage 1. */
-    const [songChunks, setSongChunks] = useState<DetailedTrack[][] | undefined>();
-    const countPerSlide = 15;
-    const chunkArray = (arr: DetailedTrack[], size: number) => {
-        return arr.reduce((acc: DetailedTrack[][], _, i) => {
-          if (i % size === 0) acc.push(arr.slice(i, i + size));
-          return acc;
-        }, []);
-    };
+    const [dashboardActive, setDashboardActive] = useState<boolean>(true);
 
     /* 
         Map of all selected songs.
@@ -79,7 +73,7 @@ export default function Rank() {
         Users final ranking of songs.
         ~ Array of DetailedTrack objects.
     */
-    const [finalRanking, setFinalRanking] = useState<DetailedTrack[] | undefined>();
+    const [finalRanking, setFinalRanking] = useState<DetailedTrack[]>([]);
     const compileFinalRanking = (ranking: DetailedTrack[]) => {
         setFinalRanking(ranking);
     }
@@ -151,59 +145,25 @@ export default function Rank() {
     return (
         <main className="flex justify-center items-center flex-col h-[calc(100vh-4rem)] bg-base-200">
             {/* Interface between ranking stages. */}
-            {!stageActive && 
-                <section className="card bg-base-100 min-w-[50rem] flex justify-center items-center rounded-md shadow-sm mb-[1rem]">
-                    <figure className="w-[12.5rem] h-[12.5rem] rounded-full mt-[3rem]">
-                        {artist &&
-                            <Image 
-                                src={artist.images[0].url}
-                                width={artist.images[0].width}
-                                height={artist.images[0].height}
-                                alt={artist.name}
-                                className=""
-                            />
-                        }
-                    </figure>
-                    <p className="text-[2rem] font-bold mt-[1rem]">
-                        {artist?.name}
-                    </p>
-                    <div className="card-body w-[100%] mt-[-1rem]">
-                        <ul className="steps w-[90%] mx-auto text-[0.9rem]">
-                            <li className={(stage > 1 ? "step step-primary" : (stage == 1 ? "step step-primary" : "step step"))}
-                                data-content={(stage > 1 ? "✓" : 1)}>
-                                <p className={(stage == 1 ? "font-semibold" : "")}>Assemble the Lineup</p></li>
-                            <li className={(stage > 2 ? "step step-primary" : (stage == 2 ? "step step-primary" : "step step"))}
-                                data-content={(stage > 2 ? "✓" : 2)}>
-                                <p className={(stage == 2 ? "font-semibold" : "")}>Song Showdown</p></li>
-                            <li className={(stage > 3 ? "step step-primary" : (stage == 3 ? "step step-primary" : "step step"))}
-                                data-content={(stage > 3 ? "✓" : 3)}>
-                                <p className={(stage == 3 ? "font-semibold" : "")}>Crown the Best!</p></li>
-                        </ul>
-                        <div className="divider my-[0.25rem]"></div>
-                        <p className="text-center text-[1.25rem] font-semibold">{`Step ${stage}:`}</p>
-                        <div className="flex justify-center flex-col text-center mb-[0.5rem]">
-                            <p>{text[stage-1]}</p>
-                        </div>
-                        <button className="btn btn-outline border-2 btn-primary max-w-[30rem] mx-auto"
-                            onClick={() => {
-                                if(stage == 1){
-                                    startStageOne();
-                                } else if(stage == 2){
-                                    startStageTwo();
-                                } else {
-                                    startStageThree();
-                                }
-                            }}
-                        >
-                            Start Ranking
-                            <IconArrowsShuffle />
-                        </button>
-                    </div>
-                </section>
+            {dashboardActive && artist && stage &&
+                <Dashboard 
+                    artist={artist} 
+                    stage={stage} 
+
+                    setStage={(newStage: number) => {
+                        setStage(newStage)
+                    }}
+                    setDashboardActive={(state: boolean) => {
+                        setDashboardActive(state);
+                    }}
+                    setType={(newType: string) => {
+                        setRankingType(newType)
+                    }}
+                />
             }
 
             {/* Stage 1 */}
-            {stageActive && (stage == 1) && songs && songChunks && 
+            {!dashboardActive && (stage == 1) && songs && songChunks && 
                 <main className='h-full w-full relative flex flex-col justify-center items-center mt-[1rem]'>
                     <SongCarousel 
                         songChunks={songChunks} 
@@ -215,18 +175,16 @@ export default function Rank() {
                             const selectedSongs: DetailedTrack[] = Object.values(idToSong);
                             compileSongs(selectedSongs);
 
-                            console.log(selectedSongs);
-
                             /* Increment current stage. */
                             setStage(2);
-                            setStageActive(false);
+                            setDashboardActive(true);
                         }}
                     ></SongCarousel>
                 </main>
             }
 
             {/* Stage 2 */}
-            {stageActive && (stage == 2) && 
+            {!dashboardActive && (stage == 2) && 
                 <Showdown 
                     itemMap={idToSong}
                     onEnd={(finalRanking: DetailedTrack[]) => {
@@ -250,7 +208,7 @@ export default function Rank() {
             }
 
             {/* Stage 3 */}
-            {stageActive && (stage == 3) && finalRanking && 
+            {!dashboardActive && (stage == 3) && finalRanking && 
                 <section className='w-full min-h-full flex justify-center mt-[2rem]'>
                     <ul className='list bg-base-100 shadow-sm w-[35rem] py-[0.25rem] px-[0rem] border-2 rounded-sm'>
                         <div className='flex flex-row justify-center items-center h-[4rem]'>
