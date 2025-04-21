@@ -17,7 +17,7 @@ import { Artist, Album } from "@/types/artist";
 
 
 /* Spotify API Wrapper. */
-import spotify from "@/clients/spotify/spotify";
+import spotify from "@/clients/spotify/spotifyClient";
 
 /* Database Wrapper. */
 
@@ -36,7 +36,9 @@ export default async function ArtistPage({
     let albums: Album[] | null = null;
 
     /* Query DB for artist. */
+
     
+
 
 
     /* If DB returns artist, query albums. */
@@ -54,7 +56,7 @@ export default async function ArtistPage({
     }
 
     /* If artist & albums are undefined, return null. */
-    if(!artist) {
+    if(!artist || !artist.images) {
         console.log("Artist & Albums not fetched from spotify.")
         return;
     }
