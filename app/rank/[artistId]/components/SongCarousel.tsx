@@ -8,18 +8,18 @@ import { SongCard } from "./SongCard";
 import 'keen-slider/keen-slider.min.css'
 import { IconCircleArrowLeft, IconCircleArrowRight } from "@tabler/icons-react";
 
-import { DetailedTrack } from "@/types/artist";
+import { Track } from "@/types/artist";
 
 export const SongCarousel = (
   props: { 
-    songChunks: DetailedTrack[][], 
+    songChunks: Track[][], 
     count: number, 
-    toggleSong: (id: string, detailedTrack: DetailedTrack) => void,  
+    toggleSong: (id: string, detailedTrack: Track) => void,  
     onEnd?: () => void,
   }) => {
 
   const [currentSlide, setCurrentSlide] = React.useState(0)
-  const [loaded, setLoaded] = useState(false)
+  const [, setLoaded] = useState(false)
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     initial: 0,
     slideChanged(slider) {
@@ -33,13 +33,13 @@ export const SongCarousel = (
   return (
     <main className="relative w-full overflow-hidden flex flex-col justify-center">
       <div ref={sliderRef} className="keen-slider">
-        {props.songChunks.map((songChunk: DetailedTrack[], slideIdx: number) => {
+        {props.songChunks.map((songChunk: Track[], slideIdx: number) => {
             return (
                 <section key={slideIdx} className={`keen-slider__slide`}>
                     <main className='grid grid-cols-5 grid-rows-3 gap-4 w-[fit-content] mx-auto'>
-                        {songChunk.map((song: DetailedTrack) => {
+                        {songChunk.map((song: Track) => {
                           return (
-                              <SongCard key={song.track.id} track={song}
+                              <SongCard key={song.id} track={song}
                                   onClick={props.toggleSong}
                               />
                           )

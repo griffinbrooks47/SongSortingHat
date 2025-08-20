@@ -1,0 +1,43 @@
+/**
+ * Track
+ */
+model DBTrack {
+  /**
+   * Identifiers
+   */
+  id        String @id @default(uuid())
+  spotifyId String @unique
+
+  /**
+   * Metadata
+   */
+  title     String
+  updatedAt DateTime @updatedAt
+
+  /**
+   * Artists
+   */
+  artists DBArtist[]
+
+  /**
+   * Optional album relation (songs may be individual singles, not album tracks)
+   */
+  albumId String?
+  album   DBAlbum? @relation(fields: [albumId], references: [id])
+
+  /**
+   * Images
+   */
+  images DBAlbumImg[]
+
+  /**
+   * Sortings that feature this track
+   */
+  sortings DBSorting[]
+
+  /**
+   * Indexes
+   */
+  @@index([spotifyId])
+  @@index([albumId])
+}

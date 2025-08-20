@@ -1,8 +1,11 @@
-import { DetailedTrack } from "@/types/artist";
+
+/* Page Components */
 import { SongCarousel } from "../../[artistId]/components/SongCarousel";
 
-const chunkArray = (arr: DetailedTrack[], size: number) => {
-    return arr.reduce((acc: DetailedTrack[][], _, i) => {
+import { Track } from "@/types/artist";
+
+const chunkArray = (arr: Track[], size: number) => {
+    return arr.reduce((acc: Track[][], _, i) => {
       if (i % size === 0) acc.push(arr.slice(i, i + size));
       return acc;
     }, []);
@@ -10,7 +13,7 @@ const chunkArray = (arr: DetailedTrack[], size: number) => {
 
 export default function Assemble(
     { songs, countPerSlide, toggleSong, onEnd } : {
-    songs: DetailedTrack[];
+    songs: Track[];
     countPerSlide: number;
     toggleSong: () => void;
     onEnd: () => void;

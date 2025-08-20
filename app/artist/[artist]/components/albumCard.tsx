@@ -10,6 +10,7 @@ interface ImageProps {
 }
 
 export const AlbumCard = (props: { image: ImageProps; name: string }) => {
+
     return (
         <div className="w-[15rem] h-[15rem] overflow-hidden relative group cursor-pointer">
             {/* Album Image */}

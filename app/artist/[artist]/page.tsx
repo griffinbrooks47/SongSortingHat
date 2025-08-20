@@ -3,23 +3,19 @@
 import Link from "next/link";
 import Image from "next/image"
 
-/* Sample data. */
-//import { sampleArtist, sampleDetailedAlbums } from "./objects/sampleArtist";
-
 /* UI Components. */
 import { IconBrandSpotify, IconHeart, IconSwitch } from "@tabler/icons-react";
 //import { AlbumCard } from "./components/albumCard";
 
-/* Custom Types */
+/* Universal Types */
 import { Artist, Album } from "@/types/artist";
-
-/* Music data types. */
-
 
 /* Spotify API Wrapper. */
 import spotify from "@/clients/spotify/spotifyClient";
 
 /* Database Wrapper. */
+import prisma from "@/clients/prisma/prismaClient";
+import { AlbumCard } from "./components/albumCard";
 
 
 export default async function ArtistPage({
@@ -32,35 +28,42 @@ export default async function ArtistPage({
     const artistId = (await params).artist;
 
     /* Artist profile data. */
-    let artist: Artist | null = null;
-    let albums: Album[] | null = null;
-
-    /* Query DB for artist. */
-
+    let artist: Artist | null = await prisma.getArtist(artistId);
+    let albums: Album[] | null = artist?.albums || null;;
+    // can add more data here if needed...
     
-
-
-
     /* If DB returns artist, query albums. */
     if(artist) {
-        
+        console.log("Artist fetched from DB: ");
     }
     /* If DB doesn't return an artist, request it from Spotify API. */
     else {
+        console.log("Artist not found in DB, fetching from Spotify API.");
+        
         /* Get artist data. */
         artist = await spotify.getArtist(artistId)
         albums = artist?.albums || null;
+
+        console.log(artist);
+ 
         if(!albums || !artist) {
             throw new Error("Artist or albums not found.");
         }
+
+        /* Save artist to DB. */
+        await prisma.createArtist(artist);
     }
 
-    /* If artist & albums are undefined, return null. */
-    if(!artist || !artist.images) {
-        console.log("Artist & Albums not fetched from spotify.")
-        return;
+    if(!artist) {
+        throw new Error("Artist not found.");
     }
-
+    if(!albums) {
+        throw new Error("Albums not found.");
+    }   
+    if(!artist.images) {
+        throw new Error("No artist images found.");
+    }
+   
     return (
         <main className="page flex justify-center items-center flex-col">
             
@@ -144,23 +147,21 @@ export default async function ArtistPage({
                         </li>
                     </ul>
                 </div>
-                
+                <div className="grid grid-cols-4 gap-3">
+                    {albums?.map((album) => (
+                        <AlbumCard
+                            image={album.images[0]}
+                            name={album.title}
+                            key={album.spotifyId}
+                        >
+                        </AlbumCard>
+                    ))}
+                </div>
             </section>
         </main>
     )
 }
 
 /* 
-
-<div className="grid grid-cols-4 gap-3">
-                    {albums?.map((album) => (
-                        <AlbumCard
-                            image={album.images[0]}
-                            name={album.name}
-                            key={album.spotifyId}
-                        >
-                        </AlbumCard>
-                    ))}
-                </div>
 
 */

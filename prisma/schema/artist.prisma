@@ -1,0 +1,63 @@
+/**
+ * Artist
+ */
+model DBArtist {
+  /**
+   * Identifiers
+   */
+  id        String @id @default(uuid())
+  spotifyId String @unique
+
+  /**
+   * Database records
+   */
+  last_updated DateTime @default(now())
+
+  /**
+   * Metadata
+   */
+  name          String
+  external_urls DBArtistUrls?
+  followers     Int
+
+  /**
+   * Albums associated with this artist
+   */
+  albums DBAlbum[]
+
+  /**
+   * Tracks associated with this artist
+   */
+  tracks DBTrack[]
+
+  /**
+   * Genres associated with this artist.
+   */
+  genres DBGenre[]
+
+  /**
+   * Images
+   */
+  images DBArtistImg[]
+
+  /**
+   * Sortings of this artist.
+   */
+  sortings DBSorting[]
+}
+
+/**
+ * Table for artist URLs
+ */
+model DBArtistUrls {
+  /**
+   * Metadata
+   */
+  spotify_url String @unique
+
+  /**
+   * Artist associated with these URLs
+   */
+  artistId String   @unique
+  artist   DBArtist @relation(fields: [artistId], references: [id])
+}

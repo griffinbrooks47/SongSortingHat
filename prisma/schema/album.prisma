@@ -1,0 +1,55 @@
+/**
+ * Album
+ */
+model DBAlbum {
+  /**
+   * Identifiers
+   */
+  id        String @id @default(uuid())
+  spotifyId String @unique
+
+  /**
+   * Database records
+   */
+  last_updated DateTime @default(now())
+
+  /**
+   * Metadata
+   */
+  title         String
+  total_tracks  Int
+  release_date  String
+  external_urls DBAlbumUrls?
+
+  /**
+   * Album Artists
+   * Usually one artist, but can be multiple.
+   */
+  artists DBArtist[]
+
+  /**
+   * Tracks on this album.
+   */
+  tracks DBTrack[]
+
+  /**
+   * Images
+   */
+  images DBAlbumImg[]
+}
+
+/**
+ * Table for album URLs
+ */
+model DBAlbumUrls {
+  /**
+   * Identifiers
+   */
+  spotify_url String @unique // Unique Spotify URL for this album
+  albumId     String @unique // Foreign key to DBAlbum, unique to enforce one-to-one
+
+  /**
+   * Relations
+   */
+  album DBAlbum @relation(fields: [albumId], references: [id]) // The album this URL belongs to
+}

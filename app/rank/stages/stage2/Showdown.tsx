@@ -3,7 +3,7 @@
 import '@xyflow/react/dist/style.css';
 
 /* Interface imports. */
-import { DetailedTrack } from "@/types/artist";
+import { Track } from "@/types/artist";
 
 /* React imports. */
 import { useState, useReducer } from "react";
@@ -88,8 +88,8 @@ const rankerReducer = (state: RankerState, action: RankerAction) => {
 }
 
 export default function Showdown(props: { 
-    itemMap: Map<string, DetailedTrack>, 
-    onEnd: (finalRanking: DetailedTrack[]) => void 
+    itemMap: Map<string, Track>, 
+    onEnd: (finalRanking: Track[]) => void 
 }) {
 
     console.log(props.itemMap);
@@ -105,10 +105,10 @@ export default function Showdown(props: {
     const secondItem: string = itemMapKeys[1];
 
     /* Current choices displayed on screen. */
-    const [leftChoice, setLeftChoice] = useState<DetailedTrack | undefined>(() => {
+    const [leftChoice, setLeftChoice] = useState<Track | undefined>(() => {
         return props.itemMap.get(firstItem);
     });
-    const [rightChoice, setRightChoice] = useState<DetailedTrack | undefined>(() => {
+    const [rightChoice, setRightChoice] = useState<Track | undefined>(() => {
         return props.itemMap.get(secondItem); 
     });
     const [currMatchup, setCurrMatchup] = useState<[string, string]>([firstItem, secondItem]);
@@ -178,7 +178,7 @@ export default function Showdown(props: {
         /* Trigger next stage if complete. */
         if(newMatchupData.isComplete) {
             /* Convert the map to an array and sort by score in descending order */
-            const finalRanking: DetailedTrack[] = Array.from(newMatchupData.reverseScoreMap.entries())
+            const finalRanking: Track[] = Array.from(newMatchupData.reverseScoreMap.entries())
                 .sort(([scoreA], [scoreB]) => scoreB - scoreA) // Sort scores in descending order
                 .flatMap(([, names]) => Array.from(names).map(name => props.itemMap.get(name)!)); // Replace name with DetailedTrack from itemMap
 
@@ -209,19 +209,19 @@ export default function Showdown(props: {
                 <main className='flex justify-center items-center flex-row mb-[2rem]'>
                     <div className="flex flex-col items-center h-[21rem] w-[17rem] pt-[1rem] mx-[1rem] cursor-pointer bg-base-100 border-2 border-neutral rounded-sm shadow-md"
                         onClick={() => {
-                            makeChoice(leftChoice.track.id, rightChoice.track.id)
+                            makeChoice(leftChoice.id, rightChoice.id)
                         }}
                     >
                         <Image
-                            src={leftChoice.cover.url}
-                            alt={leftChoice.track.name}
-                            width={leftChoice.cover.width}
-                            height={leftChoice.cover.height}
+                            src={leftChoice.images[0].url}
+                            alt={leftChoice.title}
+                            width={leftChoice.images[0].width}
+                            height={leftChoice.images[0].height}
                             className='h-[15rem] w-[15rem] border-2 border-neutral rounded-sm'
                         ></Image>
                         <div className='flex flex-col items-center pt-[0.75rem]'>
                             <div className='text-[1.05rem] font-semibold truncate max-w-[18ch]'>
-                                {leftChoice?.track.name}
+                                {leftChoice?.title}
                             </div>
                             <div className='text-[0.9rem] uppercase font-semibold opacity-70 truncate max-w-[18ch]'>
                                 {leftChoice?.album_title}
@@ -230,19 +230,19 @@ export default function Showdown(props: {
                     </div>
                     <div className="flex flex-col items-center h-[21rem] w-[17rem] pt-[1rem] mx-[1rem] cursor-pointer bg-base-100 border-2 border-neutral rounded-sm shadow-md"
                         onClick={() => {
-                            makeChoice(rightChoice.track.id, leftChoice.track.id)
+                            makeChoice(rightChoice.id, leftChoice.id)
                         }}
                     >
                         <Image
-                            src={rightChoice.cover.url}
-                            alt={rightChoice.track.name}
-                            width={rightChoice.cover.width}
-                            height={rightChoice.cover.height}
+                            src={rightChoice.images[0].url}
+                            alt={rightChoice.title}
+                            width={rightChoice.images[0].width}
+                            height={rightChoice.images[0].height}
                             className='h-[15rem] w-[15rem] border-2 border-neutral rounded-sm'
                         ></Image>
                         <div className='flex flex-col items-center pt-[0.75rem]'>
                             <div className='text-[1.05rem] font-semibold truncate max-w-[18ch]'>
-                                {rightChoice?.track.name}
+                                {rightChoice?.title}
                             </div>
                             <div className='text-[0.9rem] uppercase font-semibold opacity-70 truncate max-w-[18ch]'>
                                 {rightChoice?.album_title}

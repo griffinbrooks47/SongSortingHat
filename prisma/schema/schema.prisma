@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/**
+ * Account / User data.
+ */
+model DBUser {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String? // Null if using OAuth
+  name      String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /**
+   * Sortings data.
+   */
+  accounts    DBAccount[]
+  sortings    DBSorting[]
+  communities DBCommunityUser[]
+}
+
+model DBCommunityUser {
+  userId      String
+  communityId String
+  role        DBRole   @default(USER)
+  joinedAt    DateTime @default(now())
+
+  user      DBUser      @relation(fields: [userId], references: [id])
+  community DBCommunity @relation(fields: [communityId], references: [id])
+
+  @@id([userId, communityId])
+}
+
+/**
+ * Communities
+ */
+model DBCommunity {
+  id          String            @id @default(uuid())
+  name        String
+  description String?
+  members     DBCommunityUser[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+/**
+ * Security
+ */
+model DBAccount {
+  id                String   @id @default(uuid())
+  userId            String
+  provider          String // e.g., "google", "github", "email"
+  providerAccountId String   @unique // Unique identifier from provider
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         Int?
+  createdAt         DateTime @default(now())
+
+  user DBUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum DBRole {
+  USER
+  ADMIN
+}
+
+/**
+ * Sortings
+ */
+model DBSorting {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  config      Json // Stores the sorting configuration
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  published   Boolean  @default(true)
+
+  // User relationship
+  userId String
+  user   DBUser @relation(fields: [userId], references: [id])
+
+  // Artist relationship
+  artistId String
+  artist   DBArtist @relation(fields: [artistId], references: [id])
+
+  // Many-to-many with Songs
+  tracks DBTrack[]
+
+  @@index([userId])
+  @@index([artistId])
+}

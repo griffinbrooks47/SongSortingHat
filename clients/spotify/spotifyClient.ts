@@ -112,7 +112,45 @@ class SpotifyWrapper {
 
         /* Get artist albums & tracks. */
         const albums: Album[] | null = await this.getAlbums(artistId);
-        artist.albums = albums || [];
+        const tracks: Track[] = [];
+
+        /* Artist albums with singles filtered out. */
+        const filteredAlbums: Album[] = [];
+
+        /* Separate singles from albums (spotify mixes them) */
+        for(const album of albums || []) {
+
+            /* Get album artists. */
+            const album_artists: Artist[] = album.artists;
+            
+            /* If album has one track, append as single. */
+            if(album.tracks.length === 1) {
+                const track: Track = {
+                    artists: album_artists,
+                    spotifyId: album.spotifyId,
+                    title: album.title,
+                    track_type: "single",
+                    album_title: album.title,
+                    images: album.images,
+
+                }
+                tracks.push(track);
+            }
+
+            /* If album has more than one track, append as album. */
+            else {
+                /* Add all album tracks. */
+                tracks.push(...album.tracks);
+
+                /* Add album to filtered albums. */
+                filteredAlbums.push(album);
+            }
+
+        }
+
+        /* Append artist discography. */
+        artist.albums = filteredAlbums;
+        artist.tracks = tracks;
 
         return artist;
     }
@@ -150,11 +188,12 @@ class SpotifyWrapper {
 
             const imgs: Img[] = detailedAlbum.images;
             const album_title = detailedAlbum.name;
+            const track_type = "album track";
 
             const tracks: Track[] = [];
             for(const simpleTrack of detailedAlbum.tracks.items) {
-                tracks.push(this.parseTrack(simpleTrack, album_title, imgs))
-            }
+                tracks.push(this.parseTrack(simpleTrack, album_title, imgs, track_type))
+            }   
 
             /* Convert album. */
             const album: Album = {
@@ -162,13 +201,10 @@ class SpotifyWrapper {
                 external_urls: detailedAlbum.external_urls,
                 spotifyId: detailedAlbum.id,
                 images: detailedAlbum.images,
-                name: detailedAlbum.name,
+                title: detailedAlbum.name,
                 release_date: detailedAlbum.release_date,
                 artists: artists,
-                tracks: {
-                    total: detailedAlbum.total_tracks,
-                    items: tracks,
-                }
+                tracks: tracks,
             }
 
             albums.push(album);
@@ -337,14 +373,14 @@ class SpotifyWrapper {
         return artist;
     }
 
-    private parseTrack(simpleTrack: SimpleTrack, album_title: string, imgs: Img[]): Track {
+    private parseTrack(simpleTrack: SimpleTrack, album_title: string, imgs: Img[], track_type: string): Track {
 
         const track: Track = {
             artists: simpleTrack.artists,
             spotifyId: simpleTrack.id,
-            name: simpleTrack.name,
+            title: simpleTrack.name,
+            track_type: track_type,
             album_title: album_title,
-            track_number: simpleTrack.track_number,
             images: imgs,
         }
 

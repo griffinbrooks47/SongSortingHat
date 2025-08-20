@@ -63,7 +63,6 @@ export default async function Search(props: {
             'Authorization': `Bearer ${token}`
         };
     }
-    
     async function searchForArtist(token: string, artistName: string): Promise<Artist[] | undefined> {
         const url = "https://api.spotify.com/v1/search";
         const headers = await getAuthHeaders(token);
@@ -83,7 +82,9 @@ export default async function Search(props: {
         return jsonResult.artists?.items;
     }
     
-
+    /* 
+        Main Search Function
+    */
     const search = async (): Promise<Artist[] | undefined>  => {
 
         const searchParams = await props.searchParams;
