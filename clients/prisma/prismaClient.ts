@@ -9,7 +9,7 @@ import { Prisma } from '@prisma/client'
 import { Album, Artist, Genre, Img, Track } from "../../types/artist";
 
 /* Database types. */
-import { DBAlbum, DBAlbumImg, DBArtist, DBArtistImg, DBGenre, DBSorting, DBTrack, DBArtistUrls, DBAlbumUrls, PrismaClient } from "@prisma/client";
+import { DBAlbumImg, DBArtist, DBArtistImg, DBGenre, PrismaClient } from "@prisma/client";
 
 /* 
     Fields included when querying an artist. 
@@ -66,6 +66,7 @@ const artistInclude = Prisma.validator<Prisma.DBArtistInclude>()({
 /* 
     Fields included when querying an Album
 */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const albumInclude = Prisma.validator<Prisma.DBAlbumInclude>()({ 
     images: true, 
     artists: true, 
@@ -77,8 +78,10 @@ const albumInclude = Prisma.validator<Prisma.DBAlbumInclude>()({
     external_urls: true 
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const trackInclude = Prisma.validator<Prisma.DBTrackInclude>()({
-
+    images: true, 
+    artists: true, 
 });
 
 /** 
@@ -178,7 +181,13 @@ class PrismaWrapper {
 
         /* Package Album Artists */
         const artists: Artist[] = dbAlbum.artists.map((artist: DBArtist) => ({
-
+            /* Artist Data */
+            spotifyId: artist.spotifyId,
+            name: artist.name,
+            followers: artist.followers,
+            external_urls: {
+                /* !!! Add external urls later */
+            }
         }));
 
         /* Package Album Imgs */
@@ -231,26 +240,33 @@ class PrismaWrapper {
     /* 
         Parse a DBTrack (with relations) into a universal Track.
     */
-    private parseTrack(dbTrack: DBTrack): Track {
+    private parseTrack(dbTrack: Prisma.DBTrackGetPayload<{ include: typeof trackInclude }>): Track {
 
         /* Package artists. */
-        const artists: Artist[] = dbTrack.artist.map((artist: DBArtist) => ({
+        const artists: Artist[] = dbTrack.artists.map((artist: DBArtist) => ({
+            id: artist.id,
             spotifyId: artist.spotifyId,
             name: artist.name,
             followers: artist.followers,
+            external_urls: {
+                /* !!! Add external urls later */
+            },
+        }));
+
+        const images: Img[] = dbTrack.images.map((img: DBAlbumImg) => ({
+            width: img.width,
+            height: img.height,
+            url: img.url,
         }));
 
         return (
             {
                 spotifyId: dbTrack.spotifyId,
-                name: dbTrack.title,
+                title: dbTrack.title,
+                track_type: "album track",
                 artists: artists,
                 album_title: dbTrack.title,
-                images: dbTrack.images.map((img: DBAlbumImg) => ({
-                    width: img.width,
-                    height: img.height,
-                    url: img.url,
-                })),
+                images: images,
             }
         )
     }
@@ -259,105 +275,16 @@ class PrismaWrapper {
         Create a new artist in the database.
     */
     public async createArtist(artist: Artist): Promise<void> {
+        "use server";
 
         const artistImgs: Img[] = artist.images || [];
         const albums: Album[] = artist.albums || [];
         const tracks: Track[] = artist.tracks || [];
+
+        /* Check if artist already exists. */
+        const existingArtist = await this.getArtist(artist.spotifyId);
         
-        /* Concurrent */
-        await prisma.$transaction(async tx => {
-            
-            /* Upsert Artist */
-            const newArtist = await tx.dBArtist.upsert({
-                where:  { spotifyId: artist.spotifyId },
-                create: {
-                    spotifyId: artist.spotifyId,
-                    name: artist.name,
-                    followers: artist.followers,
-                },
-                update: {
-                    name: artist.name,
-                    followers: artist.followers,
-                    last_updated: new Date(),
-                }
-            })
-          
-            /* Delete old artist images, insert new ones. */
-            await tx.dBArtistImg.deleteMany({ where: { artistId: newArtist.id } })
-            await Promise.all(
-                artistImgs.map(img =>
-                    tx.dBArtistImg.create({
-                        data: {
-                            url: img.url,
-                            width: img.width,
-                            height: img.height,
-                            artistId: newArtist.id
-                        }
-                    })
-                )
-            )
-          
-            // 3) Albums & their nested children
-            for (const album of albums) {
-                
-                const albumRec = await tx.dBAlbum.upsert({
-                    where:  { spotifyId: album.spotifyId },
-                    create: {
-                        spotifyId: album.spotifyId,
-                        title: album.name,
-                        release_date: album.release_date,
-                        total_tracks: album.total_tracks || 0,
-                        updatedAt: new Date(),
-                        artistId: newArtist.id,
-                        artist: { 
-                            connect: { id: newArtist.id } 
-                        }
-                    },
-                    update: {
-                        title:        album.name,
-                        release_date: album.release_date,
-                        updatedAt: new Date(),
-                    }
-                })
-          
-                /* Delete old images, connect new ones. */
-                await tx.dBAlbumImg.deleteMany({ where: { albumId: albumRec.id } })
-                await Promise.all(album.images.map(img =>
-                    tx.dBAlbumImg.create({
-                    data: { 
-                        url:     img.url,
-                        width:   img.width,
-                        height:  img.height,
-                        albumId: albumRec.id
-                    }
-                    })
-                ))
-            
-                // tracks for this album
-                for (const track of tracks) {
-                    await tx.dBTrack.upsert({
-                        where:  { spotifyId: track.spotifyId },
-                        create: {
-                            spotifyId: track.spotifyId,
-                            title: track.name,
-                            album_title: albumRec.title,
-                            album: { 
-                                connect: { id: albumRec.id } 
-                            },
-                            artist: { 
-                                connect: { id: newArtist.id } 
-                            }
-                        },
-                        update: {
-                            title: track.name,
-                            updatedAt: new Date(),
-                        }
-                    })
-                }
-
-
-            }
-        })
+        
     }
           
 
