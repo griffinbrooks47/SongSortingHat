@@ -3,10 +3,6 @@
 import Link from "next/link";
 import Image from "next/image"
 
-/* UI Components. */
-import { IconBrandSpotify, IconHeart, IconSwitch } from "@tabler/icons-react";
-//import { AlbumCard } from "./components/albumCard";
-
 /* Universal Types */
 import { Artist, Album } from "@/types/artist";
 
@@ -15,7 +11,12 @@ import spotify from "@/clients/spotify/spotifyClient";
 
 /* Database Wrapper. */
 import prisma from "@/clients/prisma/prismaClient";
+
+/* React Components */
 import { AlbumCard } from "./components/albumCard";
+
+/* UI Components. */
+import { IconBrandSpotify, IconHeart, IconSwitch } from "@tabler/icons-react";
 
 
 export default async function ArtistPage({
@@ -31,11 +32,14 @@ export default async function ArtistPage({
     let artist: Artist | null = await prisma.getArtist(artistId);
     let albums: Album[] | null = artist?.albums || null;;
     // can add more data here if needed...
+
+
     
     /* If DB returns artist, query albums. */
     if(artist) {
         console.log("Artist fetched from DB: ");
     }
+
     /* If DB doesn't return an artist, request it from Spotify API. */
     else {
         console.log("Artist not found in DB, fetching from Spotify API.");
@@ -43,8 +47,6 @@ export default async function ArtistPage({
         /* Get artist data. */
         artist = await spotify.getArtist(artistId)
         albums = artist?.albums || null;
-
-        console.log(artist);
  
         if(!albums || !artist) {
             throw new Error("Artist or albums not found.");
@@ -52,6 +54,7 @@ export default async function ArtistPage({
 
         /* Save artist to DB. */
         await prisma.createArtist(artist);
+
     }
 
     if(!artist) {

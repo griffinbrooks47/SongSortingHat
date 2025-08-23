@@ -129,8 +129,7 @@ class SpotifyWrapper {
                     artists: album_artists,
                     spotifyId: album.spotifyId,
                     title: album.title,
-                    track_type: "single",
-                    album_title: album.title,
+                    album_title: "",
                     images: album.images,
 
                 }
@@ -188,11 +187,10 @@ class SpotifyWrapper {
 
             const imgs: Img[] = detailedAlbum.images;
             const album_title = detailedAlbum.name;
-            const track_type = "album track";
 
             const tracks: Track[] = [];
             for(const simpleTrack of detailedAlbum.tracks.items) {
-                tracks.push(this.parseTrack(simpleTrack, album_title, imgs, track_type))
+                tracks.push(this.parseTrack(simpleTrack, album_title, imgs))
             }   
 
             /* Convert album. */
@@ -373,13 +371,12 @@ class SpotifyWrapper {
         return artist;
     }
 
-    private parseTrack(simpleTrack: SimpleTrack, album_title: string, imgs: Img[], track_type: string): Track {
+    private parseTrack(simpleTrack: SimpleTrack, album_title: string, imgs: Img[]): Track {
 
         const track: Track = {
             artists: simpleTrack.artists,
             spotifyId: simpleTrack.id,
             title: simpleTrack.name,
-            track_type: track_type,
             album_title: album_title,
             images: imgs,
         }

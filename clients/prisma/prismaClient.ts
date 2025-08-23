@@ -1,15 +1,14 @@
-/* Spotify API Wrapper. */
-//import spotify from "@/clients/spotify/spotifyClient";
 
 /* Import prisma client module. */
-import { prisma } from "../../lib/db";
-import { Prisma } from '@prisma/client'
+import { prisma } from "@/lib/db";
+import { Prisma } from "@/prisma/generated/prisma/client";
 
 /* Universal artist types. */
-import { Album, Artist, Genre, Img, Track } from "../../types/artist";
+import { Album, Artist, Genre, Img, Track } from "@/types/artist";
 
-/* Database types. */
-import { DBAlbumImg, DBArtist, DBArtistImg, DBGenre, PrismaClient } from "@prisma/client";
+/* Database types */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { DBArtist, DBAlbum, DBTrack, DBArtistImg, DBAlbumImg, DBGenre } from "@/prisma/generated/prisma/client";
 
 /* 
     Fields included when querying an artist. 
@@ -95,7 +94,7 @@ class PrismaWrapper {
     private static instance: PrismaWrapper;
 
     /* Static prisma client. */
-    private static prisma: PrismaClient = prisma;
+    private static prisma = prisma;
 
     /* 
         Prisma client instance. 
@@ -203,7 +202,6 @@ class PrismaWrapper {
             id: track.id,
             spotifyId: track.spotifyId,
             title: track.title,
-            track_type: "track",
             album_title: dbAlbum.title,
 
             /* Relational Data */
@@ -259,33 +257,185 @@ class PrismaWrapper {
             url: img.url,
         }));
 
+        const album_title: string = dbTrack.albumId || "";
+
         return (
             {
                 spotifyId: dbTrack.spotifyId,
                 title: dbTrack.title,
-                track_type: "album track",
                 artists: artists,
-                album_title: dbTrack.title,
+                album_title: album_title,
                 images: images,
             }
         )
     }
     
-    /* 
-        Create a new artist in the database.
-    */
+    /**
+     * Create a new artist with related albums, tracks, images, genres, and URLs.
+     */
     public async createArtist(artist: Artist): Promise<void> {
-        "use server";
-
+        
         const artistImgs: Img[] = artist.images || [];
         const albums: Album[] = artist.albums || [];
         const tracks: Track[] = artist.tracks || [];
+        const nonAlbumTracks: Track[] = tracks.filter(track => !track.album_title);
 
-        /* Check if artist already exists. */
+        /* Check if the artist already exists */
         const existingArtist = await this.getArtist(artist.spotifyId);
-        
-        
+        if (existingArtist) {
+            console.log(`Artist ${artist.name} already exists.`);
+            return;
+        }
+
+        /* Upsert the artist to the database */
+        const dbArtist = await prisma.dBArtist.upsert({
+            where: { spotifyId: artist.spotifyId },
+            update: {
+                followers: artist.followers,
+                images: {
+                    create: artistImgs.map((img) => ({
+                        width: img.width,
+                        height: img.height,
+                        url: img.url,
+                    })),
+                },
+                external_urls: {},
+                genres: {},
+            },
+            create: {
+                spotifyId: artist.spotifyId,
+                name: artist.name,
+                followers: artist.followers,
+                images: {
+                    create: artistImgs.map((img) => ({
+                        width: img.width,
+                        height: img.height,
+                        url: img.url,
+                    })),
+                },
+                external_urls: {},
+                genres: {},
+            },
+            include: artistInclude, // Include relations
+        });
+
+        /* Grab returned ID */
+        const dbArtistId = dbArtist.id;
+
+        /* Gather previous albums & tracks */
+        const prevAlbumObjs = await prisma.dBArtist.findUnique({
+            where: { id: dbArtistId },
+            include: {
+                albums: true,
+                tracks: true,
+            }
+        })
+
+        /* If there are no entries, create them and return. */
+        if(!prevAlbumObjs) {
+            return;
+        }
+
+        /* Create hashmaps of current and new records for easy indexing. */
+        const prevAlbumMap = new Map(prevAlbumObjs.albums.map(album => [album.spotifyId, album]));
+        const currAlbumMap = new Map(albums.map(album => [album.spotifyId, album]));
+
+        /* Albums in new but not in old */
+        const additions = new Set<Album>();
+
+        /* Albums in old but not in new */
+        const subtractions = new Set<DBAlbum>();
+
+        /* Albums in both */
+        const updates = new Set<Album>();
+
+        /* Divide IDs into additions, subtractions, and updates. */
+        for (const [currId, currAlbum] of currAlbumMap.entries()) {
+            if (!prevAlbumMap.has(currId)) {
+                additions.add(currAlbum);
+            } else {
+                updates.add(currAlbum);
+            }
+        }
+        for (const [prevId, prevAlbum] of prevAlbumMap.entries()) {
+            if (!currAlbumMap.has(prevId)) {
+                subtractions.add(prevAlbum);
+            }
+        }
+
+        /* Create any new albums */
+        await prisma.dBAlbum.createMany({
+            data: Array.from(additions).map((newAlbum) => 
+                ({
+                    spotifyId: newAlbum.spotifyId,
+                    title: newAlbum.title,
+                    release_date: newAlbum.release_date,
+                    total_tracks: newAlbum.total_tracks,
+                })
+            ),
+        });
+     
+        /* Delete any albums that no longer exist. */
+        for (const oldAlbum of subtractions) {
+            await prisma.dBAlbum.delete({
+                where: { id: oldAlbum.id },
+            });
+        }
+
+        /* 
+            !! NEED TO HANDLE UPDATING ALBUMS 
+        */
+
+            
+        /* Now, handle non album tracks. */
+        const prevTrackMap = new Map(prevAlbumObjs.tracks.filter(track => !track.albumTitle).map(track => [track.spotifyId, track]));
+        const currTrackMap = new Map(nonAlbumTracks.map(track => [track.spotifyId, track]));
+
+        /* Tracks in new but not in old */
+        const trackAdditions = new Set<Track>();
+
+        /* Tracks in old but not in new */
+        const trackSubtractions = new Set<DBTrack>();
+
+        /* Tracks in both */
+        const trackUpdates = new Set<Track>();
+
+        /* Divide IDs into additions, subtractions, and updates. */
+        for (const [currId, currTrack] of currTrackMap.entries()) {
+            if (!prevTrackMap.has(currId)) {
+                trackAdditions.add(currTrack);
+            } else {
+                trackUpdates.add(currTrack);
+            }
+        }
+        for (const [prevId, prevTrack] of prevTrackMap.entries()) {
+            if (!currTrackMap.has(prevId)) {
+                trackSubtractions.add(prevTrack);
+            }
+        }
+
+        /* Create any new tracks */
+        await prisma.dBTrack.createMany({
+            data: Array.from(trackAdditions).map((newTrack) => 
+                ({
+                    spotifyId: newTrack.spotifyId,
+                    title: newTrack.title,
+                    /* Link to artist */
+                })
+            ),
+        });
+    
+        /* Delete any tracks that no longer exist. */
+        for (const oldTrack of trackSubtractions) {
+            await prisma.dBTrack.delete({
+                where: { id: oldTrack.id },
+            });
+        }
+        console.log(`Artist ${artist.name} created successfully.`);
     }
+
+   
+
           
 
 }

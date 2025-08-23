@@ -58,7 +58,6 @@ export type Track = {
 
     /* Metadata */
     title: string;
-    track_type: string; // Either an 'album track' or 'single'
     album_title: string; // Empty if single
 
     /* Track Artists */
