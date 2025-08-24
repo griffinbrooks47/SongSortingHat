@@ -6,7 +6,8 @@
     "dev": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db-reset": "export DATABASE_URL='file:./dev.db' && npx prisma generate && npx prisma db push"
   },
   "dependencies": {
     "@auth/pg-adapter": "^1.8.0",

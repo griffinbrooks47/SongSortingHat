@@ -374,6 +374,63 @@ class PrismaWrapper {
                 })
             ),
         });
+        /* Add album tracks */
+        for(const newAlbum of additions) {
+            await prisma.dBAlbum.update({
+                where: { spotifyId: newAlbum.spotifyId },
+                data: {
+                    artists: {
+                        connectOrCreate: newAlbum.artists
+                        .filter(artist => artist.spotifyId)
+                        .map((artist) => 
+                        ({
+                            where: { spotifyId: artist.spotifyId },
+                            create: {
+                                spotifyId: artist.spotifyId,
+                                name: artist.name,
+                                followers: artist.followers,
+                                external_urls: {
+                                    
+                                },
+                            }
+                        }))
+                    },
+                    tracks: {
+                        create: newAlbum.tracks.map((newTrack) => 
+                        ({
+                            spotifyId: newTrack.spotifyId,
+                            title: newTrack.title,
+                            albumTitle: newAlbum.title,
+                        
+                            /* Connect or create artists */
+                            artists: {
+                                connectOrCreate: newAlbum.artists
+                                .filter(artist => artist.spotifyId)
+                                .map((artist) => 
+                                ({
+                                    where: { spotifyId: artist.spotifyId },
+                                    create: {
+                                        spotifyId: artist.spotifyId,
+                                        name: artist.name,
+                                        followers: artist.followers,
+                                        external_urls: {
+                                            
+                                        },
+                                    }
+                                }))
+                            },
+                        }))
+                    },
+                    images: {
+                        create: newAlbum.images.map((img) => ({
+                            width: img.width,
+                            height: img.height,
+                            url: img.url,
+                        })),
+                    }
+                }
+            });
+        }
      
         /* Delete any albums that no longer exist. */
         for (const oldAlbum of subtractions) {
@@ -386,7 +443,6 @@ class PrismaWrapper {
             !! NEED TO HANDLE UPDATING ALBUMS 
         */
 
-            
         /* Now, handle non album tracks. */
         const prevTrackMap = new Map(prevAlbumObjs.tracks.filter(track => !track.albumTitle).map(track => [track.spotifyId, track]));
         const currTrackMap = new Map(nonAlbumTracks.map(track => [track.spotifyId, track]));
@@ -420,11 +476,34 @@ class PrismaWrapper {
                 ({
                     spotifyId: newTrack.spotifyId,
                     title: newTrack.title,
-                    /* Link to artist */
+                    albumTitle: "",
                 })
             ),
         });
-    
+        /* Add track artists */
+        for(const newTrack of trackAdditions) {
+            await prisma.dBTrack.update({
+                where: { spotifyId: newTrack.spotifyId },
+                data: {
+                    artists: {
+                        connectOrCreate: newTrack.artists
+                        .filter(artist => artist.spotifyId)
+                        .map((artist) => 
+                        ({
+                            where: { spotifyId: artist.spotifyId },
+                            create: {
+                                spotifyId: artist.spotifyId,
+                                name: artist.name,
+                                followers: artist.followers,
+                                external_urls: {
+                                    
+                                },
+                            }
+                        }))
+                    },
+                }
+            });
+        }
         /* Delete any tracks that no longer exist. */
         for (const oldTrack of trackSubtractions) {
             await prisma.dBTrack.delete({
@@ -433,10 +512,5 @@ class PrismaWrapper {
         }
         console.log(`Artist ${artist.name} created successfully.`);
     }
-
-   
-
-          
-
 }
 export default PrismaWrapper.getInstance();
