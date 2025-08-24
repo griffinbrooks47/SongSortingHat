@@ -17,7 +17,7 @@ model DBArtist {
    * Metadata
    */
   name          String
-  external_urls DBArtistUrls?
+  external_urls Json?
   followers     Int
 
   /**
@@ -44,20 +44,4 @@ model DBArtist {
    * Sortings of this artist.
    */
   sortings DBSorting[]
-}
-
-/**
- * Table for artist URLs
- */
-model DBArtistUrls {
-  /**
-   * Metadata
-   */
-  spotify_url String @unique
-
-  /**
-   * Artist associated with these URLs
-   */
-  artistId String   @unique
-  artist   DBArtist @relation(fields: [artistId], references: [id])
 }

@@ -11,8 +11,8 @@ model DBTrack {
   /**
    * Metadata
    */
-  title     String
-  updatedAt DateTime @updatedAt
+  title      String
+  updatedAt  DateTime @updatedAt
   albumTitle String?
 
   /**
@@ -23,8 +23,8 @@ model DBTrack {
   /**
    * Optional album relation (songs may be individual singles, not album tracks)
    */
-  albumId    String?
-  album      DBAlbum? @relation(fields: [albumId], references: [id])
+  albumId String?
+  album   DBAlbum? @relation(fields: [albumId], references: [id])
 
   /**
    * Images

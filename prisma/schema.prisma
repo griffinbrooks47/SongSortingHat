@@ -12,7 +12,7 @@ datasource db {
 }
 
 /**
- * Account / User data.
+ * Account / User data
  */
 model DBUser {
   id        String   @id @default(uuid())
@@ -24,7 +24,7 @@ model DBUser {
   updatedAt DateTime @updatedAt
 
   /**
-   * Sortings data.
+   * Sortings data
    */
   accounts    DBAccount[]
   sortings    DBSorting[]
