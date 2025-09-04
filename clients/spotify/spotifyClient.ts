@@ -112,7 +112,8 @@ class SpotifyWrapper {
 
         /* Get artist albums & tracks. */
         const albums: Album[] | null = await this.getAlbums(artistId);
-        const tracks: Track[] = [];
+        const album_tracks: Track[] = [];
+        const singles: Track[] = [];
 
         /* Artist albums with singles filtered out. */
         const filteredAlbums: Album[] = [];
@@ -133,13 +134,13 @@ class SpotifyWrapper {
                     images: album.images,
 
                 }
-                tracks.push(track);
+                singles.push(track);
             }
 
             /* If album has more than one track, append as album. */
             else {
                 /* Add all album tracks. */
-                tracks.push(...album.tracks);
+                album_tracks.push(...album.tracks);
 
                 /* Add album to filtered albums. */
                 filteredAlbums.push(album);
@@ -149,9 +150,10 @@ class SpotifyWrapper {
 
         /* Append artist discography. */
         artist.albums = filteredAlbums;
-        artist.tracks = tracks;
+        artist.tracks = album_tracks.concat(singles);
 
         return artist;
+
     }
 
     /* 
@@ -208,6 +210,7 @@ class SpotifyWrapper {
             albums.push(album);
             
         }
+
         return albums;
     }
 
@@ -292,7 +295,7 @@ class SpotifyWrapper {
 
     private async querySimpleAlbums(token: string, artistId: string): Promise<SimpleAlbumResponse>{
 
-        const url = "https://api.spotify.com/v1/artists/" + artistId + "/albums";
+        const url = "https://api.spotify.com/v1/artists/" + artistId + "/albums?include_groups=album,single";
         const headers = this.getAuthHeaders(token);
     
         const response = await fetch(`${url}`, { headers });

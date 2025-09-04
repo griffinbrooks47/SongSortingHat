@@ -1,16 +1,39 @@
 'use client'
 
-import { useState } from "react"
+/* React imports */
+import { useEffect, useState } from "react"
 
+/* Next imports */
+import { usePathname } from 'next/navigation'
 import Link from "next/link";
-import { IconSearch, IconSitemap, IconUserCircle, IconX } from "@tabler/icons-react";
+
+/* Components */
 import { SearchBar } from "./search";
+
+/* Icons */
+import { IconSearch, IconSitemap, IconUserCircle, IconX } from "@tabler/icons-react";
 
 export default function Navbar() {
 
-    const [authenticated, ] = useState<boolean>(true);
+    const [authenticated, ] = useState<boolean>(false);
 
     const [searchToggled, setSearchToggled] = useState<boolean>(false);
+
+    const [visible, setVisible] = useState<boolean>(true);
+
+    /* Current URL pathname */
+    const pathname = usePathname()
+
+    /* Update visibility when pathname changes. */
+    useEffect(() => {
+      if (pathname === '/login' || pathname === '/register') {
+        setVisible(false)
+      } else {
+        setVisible(true)
+      }
+    }, [pathname])
+
+    if(!visible) return <></>;
 
     return (
         <nav className="fixed top-0 px-[1.5rem] h-[4rem] w-full py-[0.5rem] bg-base-100 flex justify-between items-center z-1 shadow-sm">
@@ -40,12 +63,12 @@ export default function Navbar() {
           }
           {!authenticated && 
             <div className='flex justify-center items-center'>
-              <button className="btn btn-ghost mx-[0.5rem] rounded-md">
-                Sign Up
-              </button>
-              <button className="btn btn-neutral rounded-md">
-                Sign In
-              </button>
+              <Link href='/register' className="btn btn-default mx-[0.5rem] rounded-lg">
+                Sign up
+              </Link>
+              <Link href='/login' className="btn btn-outline rounded-lg mx-[0.5rem]">
+                Log in
+              </Link>
             </div>
           }
 

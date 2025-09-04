@@ -5,9 +5,9 @@ import { motion } from "motion/react";
 
 import { useState } from "react";
 
-import { DetailedTrack } from "@/types/artist";
+import { Track } from "@/types/artist";
 
-export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, detailedTrack: DetailedTrack) => void }) => {
+export const SongCard = (props: {track: Track, onClick: (id: string) => void }) => {
 
     const [isSelected, setIsSelected] = useState<boolean>(false);
 
@@ -22,18 +22,18 @@ export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, det
             >
                 <figure className="h-[100%] w-auto aspect-[1/1] rounded-sm border-2 border-neutral">
                     <Image 
-                        src={props.track.cover.url}
-                        width={props.track.cover.width}
-                        height={props.track.cover.height}
-                        alt={props.track.track.name}
+                        src={props.track.images[0].url}
+                        width={props.track.images[0].width}
+                        height={props.track.images[0].height}
+                        alt={props.track.title}
                         className="overflow-cover"
                     />
                 </figure>
                 <div className="m-auto flex justify-center items-center flex-col py-[0.25rem]">
                     <strong className="text-[0.9rem] font-bold block max-w-[14ch] truncate">
-                        {props.track.track.name}
+                        {props.track.title}
                     </strong>
-                    <p className="text-[0.8rem] mt-[-0.25rem]">{props.track.track.artists[0].name}</p>
+                    <p className="text-[0.8rem] mt-[-0.25rem]">{props.track.artists[0].name}</p>
                 </div>
             </div>
             {/* Opaque overlay */}
@@ -44,7 +44,7 @@ export const SongCard = (props: {track: DetailedTrack, onClick: (id: string, det
                     transition={{ duration: 0.025 }}
 
                     onClick={() => {
-                        props.onClick(props.track.track.id, props.track)
+                        props.onClick(props.track.spotifyId)
                         setIsSelected(!isSelected)
                     }}
                 >

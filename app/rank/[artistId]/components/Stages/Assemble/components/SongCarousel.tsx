@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { useKeenSlider } from 'keen-slider/react' // import from 'keen-slider/react.es' for to get an ES module
 
-import { SongCard } from "./SongCard";
+import { SongCard } from "./SongCard"
 
 import 'keen-slider/keen-slider.min.css'
 import { IconCircleArrowLeft, IconCircleArrowRight } from "@tabler/icons-react";
@@ -14,7 +14,7 @@ export const SongCarousel = (
   props: { 
     songChunks: Track[][], 
     count: number, 
-    toggleSong: (id: string, detailedTrack: Track) => void,  
+    toggleSong: (id: string) => void,  
     onEnd?: () => void,
   }) => {
 
@@ -39,7 +39,7 @@ export const SongCarousel = (
                     <main className='grid grid-cols-5 grid-rows-3 gap-4 w-[fit-content] mx-auto'>
                         {songChunk.map((song: Track) => {
                           return (
-                              <SongCard key={song.id} track={song}
+                              <SongCard key={song.spotifyId} track={song}
                                   onClick={props.toggleSong}
                               />
                           )

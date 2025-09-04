@@ -16,7 +16,7 @@ import prisma from "@/clients/prisma/prismaClient";
 import { AlbumCard } from "./components/albumCard";
 
 /* UI Components. */
-import { IconBrandSpotify, IconHeart, IconSwitch } from "@tabler/icons-react";
+import { IconHeart, IconSwitch } from "@tabler/icons-react";
 
 
 export default async function ArtistPage({
@@ -33,8 +33,6 @@ export default async function ArtistPage({
     let albums: Album[] | null = artist?.albums || null;;
     // can add more data here if needed...
 
-
-    
     /* If DB returns artist, query albums. */
     if(artist) {
         console.log("Artist fetched from DB: ");
@@ -116,21 +114,15 @@ export default async function ArtistPage({
                 
             </section>
             <section className="flex justify-center items-start flex-col mt-[0.5rem]">
-                <hr className="border-black opacity-10 w-[95%] mr-auto my-[0.05rem]"></hr>
-                <ul className="flex justify-center items-center w-full">
+                <ul className="flex justify-center items-center w-full my-[0.5rem]">
                     <li className="mx-[0.25rem]">
-                        <Link href={`/rank/${artist.spotifyId}`} className="mt-auto px-[0.75rem] py-[0.5rem] border-2 bg-accent border-neutral shadow-sm opacity-80 flex rounded-md justify-center items-center">
+                        <Link href={`/rank/${artist.spotifyId}`} className="mt-auto px-[1.5rem] py-[0.5rem] border-2 bg-accent border-neutral shadow-sm opacity-80 flex rounded-md justify-center items-center">
                             <p className="font-semibold text-[1rem] color-accent">Start Sorting</p>
                             <IconSwitch className="w-8 h-8" />
                         </Link>
                     </li>
-                    <li className="mx-[0.25rem]">
-                        <button className="my-[0.5rem] w-[3.25rem] h-[3.25rem] border-2 border-neutral bg-success opacity-80 flex rounded-lg justify-center items-center">
-                            <IconBrandSpotify className="w-8 h-8" />
-                        </button>
-                    </li>
                 </ul>
-                <hr className="border-black opacity-10 w-[95%] ml-auto my-[0.05rem]"></hr>
+                <hr className="border-black opacity-10 w-full my-[0.05rem]"></hr>
                 <div className="flex ml-[1rem] flex justify between w-full">
                     <ul className="ml-auto my-[1rem] mr-[2rem] bg-base-100 shadow-sm rounded-md flex justify-center items-center py-[0.25rem]">
                         <li>

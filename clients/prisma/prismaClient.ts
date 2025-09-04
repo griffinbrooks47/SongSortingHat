@@ -7,7 +7,6 @@ import { Prisma } from "@/prisma/generated/prisma/client";
 import { Album, Artist, Genre, Img, Track } from "@/types/artist";
 
 /* Database types */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { DBArtist, DBAlbum, DBTrack, DBArtistImg, DBAlbumImg, DBGenre } from "@/prisma/generated/prisma/client";
 
 /* 
@@ -36,7 +35,6 @@ import { DBArtist, DBAlbum, DBTrack, DBArtistImg, DBAlbumImg, DBGenre } from "@/
 
 */
 const artistInclude = Prisma.validator<Prisma.DBArtistInclude>()({
-    external_urls: true,
     images:        true,
     genres:        true,
     sortings: {
@@ -50,7 +48,6 @@ const artistInclude = Prisma.validator<Prisma.DBArtistInclude>()({
                     artists:     true,
                 }
             },
-            external_urls: true,
             artists: true,
         }
     },
@@ -74,7 +71,6 @@ const albumInclude = Prisma.validator<Prisma.DBAlbumInclude>()({
             artists: true,
         }
     }, 
-    external_urls: true 
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -112,6 +108,9 @@ class PrismaWrapper {
     */
     public async getArtist(spotifyId: string): Promise<Artist | null> {
         try {
+            /* !! TEMPORARY */
+            await this.clearDB();
+
             const dbArtist = await prisma.dBArtist.findUnique({
                 where: { spotifyId },
                 include: artistInclude // Use predefined prisma validator. 
@@ -123,6 +122,35 @@ class PrismaWrapper {
             return this.parseArtist(dbArtist);
         } catch (error) {
             console.error("Error in getArtist:", error);
+            throw error;
+        }
+    }
+
+    /* 
+        Get all tracks by a given artist.
+    */
+    public async getTracksByArtist(spotifyArtistId: string): Promise<Track[] | null> {
+        try {
+            const dbArtist = await prisma.dBArtist.findUnique({
+                where: { spotifyId: spotifyArtistId },
+                include: {
+                    tracks: {
+                        include: trackInclude
+                    }
+                }
+            });
+
+            /* If artist not found, return null. */
+            if (!dbArtist) return null;
+
+            /* Parse tracks */
+            const tracks: Track[] = dbArtist.tracks.map((track) => 
+                this.parseTrack(track)
+            );
+
+            return tracks;
+        } catch (error) {
+            console.error("Error in getTracks:", error);
             throw error;
         }
     }
@@ -376,6 +404,12 @@ class PrismaWrapper {
         });
         /* Add album tracks */
         for(const newAlbum of additions) {
+
+            /* Album relational data. */
+            const albumImages: Img[] = newAlbum.images;
+            const albumTracks: Track[] = newAlbum.tracks;
+
+
             await prisma.dBAlbum.update({
                 where: { spotifyId: newAlbum.spotifyId },
                 data: {
@@ -394,6 +428,18 @@ class PrismaWrapper {
                                 },
                             }
                         }))
+                    },
+                    images: {
+                        connectOrCreate: newAlbum.images.map((img) => 
+                            ({
+                                where: { url: img.url },
+                                create: {
+                                    width: img.width,
+                                    height: img.height,
+                                    url: img.url,
+                                }
+                            })
+                        ),
                     },
                     tracks: {
                         create: newAlbum.tracks.map((newTrack) => 
@@ -421,15 +467,25 @@ class PrismaWrapper {
                             },
                         }))
                     },
-                    images: {
-                        create: newAlbum.images.map((img) => ({
-                            width: img.width,
-                            height: img.height,
-                            url: img.url,
-                        })),
-                    }
                 }
             });
+
+            for (const albumImage of albumImages) {
+                await prisma.dBAlbumImg.update({
+                    where: { url: albumImage.url },
+                    data: {
+                        tracks: {
+                            connectOrCreate: albumTracks.map((track) => ({
+                                where: { spotifyId: track.spotifyId },
+                                    create: {
+                                        spotifyId: track.spotifyId,
+                                        title: track.title,
+                                    },
+                            }))
+                        }
+                    }
+                });
+            }
         }
      
         /* Delete any albums that no longer exist. */
@@ -501,6 +557,18 @@ class PrismaWrapper {
                             }
                         }))
                     },
+                    images: {
+                        connectOrCreate: newTrack.images
+                        .map((image) => 
+                        ({
+                            where: { url: image.url },
+                            create: {
+                                url: image.url,
+                                width: image.width,
+                                height: image.height,
+                            }
+                        }))
+                    }
                 }
             });
         }
@@ -511,6 +579,26 @@ class PrismaWrapper {
             });
         }
         console.log(`Artist ${artist.name} created successfully.`);
+    }
+
+    /* DEV METHOD ONLY - REMOVE IN PROD */
+    public async clearDB() {
+        await prisma.$transaction([
+            // Delete relation tables first (many-to-many join tables are implicit in Prisma)
+            prisma.dBArtistImg.deleteMany(),
+            prisma.dBAlbumImg.deleteMany(),
+            prisma.dBSorting.deleteMany(),    // if it exists in your schema
+            prisma.dBGenre.deleteMany(),      // if it exists in your schema
+
+            // Delete tracks before albums (tracks reference albums)
+            prisma.dBTrack.deleteMany(),
+
+            // Delete albums before artists (albums reference artists)
+            prisma.dBAlbum.deleteMany(),
+
+            // Delete artists last
+            prisma.dBArtist.deleteMany()
+    ]);
     }
 }
 export default PrismaWrapper.getInstance();

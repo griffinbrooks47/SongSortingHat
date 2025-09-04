@@ -1,6 +1,7 @@
 
 /* Page Components */
-import { SongCarousel } from "../../[artistId]/components/SongCarousel";
+import { useState } from "react";
+import { SongCarousel } from "./components/SongCarousel";
 
 import { Track } from "@/types/artist";
 
@@ -12,20 +13,39 @@ const chunkArray = (arr: Track[], size: number) => {
 };
 
 export default function Assemble(
-    { songs, countPerSlide, toggleSong, onEnd } : {
-    songs: Track[];
+    { tracks, countPerSlide, onEnd } : {
+    tracks: Track[];
     countPerSlide: number;
-    toggleSong: () => void;
-    onEnd: () => void;
+    onEnd: (removedIDs: string[]) => void;
 }) {
+
+    /* Set of spotify IDs */
+    const [removedTracks, setRemovedTracks] = useState<Set<string>>(new Set());
+    const toggleTrack = (spotifyID: string) => {
+        setRemovedTracks(prev => {
+            const newSet = new Set(prev); // copy the previous set
+            if (newSet.has(spotifyID)) {
+                newSet.delete(spotifyID); // remove if already exists
+            } else {
+                newSet.add(spotifyID); // add if not present
+            }
+            return newSet; // update state with new set
+        });
+    };
+
+    
+
+    
 
     return (
         <main className='h-full w-full relative flex flex-col justify-center items-center mt-[1rem]'>
             <SongCarousel 
-                songChunks={chunkArray(songs, countPerSlide)} 
+                songChunks={chunkArray(tracks, countPerSlide)} 
                 count={countPerSlide}
-                toggleSong={toggleSong}
-                onEnd={() => onEnd()}
+                toggleSong={(item: string) => toggleTrack(item)}
+                onEnd={() => {
+                    onEnd(Array.from(removedTracks))
+                }}
             ></SongCarousel>
         </main>
     )
