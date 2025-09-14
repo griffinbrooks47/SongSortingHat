@@ -18,7 +18,7 @@
 /out/
 
 # prisma
-/src/generated/prisma
+/db/generated/prisma
 
 # production
 /build
