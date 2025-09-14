@@ -3,12 +3,12 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "./generated/prisma"
+  output   = "../db/generated/prisma"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 model DBUser {

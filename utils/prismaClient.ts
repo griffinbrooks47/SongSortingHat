@@ -1,84 +1,48 @@
 
-/* Import prisma client module. */
-import { prismaClient } from "@/lib/db";
+/* Import Next.js prisma client module. */
+import { prismaClient } from "@/lib/prisma-client";
 import { Prisma } from "@/db/generated/prisma/client";
-
-
-/* Universal artist types. */
-import { Album, Artist, Genre, Img, Track } from "@/types/artist";
 
 /* Database types */
 import { DBArtist, DBAlbum, DBTrack, DBArtistImg, DBAlbumImg, DBGenre } from "@/db/generated/prisma/client";
 
-/* 
-    Fields included when querying an artist. 
+/* Universal artist types. */
+import { Album, Artist, Genre, Img, Track } from "@/types/artist";
 
-    Album:
-    - images
-    - tracks: 
-        - id
-        - spotifyId
-        - artists:
-            - id
-            - name
-            - spotifyId
-            - last_updated
-            - followers
-    - external_urls
-    - artist (with images, genres, sortings)
-    - tracks (with images, artists)
-    
-    Track: 
-    - images
-    - artists (with images, genres, sortings)
-    - external_urls
-    - album (with images, artist)
+const trackInclude = {
+    images: true, 
+    artists: true, 
+};
+type DBTrackWithRelations = Prisma.DBTrackGetPayload<{
+    include: typeof trackInclude;
+}>;
 
-*/
-const artistInclude = Prisma.validator<Prisma.DBArtistInclude>()({
-    images:        true,
-    genres:        true,
-    sortings: {
-        include: { tracks: true }
+const albumInclude = { 
+    images: true, 
+    artists: true, 
+    tracks: {
+        include: trackInclude,
     },
+};
+type DBAlbumWithRelations = Prisma.DBAlbumGetPayload<{
+    include: typeof albumInclude;
+}>;
+
+const artistInclude = {
+    images: true,
+    genres: true,
+    sortings: true,
     albums: {
-        include: {
-            images:        true,
-            tracks:        {
-                include: {
-                    artists:     true,
-                }
-            },
-            artists: true,
-        }
+        include: albumInclude,
     },
     tracks: {
-        include: { 
-            images: true,
-            artists: true
-        }
-    }
-});
+        include: trackInclude,
+    },
+};
+type DBArtistWithRelations = Prisma.DBArtistGetPayload<{
+    include: typeof artistInclude;
+}>;
 
-/* 
-    Fields included when querying an Album
-*/
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const albumInclude = Prisma.validator<Prisma.DBAlbumInclude>()({ 
-    images: true, 
-    artists: true, 
-    tracks: {
-        include: {
-            artists: true,
-        }
-    }, 
-});
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const trackInclude = Prisma.validator<Prisma.DBTrackInclude>()({
-    images: true, 
-    artists: true, 
-});
 
 /** 
  *  * Prisma wrapper to add, update, delete, and query data from the database.
@@ -89,7 +53,6 @@ const trackInclude = Prisma.validator<Prisma.DBTrackInclude>()({
 class PrismaWrapper {
   
     private static instance: PrismaWrapper;
-
 
     /* 
         Prisma client instance. 
@@ -106,15 +69,14 @@ class PrismaWrapper {
         Get an artist by Spotify ID.
     */
     public async getArtist(spotifyId: string): Promise<Artist | null> {
+
         try {
             await prismaClient.$connect();
 
             const dbArtist = await prismaClient.dBArtist.findUnique({
                 where: { spotifyId },
-                include: artistInclude // Use predefined prisma validator. 
-            });
-
-            /* If artist not found, return null. */
+                include: artistInclude,
+            }) satisfies DBArtistWithRelations | null;
             if (!dbArtist) return null;
 
             return this.parseArtist(dbArtist);
@@ -131,9 +93,9 @@ class PrismaWrapper {
         try {
             const dbArtist = await prismaClient.dBArtist.findUnique({
                 where: { spotifyId: spotifyArtistId },
-                include: {
+                select: {
                     tracks: {
-                        include: trackInclude
+                        include: trackInclude,
                     }
                 }
             });
@@ -142,7 +104,7 @@ class PrismaWrapper {
             if (!dbArtist) return null;
 
             /* Parse tracks */
-            const tracks: Track[] = dbArtist.tracks.map((track) => 
+            const tracks: Track[] = dbArtist.tracks.map((track: DBTrackWithRelations) => 
                 this.parseTrack(track)
             );
 
@@ -156,12 +118,13 @@ class PrismaWrapper {
     /*
         Parse a DBArtist (with relations) into a universal Artist.
     */
-    private parseArtist(dbArtist: Prisma.DBArtistGetPayload<{ include: typeof artistInclude }>): Artist {
+    private parseArtist(dbArtist: DBArtistWithRelations): Artist {
 
         /* Package Artist Albums */
-        const albums: Album[] = dbArtist.albums.map((album) => 
+        const albums: Album[] = (dbArtist.albums ?? []).map(album =>
             this.parseAlbum(album)
         );
+
         /* Package Artist Tracks */
         const tracks: Track[] = dbArtist.tracks.map((track) => 
             this.parseTrack(track)
@@ -181,7 +144,6 @@ class PrismaWrapper {
         }));
         /* Package external urls */
         const external_urls = {
-            spotify: dbArtist.external_urls?.spotify_url || "",
         };
 
         return {
@@ -202,7 +164,7 @@ class PrismaWrapper {
     /* 
         Parse a DBAlbum (with relations) into a universal Album.
     */
-    private parseAlbum(dbAlbum: Prisma.DBAlbumGetPayload<{ include: typeof albumInclude }>): Album {
+    private parseAlbum(dbAlbum: DBAlbumWithRelations): Album {
 
         /* Package Album Artists */
         const artists: Artist[] = dbAlbum.artists.map((artist: DBArtist) => ({
@@ -223,32 +185,15 @@ class PrismaWrapper {
         }));
 
         /* Package Album Tracks */
-        const tracks: Track[] = dbAlbum.tracks.map((track) => ({
-            /* Artist Data */
-            id: track.id,
-            spotifyId: track.spotifyId,
-            title: track.title,
-            album_title: dbAlbum.title,
-
-            /* Relational Data */
-            artists: track.artists.map((artist: DBArtist) => ({
-                id: artist.id,
-                spotifyId: artist.spotifyId,
-                name: artist.name,
-                followers: artist.followers,
-                external_urls: {
-                    /* !!!Add relational urls later */
-                },
-            })),
-            images: images,
-        }));
+        const tracks: Track[] = dbAlbum.tracks.map((track: DBTrackWithRelations) => 
+            this.parseTrack(track)
+        );
 
         return ({
             /* Album Data */
             spotifyId: dbAlbum.spotifyId,
             total_tracks: dbAlbum.total_tracks,
             external_urls: {
-                spotify: dbAlbum.external_urls?.spotify_url || "",
             },
             title: dbAlbum.title,
             release_date: dbAlbum.release_date,
@@ -264,7 +209,7 @@ class PrismaWrapper {
     /* 
         Parse a DBTrack (with relations) into a universal Track.
     */
-    private parseTrack(dbTrack: Prisma.DBTrackGetPayload<{ include: typeof trackInclude }>): Track {
+    private parseTrack(dbTrack: DBTrackWithRelations): Track {
 
         /* Package artists. */
         const artists: Artist[] = dbTrack.artists.map((artist: DBArtist) => ({
@@ -314,7 +259,7 @@ class PrismaWrapper {
         }
 
         /* Upsert the artist to the database */
-        const dbArtist = await prisma.dBArtist.upsert({
+        const dbArtist = await prismaClient.dBArtist.upsert({
             where: { spotifyId: artist.spotifyId },
             update: {
                 followers: artist.followers,
@@ -349,7 +294,7 @@ class PrismaWrapper {
         const dbArtistId = dbArtist.id;
 
         /* Gather previous albums & tracks */
-        const prevAlbumObjs = await prisma.dBArtist.findUnique({
+        const prevAlbumObjs = await prismaClient.dBArtist.findUnique({
             where: { id: dbArtistId },
             include: {
                 albums: true,
@@ -390,7 +335,7 @@ class PrismaWrapper {
         }
 
         /* Create any new albums */
-        await prisma.dBAlbum.createMany({
+        await prismaClient.dBAlbum.createMany({
             data: Array.from(additions).map((newAlbum) => 
                 ({
                     spotifyId: newAlbum.spotifyId,
@@ -408,7 +353,7 @@ class PrismaWrapper {
             const albumTracks: Track[] = newAlbum.tracks;
 
 
-            await prisma.dBAlbum.update({
+            await prismaClient.dBAlbum.update({
                 where: { spotifyId: newAlbum.spotifyId },
                 data: {
                     artists: {
@@ -469,7 +414,7 @@ class PrismaWrapper {
             });
 
             for (const albumImage of albumImages) {
-                await prisma.dBAlbumImg.update({
+                await prismaClient.dBAlbumImg.update({
                     where: { url: albumImage.url },
                     data: {
                         tracks: {
@@ -488,7 +433,7 @@ class PrismaWrapper {
      
         /* Delete any albums that no longer exist. */
         for (const oldAlbum of subtractions) {
-            await prisma.dBAlbum.delete({
+            await prismaClient.dBAlbum.delete({
                 where: { id: oldAlbum.id },
             });
         }
@@ -525,7 +470,7 @@ class PrismaWrapper {
         }
 
         /* Create any new tracks */
-        await prisma.dBTrack.createMany({
+        await prismaClient.dBTrack.createMany({
             data: Array.from(trackAdditions).map((newTrack) => 
                 ({
                     spotifyId: newTrack.spotifyId,
@@ -536,7 +481,7 @@ class PrismaWrapper {
         });
         /* Add track artists */
         for(const newTrack of trackAdditions) {
-            await prisma.dBTrack.update({
+            await prismaClient.dBTrack.update({
                 where: { spotifyId: newTrack.spotifyId },
                 data: {
                     artists: {
@@ -572,7 +517,7 @@ class PrismaWrapper {
         }
         /* Delete any tracks that no longer exist. */
         for (const oldTrack of trackSubtractions) {
-            await prisma.dBTrack.delete({
+            await prismaClient.dBTrack.delete({
                 where: { id: oldTrack.id },
             });
         }
@@ -581,30 +526,30 @@ class PrismaWrapper {
 
     /* DEV METHOD ONLY - REMOVE IN PROD */
     public async clearDB() {
-        await prisma.$transaction([
+        await prismaClient.$transaction([
             // Delete relation tables first (many-to-many join tables are implicit in Prisma)
-            prisma.dBArtistImg.deleteMany(),
-            prisma.dBAlbumImg.deleteMany(),
-            prisma.dBSorting.deleteMany(),    // if it exists in your schema
-            prisma.dBGenre.deleteMany(),      // if it exists in your schema
+            prismaClient.dBArtistImg.deleteMany(),
+            prismaClient.dBAlbumImg.deleteMany(),
+            prismaClient.dBSorting.deleteMany(),    // if it exists in your schema
+            prismaClient.dBGenre.deleteMany(),      // if it exists in your schema
 
             // Delete tracks before albums (tracks reference albums)
-            prisma.dBTrack.deleteMany(),
+            prismaClient.dBTrack.deleteMany(),
 
             // Delete albums before artists (albums reference artists)
-            prisma.dBAlbum.deleteMany(),
+            prismaClient.dBAlbum.deleteMany(),
 
             // Delete artists last
-            prisma.dBArtist.deleteMany()
+            prismaClient.dBArtist.deleteMany()
     ]);
     }
 
     public async listTables(): Promise<void> {
         try {
             console.log('Database URL:', process.env.DATABASE_URL);
-            console.log('Prisma client status:', prisma.$connect());
+            console.log('Prisma client status:', prismaClient.$connect());
             // For SQLite
-            const tables = await prisma.$queryRaw`
+            const tables = await prismaClient.$queryRaw`
                 SELECT name FROM sqlite_master 
                 WHERE type='table' AND name NOT LIKE 'sqlite_%'
             `;

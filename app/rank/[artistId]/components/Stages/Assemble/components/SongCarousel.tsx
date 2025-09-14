@@ -49,8 +49,8 @@ export const SongCarousel = (
               )
           })}
       </div>
-      <nav className='flex justify-center items-center mt-[1.25rem] w-full'>
-        <button className="btn btn-outline border-2 mx-[0.25rem]" 
+      <nav className='flex justify-center items-center mt-[1.25rem]'>
+        <button className="btn btn-outline border-2 mx-[0.25rem] rounded-md px-[1rem]" 
             onClick={(e: any) =>
               e.stopPropagation() || instanceRef.current?.prev()
             }
@@ -58,21 +58,8 @@ export const SongCarousel = (
             <IconCircleArrowLeft />
             Prev
         </button>
-        {props.songChunks.map((songChunk, index) => (
-            <button 
-                className={`
-                  btn btn-sm btn-circle border-2 mx-[0.25rem]
-                  ${(currentSlide == index) ? 'btn-base-300 border font-bold' : 'btn-outline'}
-                
-                  `}
-                key={index} onClick={() =>
-                  instanceRef.current?.moveToIdx(index)
-                }>
-                {index+1}
-            </button>
-        ))}
         <button 
-          className={`btn border-2 mx-[0.25rem]
+          className={`btn border-2 mx-[0.25rem] rounded-md
               ${(props.onEnd && (instanceRef.current?.slides.length) == (currentSlide + 1)) 
                 ? 'btn-base-content' 
                 : 'btn-outline'}
@@ -101,3 +88,19 @@ export const SongCarousel = (
     </main>
   )
 }
+
+/* 
+  {props.songChunks.map((songChunk, index) => (
+            <button 
+                className={`
+                  btn btn-sm btn-circle border-2 mx-[0.25rem]
+                  ${(currentSlide == index) ? 'btn-base-300 border font-bold' : 'btn-outline'}
+                
+                  `}
+                key={index} onClick={() =>
+                  instanceRef.current?.moveToIdx(index)
+                }>
+                {index+1}
+            </button>
+        ))}
+*/

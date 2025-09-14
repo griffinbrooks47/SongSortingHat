@@ -10,7 +10,7 @@ import { Artist, Album } from "@/types/artist";
 import spotify from "@/clients/spotify/spotifyClient";
 
 /* Database Wrapper. */
-import prisma from "@/clients/prisma/prismaClient";
+import prisma from "@/utils/prismaClient";
 
 /* React Components */
 import { AlbumCard } from "./components/albumCard";

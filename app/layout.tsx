@@ -13,7 +13,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" data-theme="cupcake" className='bg-base-200'>
-      <body className="relative w-[100%] px-[0rem]">
+      <body className="relative w-[100%] px-[0rem] min-h-screen">
         {children}
         <Navbar />
       </body>

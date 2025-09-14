@@ -41,22 +41,26 @@ export default function RankerInterface(
             tempMap.set(track.spotifyId, track);
         }
         setSongMap(tempMap);
-    }, [])
-
+    }, [tracks])
 
     /* 
         Showdown
     */
 
     return (
-        <main>
-            <Assemble 
+        <main className="w-full h-full">
+            {(stage == 0) && 
+                <Assemble 
                 tracks={tracks} 
-                countPerSlide={15} 
+                countPerSlide={12} 
                 onEnd={(removedIDs: string[]) => {
                     assemble(removedIDs)
                 }}
-            ></Assemble>
+                ></Assemble>
+            }
+            {(stage == 1)
+            
+            }
         </main>
     )
 }

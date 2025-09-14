@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
         hostname: "i.scdn.co",
       },
     ],
-    domains: ["i.scdn.co"], // Alternative method
   },
 };
 
