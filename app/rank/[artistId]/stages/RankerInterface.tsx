@@ -3,7 +3,8 @@
 import { Track } from "@/types/artist"
 
 /* Import ranker stages */
-import Assemble from "./Stages/Assemble/Assemble"
+import Assemble from "./Assemble";
+import Rank from "./Rank";
 
 /* React Imports */
 import { useEffect, useState } from "react";
@@ -22,7 +23,7 @@ export default function RankerInterface(
         Assemble
         - Remove the specified tracks from the ranking pool. 
     */
-    const assemble = (removedIDs: string[]) => {
+    const assemble = (removedIDs: string[]) : void => {
         setSongMap(prev => {
             const newMap = new Map(prev);
             for (const spotifyID of removedIDs) {
@@ -34,6 +35,7 @@ export default function RankerInterface(
             return prev + 1;
         })
     }
+    
     /* Only set the songMap on page refresh. */
     useEffect(() => {
         const tempMap: Map<string, Track> = new Map(); 
@@ -48,18 +50,15 @@ export default function RankerInterface(
     */
 
     return (
-        <main className="w-full h-full">
+        <main className="w-full h-full flex flex-col items-center justify-center">
             {(stage == 0) && 
-                <Assemble 
-                tracks={tracks} 
-                countPerSlide={12} 
-                onEnd={(removedIDs: string[]) => {
-                    assemble(removedIDs)
-                }}
+                <Assemble
+                    tracks={tracks}
+                    onEnd={assemble}
                 ></Assemble>
             }
-            {(stage == 1)
-            
+            {(stage == 1) &&
+                <Rank ></Rank>
             }
         </main>
     )

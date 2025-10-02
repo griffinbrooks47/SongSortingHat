@@ -1,4 +1,4 @@
-import { Results } from "./components/results";
+import { ArtistCard } from "./components/artistCard";
 import { SearchBar } from "./components/search";
 
 import { Artist } from "@/types/artist";
@@ -18,7 +18,7 @@ export default async function Search(props: {
     /* Spotify API Functions. */
     async function getToken(clientId: string | undefined, clientSecret: string | undefined): Promise<string | null> {
 
-        if(clientId === undefined || clientId === undefined){
+        if(clientId === undefined || clientSecret === undefined){
             return null;
         }
 
@@ -85,47 +85,57 @@ export default async function Search(props: {
     /* 
         Main Search Function
     */
-    const search = async (): Promise<Artist[] | undefined>  => {
-
-        const searchParams = await props.searchParams;
-    
-        let searchString: string;
-        if(searchParams && searchParams.artist) {
-            searchString = searchParams.artist;
-        } else {
-            return;
-        }
+    const search = async (artistName: string): Promise<Artist[]>  => {
         
         const token: string | null = await getToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
 
-        if(!token) return;
+        if(!token) return [];
 
-        const artists: Artist[] | undefined = await searchForArtist(token, searchString);
+        const artists: Artist[] | undefined = await searchForArtist(token, artistName);
 
-        return artists;
+        return artists ? artists : [];
     }
 
-    const artist: string | undefined = (await props.searchParams)?.artist;
-    const results: Artist[] | undefined = await search();
-    const artists: Artist[] = results ?? [];
+    const searchParams = await props.searchParams;
+    const artistName: string | undefined = searchParams?.artist;
+
+    let artists: Artist[] = [];
+    if(artistName) {
+        artists = await search(artistName);
+    };
     
     return (
         <main className="bg-base-200 min-h-[calc(100vh)] pt-[5rem] flex justify-center items-center flex-col">
-            <section className={`w-[45rem] mt-[0rem] mb-[1rem] ${!artist ? "min-h-[20rem]" : ""}`}>
-                {!artist && 
+            <section className={`w-[45rem] mt-[0rem] mb-[1rem] ${!artistName ? "min-h-[20rem]" : ""}`}>
+                {!artistName && 
                     <p className="text-[1.25rem] mt-[0rem] mb-[0.5rem]">
                         Search for an artist to start ranking.
                     </p>
                 }
-                {artist && 
+                {artistName && 
                     <p className="text-[1.25rem] mt-[2rem] mb-[0.5rem]">
-                        Showing results for: <strong>{artist}</strong>
+                        Showing results for: <strong>{artistName}</strong>
                     </p>
                 }
                 <hr className="border-black opacity-10"></hr>
                 <SearchBar placeholder="Search for an artist..."/>
             </section>
-            <Results artists={artists}></Results>
+            <section className="grid grid-cols-3 grid-rows-3 gap-4 rounded-none">
+                {artists.map((artist: Artist) => {
+                    const image = artist.images?.[0];
+                    if (!image) return null;
+
+                    return (
+                        <ArtistCard 
+                            key={artist.id} 
+                            artist={artist}
+                            img={image.url} 
+                            width={image.width} 
+                            height={image.height}
+                        />
+                    );
+                })}
+            </section>
         </main>
     )
 }

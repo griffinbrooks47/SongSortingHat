@@ -3,10 +3,10 @@
 import { Artist, Album, Track } from "@/types/artist";
 
 /* Components */
-import RankerInterface from "./components/RankerInterface";
+import RankerInterface from "./stages/RankerInterface";
 
 /* Database Wrapper. */
-import prisma from "@/clients/prisma/prismaClient";
+import prisma from "@/utils/prismaClient";
 
 export default async function Rank({
     params,
