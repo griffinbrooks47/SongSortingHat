@@ -26,6 +26,13 @@ class MatchupQueue {
         return this.matchups.length;
     }
 
+    /* Clone the current queue */
+    public clone(): MatchupQueue {
+        const newQueue = new MatchupQueue();
+        newQueue.matchups = this.matchups.map(m => [...m] as [string, string]);
+        return newQueue;
+    }
+
     public toStringArray(): string[] {
 
         const stringArray: string[] = [];

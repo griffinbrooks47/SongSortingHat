@@ -1,118 +1,89 @@
 
-/* 
-    Version 1.0.0 Ranking Algorithm
-    Future Optimizations
-    ~ Implement a more efficient method for selecting the next matchup, utilizing a win/loss ratio. 
-*/
-
 import MatchupQueue from "./matchupQueue";
 import TrackNode from "./TrackNode";
 
-/* Return type when sending next iteration to view. */
-interface MatchupData {
-    currMatchup: [string, string];
-    trackIDs: Set<string>;
-    matchups: MatchupQueue;
-    nodeMap: Map<string, TrackNode>;
-    scoreMap: Map<string, number>;
-    reverseScoreMap: Map<number, Set<string>>;
-    choiceCache: Map<string, Set<string>>;
-    isComplete: boolean;
+/* Represents a snapshot of the Ranker state */
+export interface MatchupData {
+  /** The current active matchup (pair of track IDs) */
+  currMatchup: [string, string];
+
+  /** IDs of tracks that haven’t yet entered the matchup queue */
+  trackIDs: Set<string>;
+
+  /** Queue of pending matchups to resolve */
+  matchups: MatchupQueue;
+
+  /** Map of track ID → TrackNode (graph representation) */
+  nodeMap: Map<string, TrackNode>;
+
+  /** Map of track ID → calculated score */
+  scoreMap: Map<string, number>;
+
+  /** Map of score → set of track IDs that share that score */
+  reverseScoreMap: Map<number, Set<string>>;
+
+  /** Direct “winner → losers” cache of already-resolved choices */
+  choiceCache: Map<string, Set<string>>;
+
+  /** Whether all matchups are complete */
+  isComplete: boolean;
 }
 
-/* 
-    At each iteration, store:
-    ~ matchupQueue
-    ~ trackIDs
-    ~ trackMap
-    ~ scoreMap
-    ~ reverseScoreMap
-    ~ choiceCache
-*/
 export default class Ranker {
+    
+    private currMatchup?: [string, string];
+    
+    private trackIDs = new Set<string>();
+    private matchups = new MatchupQueue();
+    
+    private nodeMap = new Map<string, TrackNode>();
+    private scoreMap = new Map<string, number>();
+    private reverseScoreMap = new Map<number, Set<string>>();
+    
+    private choiceCache = new Map<string, Set<string>>();
+    
+    private isComplete = false;
 
-    /* Current matchup */
-    private currMatchup: [string, string] | undefined;
-
-    /* Item pool. */
-    private trackIDs: Set<string>;
-
-    /* Matchup queue. */
-    private matchups: MatchupQueue;
-
-    /* Maps ids to track objects. */
-    private nodeMap: Map<string, TrackNode>;
-
-    /* Maps track id to score. */
-    private scoreMap: Map<string, number>;
-
-    /* Maps score to tracks with that score. */
-    private reverseScoreMap: Map<number, Set<string>>;
-
-    /* Maps track id to track ids it is ranked above directly. */
-    private choiceCache: Map<string, Set<string>>;
-
-    private isComplete: boolean;
-
-    /* Initialize all data structures. */
-    constructor() {
+    constructor(trackIds: string[]) {
         this.matchups = new MatchupQueue();
-        
-        this.trackIDs = new Set();
+        this.trackIDs = new Set(trackIds);
         this.nodeMap = new Map();
-
         this.scoreMap = new Map();
         this.reverseScoreMap = new Map();
         this.choiceCache = new Map();
-        
         this.isComplete = false;
-    }
 
-    public initRanker(trackIds: string[]) {
+        // Build nodes for each track
         trackIds.forEach(id => {
             this.nodeMap.set(id, new TrackNode(id));
         });
+    }
+
+    /* 
+        PUBLIC API 
+    */
+
+    public getNextMatchup(): [string, string] {
+   
+        if (this.currMatchup) {
+            return this.currMatchup;
+        }
+
         this.genChoice();
+        this.currMatchup = this.matchups.dequeue();
+        
+        if (!this.currMatchup) {
+            throw new Error("No matchups available");
+        }
+        
         return this.currMatchup;
     }
 
-    /* 
-        Given the date from the previous choice:
-        ~ 
-    */
-    public iterate(
-        prevMatchup: [string, string],
-        prevMatchups: MatchupQueue, 
-        prevTrackIDs: Set<string>,
-        prevNodeMap: Map<string, TrackNode>, 
-        prevScoreMap: Map<string, number>, 
-        prevReverseScoreMap: Map<number, Set<string>>, 
-        prevChoiceCache: Map<string, Set<string>>,
-    ) {
-        /* Init data structures for previous iteration. */
-        this.currMatchup = prevMatchup;
-        this.matchups = prevMatchups;
-        this.trackIDs = prevTrackIDs;
+    public makeChoice(winnerID: string, loserID: string) : void {
 
-        this.nodeMap = prevNodeMap;
-
-        this.scoreMap = prevScoreMap;
-        this.reverseScoreMap = prevReverseScoreMap;
-        this.choiceCache = prevChoiceCache;
-    }
-
-    /* Ranker Interface */
-
-    /* 
-        Updates the current rankings given the winner and loser of current matchup. 
-    */
-    public makeChoice(winnerID: string, loserID: string) {
-
-        /* Throw error if no matchup has been set. */
         if(!this.currMatchup) {
             throw new Error("No matchup found.")
         }
-        /* Throw error if choice isn't valid. */
         if(!this.currMatchup.includes(winnerID) || !this.currMatchup.includes(loserID)) {
             throw new Error("Choice not found in current matchup.")
         }
@@ -168,38 +139,76 @@ export default class Ranker {
                 }
             }
         }
-
-
-        /* Return matchup to view. */
-        return this.currMatchup;
     }
 
-    public getNewMatchups(): MatchupData {
-
-        if(!this.currMatchup) {
-            throw new Error("No current matchup, can't return from ranker. ")
+    /* Provide a read-only snapshot for UI or persistence */
+    public getSnapshot(): MatchupData {
+        if (!this.currMatchup) {
+        throw new Error("No current matchup.");
         }
 
-        /* Package all fields together. */
-        const matchupData: MatchupData = {
+        return {
             currMatchup: this.currMatchup,
-            matchups: this.matchups,
-            trackIDs: this.trackIDs,
-            nodeMap: this.nodeMap,
-            scoreMap: this.scoreMap,
-            reverseScoreMap: this.reverseScoreMap,
-            choiceCache: this.choiceCache,
+            trackIDs: new Set(this.trackIDs),
+            matchups: this.matchups.clone(), // or expose a readonly view
+            nodeMap: new Map(this.nodeMap),
+            scoreMap: new Map(this.scoreMap),
+            reverseScoreMap: new Map(this.reverseScoreMap),
+            choiceCache: new Map(this.choiceCache),
             isComplete: this.isComplete,
         };
-
-        return matchupData
     }
 
-    /* PRIVATE METHODS */
+    /* Optional: persistence helpers */
+    public serialize(): string {
+        return JSON.stringify(this.getSnapshot());
+    }
+
+    public static hydrate(serialized: string): Ranker {
+        const state: MatchupData = JSON.parse(serialized);
+        const ranker = new Ranker(Array.from(state.trackIDs));
+        // restore internals from state
+        ranker.currMatchup = state.currMatchup;
+        ranker.trackIDs = state.trackIDs;
+        ranker.matchups = state.matchups;
+        ranker.nodeMap = state.nodeMap;
+        ranker.scoreMap = state.scoreMap;
+        ranker.reverseScoreMap = state.reverseScoreMap;
+        ranker.choiceCache = state.choiceCache;
+        ranker.isComplete = state.isComplete;
+        return ranker;
+    }
 
     /* 
-        Score the entire tree, first clearing maps then deferring to helper method. 
+        PRIVATE 
     */
+
+     /* Create the next matchup, introducing a new item. */
+    private genChoice(): void {
+
+        if(!this.trackIDs) {
+            throw new Error("Tracks not initialized. ")
+        }
+
+        if(this.trackIDs.size > 0) {
+
+            /* Get arbitrary track for next matchup. */
+            const left = this.trackIDs.values().next().value!;
+
+            /* Find the best matchup to pair with left. */
+            const right = this.findBestMatch();
+
+            this.trackIDs.delete(left)
+
+            /* Queue the next matchup. */
+            if(this.trackIDs.size > 0) {
+                const matchup: [string, string] = [left, right];
+                this.matchups.enqueue(matchup);
+            }
+        }
+    }
+
+    /* Score the entire tree, first clearing maps then deferring to helper method. */
     private scoreTree(): void {
 
         if(!this.trackIDs) {
@@ -221,9 +230,7 @@ export default class Ranker {
         }
     }
 
-    /* 
-        Recursively score a node by calculating scores of its child nodes. 
-    */
+    /* Recursively score a node by calculating scores of its child nodes. */
     private scoreTreeBelow(track: TrackNode): number {
 
         /* Get the tracks ranked below track.  */
@@ -261,33 +268,6 @@ export default class Ranker {
             this.addToReverseScoreMap(maxChildScore + 1, id);
 
             return maxChildScore + 1;
-        }
-    }
-
-    /* 
-        Create the next matchup, introducing a new item. 
-    */
-    private genChoice(): void {
-
-        if(!this.trackIDs) {
-            throw new Error("Tracks not initialized. ")
-        }
-
-        if(this.trackIDs.size > 0) {
-
-            /* Get arbitrary track for next matchup. */
-            const left = this.trackIDs.values().next().value!;
-
-            /* Find the best matchup to pair with left. */
-            const right = this.findBestMatch();
-
-            this.trackIDs.delete(left)
-
-            /* Queue the next matchup. */
-            if(this.trackIDs.size > 0) {
-                const matchup: [string, string] = [left, right];
-                this.matchups.enqueue(matchup);
-            }
         }
     }
 
@@ -357,7 +337,7 @@ export default class Ranker {
     }
 
     /* 
-    Helper Methods. 
+        Private Helper Methods. 
     */
 
     /* 
@@ -381,9 +361,6 @@ export default class Ranker {
         return false;
     }
 
-    /* 
-        
-    */
     private checkSafeMatchup(matchup: [string, string]): boolean {
 
         /* Grab the matchup IDs. */
@@ -428,8 +405,4 @@ export default class Ranker {
 
     }
 
-    /* FOR TESTING PURPOSES */
-    public buildDevGraph(): void {
-
-    }
 }

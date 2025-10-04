@@ -1,50 +1,24 @@
 'use client'
 
 import { motion } from "motion/react";
-
-/* SSH Types */
 import { Track } from '@/types/artist';
-
-/* React & Next */
-import { useCallback, useEffect, useRef, useState, memo } from 'react';
+import { useCallback, useEffect, useRef, useState, memo, useMemo } from 'react';
 import Image from "next/image";
-
 import { type CarouselApi } from "@/components/ui/carousel"
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel"
 
-const responsive = {
-  superLargeDesktop: {
-    // the naming can be any, depends on you.
-    breakpoint: { max: 4000, min: 3000 },
-    items: 5
-  },
-  desktop: {
-    breakpoint: { max: 3000, min: 1024 },
-    items: 3
-  },
-  tablet: {
-    breakpoint: { max: 1024, min: 464 },
-    items: 2
-  },
-  mobile: {
-    breakpoint: { max: 464, min: 0 },
-    items: 1
-  }
-};
-
 export default function Assemble(
-    { tracks, onEnd }: { tracks: Track[] ,onEnd?: (removedIDs: string[]) => void }
+    { tracks, onEnd }: { tracks: Track[] ,onEnd: (selectedIds: string[]) => void }
 ) {
-
-    const [idsToRemove, setIdsToRemove] = useState<Set<string>>(new Set());
-    const toggleIdToRemove = (id: string) => {
-        setIdsToRemove(prev => {
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    
+    // Optimized toggle function
+    const toggleIdToRemove = useCallback((id: string) => {
+        setSelectedIds(prev => {
             const newSet = new Set(prev);
             if (newSet.has(id)) {
                 newSet.delete(id);
@@ -53,169 +27,177 @@ export default function Assemble(
             }
             return newSet;
         });
-    }
-
-    /* Chunked Songs */
-    const chunkTracks = (flatTracks: Track[], chunkSize: number = numTracksPerPage): Track[][] => {
-        const chunks: Track[][] = [];
-        for (let i = 0; i < flatTracks.length; i += chunkSize) {
-            chunks.push(flatTracks.slice(i, i + chunkSize));
-        }
-        return chunks;
-    }
+    }, []);
 
     const numTracksPerPage: number = 15;
-    const slides = chunkTracks(tracks, numTracksPerPage);
-
-    /* If tracks change, reset the ids. */
-    useEffect(() => {
-        const newSet: Set<string> = new Set();
-        for(const track of tracks) {
-            newSet.add(track.spotifyId);
+    const slides = useMemo(() => {
+        const chunks: Track[][] = [];
+        for (let i = 0; i < tracks.length; i += numTracksPerPage) {
+            chunks.push(tracks.slice(i, i + numTracksPerPage));
         }
-        setIdsToRemove(newSet);
+        return chunks;
+    }, [tracks, numTracksPerPage]);
+
+    useEffect(() => {
+        setSelectedIds(new Set());
     }, [tracks])
 
     const [api, setApi] = useState<CarouselApi>();
-    const currentSlideRef = useRef<number>(0);
-    const totalSlidesRef = useRef<number>(0);
-    const currentTextRef = useRef<HTMLSpanElement>(null);
-    const countTextRef = useRef<HTMLSpanElement>(null);
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [totalSlides, setTotalSlides] = useState(0);
 
+    // Optimized API setup - no forceUpdate, no refs for display values
     useEffect(() => {
-        if (!api) {
-            return;
-        }
+        if (!api) return;
 
-        totalSlidesRef.current = api.scrollSnapList().length;
-        currentSlideRef.current = api.selectedScrollSnap();
-
-        // Update text content
-        if (currentTextRef.current) {
-            currentTextRef.current.textContent = String(currentSlideRef.current + 1);
-        }
-        if (countTextRef.current) {
-            countTextRef.current.textContent = String(totalSlidesRef.current);
-        }
-
-        const handleSelect = () => {
-            currentSlideRef.current = api.selectedScrollSnap();
-            
-            // Update text content
-            if (currentTextRef.current) {
-                currentTextRef.current.textContent = String(currentSlideRef.current + 1);
-            }
+        const updateSlides = () => {
+            setCurrentSlide(api.selectedScrollSnap());
+            setTotalSlides(api.scrollSnapList().length);
         };
 
-        api.on("select", handleSelect);
+        // Initial setup
+        updateSlides();
+
+        // Throttle the select event if needed
+        api.on("select", updateSlides);
 
         return () => {
-            api.off("select", handleSelect);
+            api.off("select", updateSlides);
         };
     }, [api]);
 
     return (
-        <div className="w-full mb-[0rem]">
-            <Carousel 
-                className="w-full max-w-[90vw] mx-auto"
-                setApi={setApi}
-            >
+        <div className="max-w-[75%] mb-[0rem] flex flex-col justify-center">
+            <Carousel setApi={setApi}>
                 <CarouselContent>
                     {slides.map((trackChunk, index) => (
-                        <CarouselItem className="w-full" key={index}>
-                            <CarouselPage 
-                                key={index} 
-                                index={index} 
-                                numSlides={slides.length} 
+                        <CarouselItem className="w-fit" key={index}>
+                            <MemoCarouselPage 
                                 tracks={trackChunk} 
                                 toggleId={toggleIdToRemove}
                             />
                         </CarouselItem>
                     ))}
                 </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
             </Carousel>
-            <div className="py-8 text-center text-sm text-muted-foreground">
-                <span ref={currentTextRef}>1</span> of <span ref={countTextRef}>{slides.length}</span>
-            </div>
+            <section className="mt-8 flex flex-row items-center justify-between w-full">
+                    <button className="btn btn-outline btn-lg rounded-sm">
+                        Back to Artist
+                    </button>
+                    
+                    <div className="flex items-center gap-4">
+                        <button 
+                            className="btn btn-outline btn-md rounded-sm"
+                            onClick={() => api?.scrollPrev()}
+                            disabled={currentSlide === 0}
+                        >
+                            Prev
+                        </button>
+                        <div className="text-center text-sm text-muted-foreground">
+                            {currentSlide + 1} of {totalSlides}
+                        </div>
+                        <button 
+                            className="btn btn-outline btn-md rounded-sm"
+                            onClick={() => api?.scrollNext()}
+                            disabled={currentSlide === totalSlides - 1}
+                        >
+                            Next
+                        </button>
+                    </div>
+                    
+                    <button 
+                        className="btn btn-outline btn-lg rounded-sm"
+                        onClick={() => onEnd(Array.from(selectedIds))}
+                    >
+                        Next Stage
+                    </button>
+                </section>
         </div>
-    )
-};
-
-function CarouselPage({ tracks, index, numSlides, toggleId }: { tracks: Track[], index: number, numSlides: number, toggleId: (id: string) => void }) {
-    return (
-            <div className="w-full h-full flex items-center justify-center px-12">
-                <main className="grid grid-cols-5 grid-rows-3 gap-4 mx-auto">
-                    {tracks.map((track: Track) => {
-                        return (
-                            <SongCard key={track.spotifyId} track={track}
-                                onClick={toggleId}
-                            />
-                        )
-                    })}
-                </main>
-            </div>
     )
 }
 
-const SongCard = memo(function SongCard(props: {
+// Memoize the carousel page
+const MemoCarouselPage = memo(function CarouselPage({ 
+    tracks, 
+    toggleId 
+}: { 
+    tracks: Track[], 
+    toggleId: (id: string) => void 
+}) {
+    return (
+        <div className="h-full flex items-center justify-center py-2">
+            <main className="grid grid-cols-5 grid-rows-3 gap-4">
+                {tracks.map((track) => (
+                    <SongCard 
+                        key={track.spotifyId} 
+                        track={track}
+                        onClick={toggleId}
+                    />
+                ))}
+            </main>
+        </div>
+    )
+});
+
+const SongCard = memo(function SongCard({ track, onClick }: {
     track: Track, 
     onClick: (id: string) => void 
 }) {
     const [isSelected, setIsSelected] = useState<boolean>(false);
 
     const handleClick = useCallback(() => {
-        props.onClick(props.track.spotifyId);
+        onClick(track.spotifyId);
         setIsSelected(prev => !prev);
-    }, [props.onClick, props.track.spotifyId]);
+    }, [onClick, track.spotifyId]);
 
     return (
-        <motion.main 
-            className="relative h-[11rem] w-[11rem]"
+        <motion.div 
+            className={`relative h-[11rem] w-[11rem] cursor-pointer rounded-md ${
+                isSelected 
+                    ? 'shadow-sm border-black bg-accent border-2' 
+                    : 'shadow-md border-black bg-base-100 border-2'
+            }`}
+            onClick={handleClick}
             whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 500, damping: 20 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
-            <div 
-                className={`relative card w-[11rem] h-[100%] p-[0.5rem] cursor-pointer
-                    ${isSelected ? 'bg-accent border-2 border-accent rounded-sm shadow-lg' : 'bg-base-100 border-2 border-neutral rounded-sm shadow-md'}`}
-            >
-                <figure className="h-[100%] w-auto aspect-[1/1] rounded-sm border-2 border-neutral">
+            <div className={`relative card w-full h-full p-2 rounded-sm transition-opacity ${
+                isSelected 
+                    ? 'opacity-100' 
+                    : 'opacity-100'
+            }`}>
+                <figure className={`h-full w-full aspect-square rounded-sm border-2 border-black overflow-hidden`}>
                     <Image 
-                        src={props.track.images[0].url}
-                        width={props.track.images[0].width}
-                        height={props.track.images[0].height}
-                        alt={props.track.title}
-                        className="overflow-cover"
+                        src={track.images[0].url}
+                        width={track.images[0].width}
+                        height={track.images[0].height}
+                        alt={track.title}
+                        className="object-cover"
                         priority={false}
                         loading="lazy"
-                        placeholder="blur"
-                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzMzMyIvPjwvc3ZnPg=="
                     />
                 </figure>
-                <div className="m-auto flex justify-center items-center flex-col py-[0.25rem]">
-                    <strong className="text-[0.9rem] font-bold block max-w-[14ch] truncate">
-                        {props.track.title}
+                <div className="flex flex-col items-center py-1">
+                    <strong className="text-sm font-bold truncate max-w-[14ch]">
+                        {track.title}
                     </strong>
-                    <p className="text-[0.8rem] mt-[-0.25rem]">{props.track.artists[0].name}</p>
+                    <p className="text-xs mt-[-0.25rem] truncate max-w-[14ch]">
+                        {track.artists[0].name}
+                    </p>
                 </div>
             </div>
-            {/* Opaque overlay */}
-            <motion.div
-                className="absolute h-[100%] flex justify-center items-center inset-0 bg-black/90 rounded-md cursor-pointer"
+            
+            {/* Framer Motion hover overlay */}
+            <motion.div 
+                className="w-full h-full inset-0 bg-black/90 border-2 border-black rounded-sm absolute flex items-center justify-center"
                 initial={{ opacity: 0 }}
                 whileHover={{ opacity: 1 }}
-                transition={{ duration: 0.025 }}
-                onClick={handleClick}
+                transition={{ duration: 0.075 }}
             >
-                <div className="text-white flex items-center justify-center">
-                    <p className="font-bold text-[1rem]">Add Song</p>
-                </div>
+                <strong className="text-sm text-white font-bold truncate max-w-[14ch]">
+                    {track.title}
+                </strong>
             </motion.div>
-        </motion.main>
+        </motion.div>
     );
-}, (prevProps, nextProps) => {
-    // Custom comparison: only re-render if track ID or onClick reference changes
-    return prevProps.track.spotifyId === nextProps.track.spotifyId &&
-           prevProps.onClick === nextProps.onClick;
 });

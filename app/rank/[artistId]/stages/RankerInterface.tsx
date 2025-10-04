@@ -18,26 +18,37 @@ export default function RankerInterface(
 
     /* Maps SpotifyID to Track for quick indexing. */
     const [songMap, setSongMap] = useState<Map<string, Track>>(new Map());
+    const [songList, setSongList] = useState<Track[]>([]);
 
     /* 
         Assemble
         - Remove the specified tracks from the ranking pool. 
     */
-    const assemble = (removedIDs: string[]) : void => {
+    const assemble = (selectedIds: string[]) : void => {
         setSongMap(prev => {
             const newMap = new Map(prev);
-            for (const spotifyID of removedIDs) {
-                newMap.delete(spotifyID);
+            for (const spotifyID of selectedIds) {
+                newMap.set(spotifyID, prev.get(spotifyID)!);
             }
+            setSongList(Array.from(newMap.values()));
             return newMap;
         });
         setStage(prev => {
             return prev + 1;
         })
     }
+
+    /* 
+        Rank
+        - Algorithmically determine the final ranking. 
+    */
+    const rank = (finalList: string[]) : void => {
+        
+    }
     
     /* Only set the songMap on page refresh. */
     useEffect(() => {
+        setSongList(tracks)
         const tempMap: Map<string, Track> = new Map(); 
         for(const track of tracks) {
             tempMap.set(track.spotifyId, track);
@@ -53,12 +64,15 @@ export default function RankerInterface(
         <main className="w-full h-full flex flex-col items-center justify-center">
             {(stage == 0) && 
                 <Assemble
-                    tracks={tracks}
+                    tracks={songList}
                     onEnd={assemble}
                 ></Assemble>
             }
             {(stage == 1) &&
-                <Rank ></Rank>
+                <Rank 
+                    tracks={songList}
+                    onEnd={rank}
+                ></Rank>
             }
         </main>
     )
