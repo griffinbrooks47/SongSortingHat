@@ -1,4 +1,5 @@
 
+import { initialize } from "next/dist/server/lib/render-server";
 import MatchupQueue from "./matchupQueue";
 import TrackNode from "./TrackNode";
 
@@ -63,14 +64,21 @@ export default class Ranker {
         PUBLIC API 
     */
 
-    public getNextMatchup(): [string, string] {
-   
-        if (this.currMatchup) {
-            return this.currMatchup;
-        }
+    public initialize() : void {
+        if(this.trackIDs.size <= 0) throw new Error("No tracks to initialize ranker with.");
 
+        /* Create first matchup. */
         this.genChoice();
+
+        /* Set the current matchup. */
         this.currMatchup = this.matchups.dequeue();
+    }
+
+    public checkComplete() : boolean {
+        return this.isComplete;
+    }
+
+    public getCurrMatchup(): [string, string] {
         
         if (!this.currMatchup) {
             throw new Error("No matchups available");
@@ -88,21 +96,8 @@ export default class Ranker {
             throw new Error("Choice not found in current matchup.")
         }
 
-        const winnerNode: TrackNode | undefined = this.nodeMap.get(winnerID);
-        const loserNode: TrackNode | undefined =  this.nodeMap.get(loserID);
-
-        if(!winnerNode || !loserNode) {
-            throw new Error("Nodes not found");
-        }
-
-        /* Create graph edges. */
-        winnerNode.create_below_edge(loserNode);
-        loserNode.create_above_edge(winnerNode);
-
-        if(!this.choiceCache.has(winnerID)) {
-            this.choiceCache.set(winnerID, new Set());
-        }
-        this.choiceCache.get(winnerID)?.add(loserID);
+        /* Handle the internal logic of making a choice. */
+        this.handleMakeChoice(winnerID, loserID);
 
         /* Score entire tree, following the addition of winner/loser node edges. */
         this.scoreTree();
@@ -123,13 +118,16 @@ export default class Ranker {
 
                 /* If no matchup can be dequeued, terminate. */
                 if(!this.currMatchup) {
+                    this.isComplete = true;
                     break;
                 }
 
                 /* Ensure answering the matchup does not create graph cycles. */
                 if(this.checkSafeMatchup(this.currMatchup)) {
-                    /* Automatically make choice for user if possible. */
+                  
                     if(this.tryToResolve(this.currMatchup)) {
+                        this.scoreTree();
+                        this.resolveBranches();
                         continue; // Dequeue the next matchup.
                     } 
                     /* If not, defer to user choice. */
@@ -141,71 +139,125 @@ export default class Ranker {
         }
     }
 
-    /* Provide a read-only snapshot for UI or persistence */
-    public getSnapshot(): MatchupData {
-        if (!this.currMatchup) {
-        throw new Error("No current matchup.");
+    /*
+        Handles the internal logic of making a choice, including:
+        - Creating graph edges
+        - Updating the choice cache with full transitivity via BFS
+    */
+    private handleMakeChoice(winnerID: string, loserID: string): void {
+        
+        const winnerNode: TrackNode | undefined = this.nodeMap.get(winnerID);
+        const loserNode: TrackNode | undefined = this.nodeMap.get(loserID);
+
+        if (!winnerNode || !loserNode) {
+            throw new Error("Nodes not found");
         }
 
-        return {
-            currMatchup: this.currMatchup,
-            trackIDs: new Set(this.trackIDs),
-            matchups: this.matchups.clone(), // or expose a readonly view
-            nodeMap: new Map(this.nodeMap),
-            scoreMap: new Map(this.scoreMap),
-            reverseScoreMap: new Map(this.reverseScoreMap),
-            choiceCache: new Map(this.choiceCache),
-            isComplete: this.isComplete,
-        };
+        /* Create graph edges. */
+        winnerNode.create_below_edge(loserNode);
+        loserNode.create_above_edge(winnerNode);
+
+        /* Add to choice cache with full transitivity via BFS */
+        if (!this.choiceCache.has(winnerID)) {
+            this.choiceCache.set(winnerID, new Set());
+        }
+
+        const winnerLosers = this.choiceCache.get(winnerID)!;
+        winnerLosers.add(loserID);
+
+        const queue = [loserID];
+        const visited = new Set([loserID]);
+        let queueIndex = 0;
+
+        while (queueIndex < queue.length) {
+            const current = queue[queueIndex++];
+            
+            if (this.choiceCache.has(current)) {
+                for (const indirectLoser of this.choiceCache.get(current)!) {
+                    if (!visited.has(indirectLoser)) {
+                        visited.add(indirectLoser);
+                        winnerLosers.add(indirectLoser);
+                        queue.push(indirectLoser);
+                    }
+                }
+            }
+        }
+
+        // Update anyone who beat the winner to also beat all new losers
+        for (const losers of this.choiceCache.values()) {
+            if (losers.has(winnerID)) {
+                for (const newLoser of visited) {
+                    losers.add(newLoser);
+                }
+            }
+        }
     }
 
-    /* Optional: persistence helpers */
-    public serialize(): string {
-        return JSON.stringify(this.getSnapshot());
+    /* 
+        Given a matchup, automatically resolve it if the choice has been made explicitly by user already. 
+    */
+    private tryToResolve(matchup: [string, string]): boolean {
+
+        /* Grab the matchup IDs. */
+        const left: string = matchup[0];
+        const right: string = matchup[1];
+
+        if(this.choiceCache.has(left) && this.choiceCache.get(left)?.has(right)){
+            console.log("Auto-resolving: ", left, " > ", right);
+            this.handleMakeChoice(left, right);
+            return true;
+        }
+        else if(this.choiceCache.has(right) && this.choiceCache.get(right)?.has(left)) {
+            console.log("Auto-resolving: ", right, " > ", left);
+            this.handleMakeChoice(right, left);
+            return true;
+        }
+
+        return false;
     }
 
-    public static hydrate(serialized: string): Ranker {
-        const state: MatchupData = JSON.parse(serialized);
-        const ranker = new Ranker(Array.from(state.trackIDs));
-        // restore internals from state
-        ranker.currMatchup = state.currMatchup;
-        ranker.trackIDs = state.trackIDs;
-        ranker.matchups = state.matchups;
-        ranker.nodeMap = state.nodeMap;
-        ranker.scoreMap = state.scoreMap;
-        ranker.reverseScoreMap = state.reverseScoreMap;
-        ranker.choiceCache = state.choiceCache;
-        ranker.isComplete = state.isComplete;
-        return ranker;
+    public getSorting() : string[] {
+        
+        const rankedList: string[] = [];
+        // Get all scores, sort them descending
+        const scores = Array.from(this.reverseScoreMap.keys()).sort((a, b) => b - a);
+
+        for (const score of scores) {
+            const tracks = this.reverseScoreMap.get(score);
+            if (tracks) {
+                // Add tracks of this score to the list (order inside a score bucket can be arbitrary)
+                rankedList.push(...tracks);
+            }
+        }
+
+        return rankedList;
     }
 
     /* 
         PRIVATE 
     */
 
-     /* Create the next matchup, introducing a new item. */
+    /* Create the next matchup, introducing a new item. */
     private genChoice(): void {
 
-        if(!this.trackIDs) {
-            throw new Error("Tracks not initialized. ")
+        if(!this.trackIDs || this.trackIDs.size <= 0) {
+            return;
         }
 
+        /* Get arbitrary track for next matchup. */
+        const left = this.trackIDs.values().next().value!;
+        this.trackIDs.delete(left);
+
+        /* Find the best matchup to pair with left. */
+        const right = this.findBestMatch(left);
+        this.trackIDs.delete(right);
+
+        /* Queue the next matchup. */
         if(this.trackIDs.size > 0) {
-
-            /* Get arbitrary track for next matchup. */
-            const left = this.trackIDs.values().next().value!;
-
-            /* Find the best matchup to pair with left. */
-            const right = this.findBestMatch();
-
-            this.trackIDs.delete(left)
-
-            /* Queue the next matchup. */
-            if(this.trackIDs.size > 0) {
-                const matchup: [string, string] = [left, right];
-                this.matchups.enqueue(matchup);
-            }
+            const matchup: [string, string] = [left, right];
+            this.matchups.enqueue(matchup);
         }
+        
     }
 
     /* Score the entire tree, first clearing maps then deferring to helper method. */
@@ -325,7 +377,7 @@ export default class Ranker {
                 const idList: string[] = Array.from(idSet);
 
                 /* Add matchups for every two songs of same score. */
-                for(let i = 0; i < idSetLength - idSetLength%2; i += 2) {
+                for(let i = 0; i < idSetLength - 1; i += 2) {
                     const left: string = idList[i];
                     const right: string = idList[i+1];
 
@@ -339,28 +391,6 @@ export default class Ranker {
     /* 
         Private Helper Methods. 
     */
-
-    /* 
-        Given a matchup, automatically resolve it if the choice has been made explicitly by user already. 
-    */
-    private tryToResolve(matchup: [string, string]): boolean {
-
-        /* Grab the matchup IDs. */
-        const left: string = matchup[0];
-        const right: string = matchup[1];
-
-        if(!this.choiceCache.has(left) && this.choiceCache.get(left)?.has(right)){
-            this.makeChoice(left, right);
-            return true;
-        }
-        else if(this.choiceCache.has(right) && this.choiceCache.get(right)?.has(left)) {
-            this.makeChoice(right, left);
-            return true;
-        }
-
-        return false;
-    }
-
     private checkSafeMatchup(matchup: [string, string]): boolean {
 
         /* Grab the matchup IDs. */
@@ -377,14 +407,69 @@ export default class Ranker {
         return (leftScore == rightScore)
 
     }
-    /* 
-        Currently not optimized - picks middle song from score map. 
-    */
-    private findBestMatch(): string {
 
-        /* WRITE BETTER METHOD IN FUTURE */
-        return this.scoreMap.keys().next().value!;
+    /*
+        Selects the best existing (already-ranked) track to match against a new track.
+        Strategy:
+        - Prefer tracks with a mid-range score (max information gain).
+        - If no scores exist yet, just pick an arbitrary node.
+    */
+    private findBestMatch(targetTrack: string): string {
+        
+        // If no tracks have been ranked yet, just pick any other track
+        if (this.scoreMap.size === 0) {
+            const keys = Array.from(this.nodeMap.keys());
+
+            // No tracks at all — fail safely
+            if (keys.length === 0) {
+                throw new Error("No tracks available for matchup generation.");
+            }
+
+            // Only one track available — fallback to itself (or empty string if undesired)
+            if (keys.length === 1) {
+                return keys[0] === targetTrack ? "" : keys[0];
+            }
+
+            // Otherwise, pick the first track that isn’t the target
+            return keys[0] === targetTrack ? keys[1] : keys[0];
+        }
+
+        // Compute all currently ranked tracks (i.e., in nodeMap but not in trackIDs)
+        const rankedTracks = Array.from(this.nodeMap.keys()).filter(
+            id => !this.trackIDs.has(id) && id !== targetTrack
+        );
+
+        if (rankedTracks.length === 0) {
+            // If no ranked tracks exist yet, fallback to first track in nodeMap
+            return this.nodeMap.keys().next().value!;
+        }
+
+        // Compute the midrange (median) score among ranked tracks
+        const scored = rankedTracks.map(id => ({
+            id,
+            score: this.scoreMap.get(id) ?? 0
+        }));
+
+        scored.sort((a, b) => a.score - b.score);
+
+        const medianIndex = Math.floor(scored.length / 2);
+        const median = scored[medianIndex];
+
+        // Pick the track whose score is closest to the median (balances exploration)
+        let bestMatch = median.id;
+        let bestDiff = Infinity;
+
+        for (const { id, score } of scored) {
+            const diff = Math.abs(score - median.score);
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                bestMatch = id;
+            }
+        }
+
+        return bestMatch;
     }
+
 
     /* 
         Maps a song title to its new score. 
@@ -403,6 +488,10 @@ export default class Ranker {
             this.reverseScoreMap.set(score, idSet);
         }
 
+    }
+
+    public getReverseScoreMap(): Map<number, Set<string>> {
+        return this.reverseScoreMap;
     }
 
 }

@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,84 +11,94 @@ datasource db {
  * Artist
  */
 model DBArtist {
-  id        String @id @default(uuid())
-  spotifyId String @unique
-  last_updated DateTime @default(now())
+  id            String        @id @default(uuid())
+  spotifyId     String        @unique
+  last_updated  DateTime      @default(now())
   name          String
   external_urls Json?
   followers     Int
-  albums DBAlbum[]
-  tracks DBTrack[]
-  genres DBGenre[]
-  images DBArtistImg[]
-  sortings DBSorting[]
+  albums        DBAlbum[]
+  tracks        DBTrack[]
+  genres        DBGenre[]
+  images        DBArtistImg[]
+  sortings      DBSorting[]
 }
+
 /**
  * Album
  */
 model DBAlbum {
-  id        String @id @default(uuid())
-  spotifyId String @unique
-  last_updated DateTime @default(now())
+  id            String       @id @default(uuid())
+  spotifyId     String       @unique
+  last_updated  DateTime     @default(now())
   title         String
   total_tracks  Int
   release_date  String
   external_urls Json?
-  artists DBArtist[]
-  tracks DBTrack[]
-  images DBAlbumImg[]
+  artists       DBArtist[]
+  tracks        DBTrack[]
+  images        DBAlbumImg[]
 }
+
 /**
  * Track
  */
 model DBTrack {
-  id        String @id @default(uuid())
-  spotifyId String @unique
+  id         String   @id @default(uuid())
+  spotifyId  String   @unique
   title      String
   updatedAt  DateTime @updatedAt
   albumTitle String?
+
   artists DBArtist[]
+
   albumId String?
   album   DBAlbum? @relation(fields: [albumId], references: [id])
+
   images DBAlbumImg[]
-  sortings DBSorting[]
+
+  sortings       DBSorting[]
+  sortingEntries DBSortingEntry[]
+
   @@index([spotifyId])
   @@index([albumId])
 }
+
 /**
  * Genres
  */
 model DBGenre {
-  id String @id @default(uuid())
-  name String @unique
+  id      String     @id @default(uuid())
+  name    String     @unique
   artists DBArtist[]
 }
+
 /**
  * Images
  */
 model DBArtistImg {
-  id     String @id @default(uuid())
-  width  Int
-  height Int
-  url    String @unique
+  id       String   @id @default(uuid())
+  width    Int
+  height   Int
+  url      String   @unique
   artist   DBArtist @relation(fields: [artistId], references: [id])
   artistId String
+
   @@index([artistId])
 }
+
 model DBAlbumImg {
-  id     String @id @default(uuid())
-  width  Int
-  height Int
-  url    String @unique
+  id      String    @id @default(uuid())
+  width   Int
+  height  Int
+  url     String    @unique
   album   DBAlbum?  @relation(fields: [albumId], references: [id])
   albumId String?
   tracks  DBTrack[] // Implicit many-to-many relation
+
   @@index([albumId])
   @@index([url])
 }
-
-
-
 
 model DBUser {
   id        String   @id @default(uuid())
@@ -148,7 +157,7 @@ model DBSorting {
   id          String   @id @default(uuid())
   name        String
   description String?
-  config      Json // Stores the sorting configuration
+  config      Json
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -158,15 +167,32 @@ model DBSorting {
   userId String
   user   DBUser @relation(fields: [userId], references: [id])
 
-  // Artist relationship
-  artistId String
-  artist   DBArtist @relation(fields: [artistId], references: [id])
+  // Optional: Sorting can be themed by artist
+  artistId String?
+  artist   DBArtist? @relation(fields: [artistId], references: [id])
 
-  // Many-to-many with Songs
+  // Ordered tracks relation
+  entries DBSortingEntry[]
+
+  // Opposite relation for DBTrack.sortings
   tracks DBTrack[]
 
   @@index([userId])
   @@index([artistId])
+}
+
+model DBSortingEntry {
+  id        String    @id @default(uuid())
+  position  Int // 1 through 10
+  sortingId String
+  sorting   DBSorting @relation(fields: [sortingId], references: [id])
+
+  trackId String
+  track   DBTrack @relation(fields: [trackId], references: [id])
+
+  @@unique([sortingId, position]) // one position per list
+  @@unique([sortingId, trackId]) // track can appear only once per list
+  @@index([trackId])
 }
 
 model User {

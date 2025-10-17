@@ -87,47 +87,35 @@ export default async function ArtistPage({
   return (
     <main className="page flex justify-center items-center flex-col">
       <div className="mt-[5rem]">
-        <div className="relative h-[17.5rem] mb-[2rem] flex flex-row justify-between items-start rounded-md">
-          <section className="pt-[0rem] mt-[0.5rem] mb-[2rem] flex flex-row min-w-[30rem]">
-            <div className="ml-[1.5rem] pr-[5rem] my-auto">
-              <p
-                className="text-[2.75rem] font-bold break-words overflow-hidden 
-                        line-clamp-2 text-ellipsis max-w-full leading-[3.65rem]"
-                style={{
-                  display: "-webkit-box",
-                  WebkitBoxOrient: "vertical",
-                  WebkitLineClamp: 2,
-                  whiteSpace: "normal",
-                }}
-              >
-                {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
-              </p>
-              <p className="text-[1.15rem] mt-[0rem] font-semibold opacity-80 truncate max-w-[40ch] leading-[1.25rem]">
-                {artist.followers.toLocaleString()} followers
-              </p>
-              <p className="text-[0.95rem] my-[0.25rem] font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1rem]">
-                {albums.length} projects
-              </p>
-              <div className="flex">
-                <button className="mr-[0.5rem] my-[0.5rem] w-[3.25rem] h-[3.25rem] border-2 border-neutral opacity-80 flex rounded-full justify-center items-center hover:opacity-100 transition-opacity">
-                  <IconHeart className="w-8 h-8" />
-                </button>
-              </div>
-            </div>
-          </section>
-          <div className="h-full">
-            <figure className="h-full z-10 aspect-w-1 aspect-h-1">
-              <Image
-                src={artist.images[0].url}
-                width={280} 
-                height={280}
-                alt={`${artist.name} profile picture`}
-                className="h-full rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.8)] object-cover"
-                priority // Load artist image immediately
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-              />
-            </figure>
+        <div className="relative h-[17.5rem] mb-[2rem] flex flex-row gap-6">
+          {/* Artist Image */}
+          <figure className="h-full aspect-square">
+            <Image
+              src={artist.images[0].url}
+              width={280} 
+              height={280}
+              alt={`${artist.name} profile picture`}
+              className="h-full rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.8)] object-cover"
+              priority
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+            />
+          </figure>
+          
+          {/* Artist Info */}
+          <div className="my-auto pr-[5rem] min-w-[30rem]">
+            <p className="text-[2.75rem] font-bold leading-[3.65rem] line-clamp-2">
+              {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
+            </p>
+            <p className="text-[1.15rem] font-semibold opacity-80 truncate max-w-[40ch] leading-[1.25rem]">
+              {artist.followers.toLocaleString()} followers
+            </p>
+            <p className="text-[0.95rem] my-[0.25rem] font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1rem]">
+              {albums.length} projects
+            </p>
+            <button className="mt-[0.5rem] w-[3.25rem] h-[3.25rem] border-2 border-neutral opacity-80 flex rounded-full justify-center items-center hover:opacity-100 transition-opacity">
+              <IconHeart className="w-8 h-8" />
+            </button>
           </div>
         </div>
       </div>

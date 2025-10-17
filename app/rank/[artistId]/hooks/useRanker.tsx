@@ -4,60 +4,58 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import Ranker from "../objects/rank3";
 import { MatchupData } from "../objects/rank3";
 
-export function useRanker(initialTrackIds: string[]) {
+export function useRanker() {
  
     const rankerRef = useRef<Ranker | null>(null);
     const [currentMatchup, setCurrentMatchup] = useState<[string, string] | null>(null);
-    const [snapshot, setSnapshot] = useState<MatchupData | null>(null);
 
-    const [complete, setComplete] = useState(false);
+    const [reverseScoreMap, setReverseScoreMap] = useState<Map<number, Set<string>>>(new Map());
 
-    /* Initialize Ranker once on mount or when track IDs change */
-    useEffect(() => {
-        const ranker = new Ranker(initialTrackIds);
-        rankerRef.current = ranker;
-
-        const snap = ranker.getSnapshot();
-        setSnapshot(snap);
-        setCurrentMatchup(snap.currMatchup);
-    }, [initialTrackIds]);
+    const [isComplete, setIsComplete] = useState(false);
+    const [finalSorting, setFinalSorting] = useState<string[]>([]);
 
     /* 
         View API
     */
+    const initilize = useCallback((trackIds: string[]) => {
+        if(trackIds.length <= 0) {
+            throw new Error("Can't initilize ranker with no tracks")
+        }
 
-    const makeChoice = useCallback((winner: string, loser: string) => {
-        if (!rankerRef.current) return;
-
-        rankerRef.current.makeChoice(winner, loser);
-
-        const snap = rankerRef.current.getSnapshot();
-        setSnapshot(snap);
-        setCurrentMatchup(snap.currMatchup);
-    }, []);
-    const undo = useCallback(() => {
-
-    }, []);
-    const reset = useCallback((trackIds: string[]) => {
-        // Create a new Ranker instance with the provided tracks
         const ranker = new Ranker(trackIds);
+        ranker.initialize();
+        setCurrentMatchup(ranker.getCurrMatchup());
 
-        // Replace the ref with the new Ranker
         rankerRef.current = ranker;
 
-        // Get the snapshot from the new Ranker
-        const snap = ranker.getSnapshot();
+    }, [])
 
-        // Update the hook state
-        setSnapshot(snap);
-        setCurrentMatchup(snap.currMatchup);
+    const makeChoice = useCallback((winner: string, loser: string) => {
+        
+        if (!rankerRef.current) return;
+
+        rankerRef.current.makeChoice(winner, loser);    
+
+        if(rankerRef.current.checkComplete()) {
+            setFinalSorting(rankerRef.current.getSorting());
+            setIsComplete(true);
+        }
+        else {
+            const nextMatchup = rankerRef.current.getCurrMatchup();
+            setCurrentMatchup(nextMatchup);
+        }
+
+        /* DEV */
+        setReverseScoreMap(rankerRef.current.getReverseScoreMap());
+
     }, []);
 
     return {
-        snapshot,
         currentMatchup,
+        initilize,
         makeChoice,
-        reset,
-        complete
+        reverseScoreMap,
+        isComplete,
+        finalSorting
     };
 }

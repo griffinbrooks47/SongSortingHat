@@ -66,10 +66,9 @@ class PrismaWrapper {
     }
 
     /* 
-        Get an artist by Spotify ID.
+        DATABASE FETCH
     */
     public async getArtist(spotifyId: string): Promise<Artist | null> {
-
         try {
             const dbArtist = await prisma.dBArtist.findUnique({
                 where: { spotifyId },
@@ -84,11 +83,30 @@ class PrismaWrapper {
             throw error;
         }
     }
+    public async getAlbumsByArtist(spotifyArtistId: string): Promise<Album[] | null> {
+        try {
+            const albumsWithTracks = await prisma.dBAlbum.findMany({
+                where: {
+                    artists: {
+                        some: {
+                            spotifyId: spotifyArtistId
+                        },
+                    }
+                },
+                include: albumInclude,
+                orderBy: {
+                    release_date: 'desc'
+                },
+            }) satisfies DBAlbumWithRelations[];
 
-    /* 
-        Get all tracks by a given artist.
-    */
-    public async getTracksByArtist(spotifyArtistId: string): Promise<Track[] | null> {
+            return albumsWithTracks.map((album: DBAlbumWithRelations) => this.parseAlbum(album));
+
+        } catch (error) {
+            console.error("Error in getAlbumsByArtist:", error);
+            throw error;
+        }
+    }
+    public async getAllTracksByArtist(spotifyArtistId: string): Promise<Track[] | null> {
         try {
             const dbArtist = await prisma.dBArtist.findUnique({
                 where: { spotifyId: spotifyArtistId },
@@ -113,136 +131,38 @@ class PrismaWrapper {
             throw error;
         }
     }
-    
-    /*
-        Parse a DBArtist (with relations) into a universal Artist.
-    */
-    private parseArtist(dbArtist: DBArtistWithRelations): Artist {
+    public async getSinglesByArtist(spotifyArtistId: string): Promise<Track[] | null> {
+        try {
+            const dbArtist = await prisma.dBArtist.findUnique({
+                where: { spotifyId: spotifyArtistId },
+                select: {
+                    tracks: {
+                        where: {
+                            albumTitle: "",
+                        },
+                        include: trackInclude,
+                    }
+                }
+            });;
 
-        /* Package Artist Albums */
-        const albums: Album[] = (dbArtist.albums ?? []).map(album =>
-            this.parseAlbum(album)
-        );
+            /* If artist not found, return null. */
+            if (!dbArtist) return null;
 
-        /* Package Artist Tracks */
-        const tracks: Track[] = dbArtist.tracks.map((track) => 
-            this.parseTrack(track)
-        );
+            /* Parse tracks */
+            const tracks: Track[] = dbArtist.tracks.map((track: DBTrackWithRelations) => 
+                this.parseTrack(track)
+            );
 
-        /* Package Artist Imgs */
-        const images: Img[] = dbArtist.images.map((img: DBArtistImg) => ({
-            width: img.width,
-            height: img.height,
-            url: img.url,
-        }));
-
-        /* Package Artist Genres */
-        const genres: Genre[] = dbArtist.genres.map((g: DBGenre) => ({
-            id: g.id,
-            name: g.name,
-        }));
-        /* Package external urls */
-        const external_urls = {
-        };
-
-        return {
-            /* Relational data */
-            albums: albums,
-            tracks: tracks,
-            genres: genres,
-            images: images,
-
-            /* Non relational data */
-            spotifyId: dbArtist.spotifyId,
-            name: dbArtist.name,
-            external_urls: external_urls,
-            followers: dbArtist.followers,
-        };
+            return tracks;
+        } catch (error) {
+            console.error("Error in getSinglesByArtist:", error);
+            throw error;
+        }
     }
 
     /* 
-        Parse a DBAlbum (with relations) into a universal Album.
+        DATABASE CREATE
     */
-    private parseAlbum(dbAlbum: DBAlbumWithRelations): Album {
-
-        /* Package Album Artists */
-        const artists: Artist[] = dbAlbum.artists.map((artist: DBArtist) => ({
-            /* Artist Data */
-            spotifyId: artist.spotifyId,
-            name: artist.name,
-            followers: artist.followers,
-            external_urls: {
-                /* !!! Add external urls later */
-            }
-        }));
-
-        /* Package Album Imgs */
-        const images: Img[] = dbAlbum.images.map((img: DBAlbumImg) => ({
-            width: img.width,
-            height: img.height,
-            url: img.url,
-        }));
-
-        /* Package Album Tracks */
-        const tracks: Track[] = dbAlbum.tracks.map((track: DBTrackWithRelations) => 
-            this.parseTrack(track)
-        );
-
-        return ({
-            /* Album Data */
-            spotifyId: dbAlbum.spotifyId,
-            total_tracks: dbAlbum.total_tracks,
-            external_urls: {
-            },
-            title: dbAlbum.title,
-            release_date: dbAlbum.release_date,
-
-            /* Relational Data */
-            images: images,
-            artists: artists,
-            tracks: tracks,
-        })
-
-    }
-
-    /* 
-        Parse a DBTrack (with relations) into a universal Track.
-    */
-    private parseTrack(dbTrack: DBTrackWithRelations): Track {
-
-        /* Package artists. */
-        const artists: Artist[] = dbTrack.artists.map((artist: DBArtist) => ({
-            id: artist.id,
-            spotifyId: artist.spotifyId,
-            name: artist.name,
-            followers: artist.followers,
-            external_urls: {
-                /* !!! Add external urls later */
-            },
-        }));
-
-        const images: Img[] = dbTrack.images.map((img: DBAlbumImg) => ({
-            width: img.width,
-            height: img.height,
-            url: img.url,
-        }));
-
-        const album_title: string = dbTrack.albumId || "";
-
-        return (
-            {
-                spotifyId: dbTrack.spotifyId,
-                title: dbTrack.title,
-                artists: artists,
-                album_title: album_title,
-                images: images,
-            }
-        )
-    }
-    
-    /**
-     * Create a new artist with related albums, tracks, images, genres, and URLs.
-     */
     public async createArtist(artist: Artist): Promise<void> {
         
         const artistImgs: Img[] = artist.images || [];
@@ -522,5 +442,134 @@ class PrismaWrapper {
         }
         console.log(`Artist ${artist.name} created successfully.`);
     }
+
+    /* PRIVATE HELPERS - PARSING DATA */
+
+    /*
+        Parse a DBArtist (with relations) into a universal Artist.
+    */
+    private parseArtist(dbArtist: DBArtistWithRelations): Artist {
+
+        /* Package Artist Albums */
+        const albums: Album[] = (dbArtist.albums ?? []).map(album =>
+            this.parseAlbum(album)
+        );
+
+        /* Package Artist Tracks */
+        const tracks: Track[] = dbArtist.tracks.map((track) => 
+            this.parseTrack(track)
+        );
+
+        /* Package Artist Imgs */
+        const images: Img[] = dbArtist.images.map((img: DBArtistImg) => ({
+            width: img.width,
+            height: img.height,
+            url: img.url,
+        }));
+
+        /* Package Artist Genres */
+        const genres: Genre[] = dbArtist.genres.map((g: DBGenre) => ({
+            id: g.id,
+            name: g.name,
+        }));
+        /* Package external urls */
+        const external_urls = {
+        };
+
+        return {
+            /* Relational data */
+            albums: albums,
+            tracks: tracks,
+            genres: genres,
+            images: images,
+
+            /* Non relational data */
+            spotifyId: dbArtist.spotifyId,
+            name: dbArtist.name,
+            external_urls: external_urls,
+            followers: dbArtist.followers,
+        };
+    }
+
+    /* 
+        Parse a DBAlbum (with relations) into a universal Album.
+    */
+    private parseAlbum(dbAlbum: DBAlbumWithRelations): Album {
+
+        /* Package Album Artists */
+        const artists: Artist[] = dbAlbum.artists.map((artist: DBArtist) => ({
+            /* Artist Data */
+            spotifyId: artist.spotifyId,
+            name: artist.name,
+            followers: artist.followers,
+            external_urls: {
+                /* !!! Add external urls later */
+            }
+        }));
+
+        /* Package Album Imgs */
+        const images: Img[] = dbAlbum.images.map((img: DBAlbumImg) => ({
+            width: img.width,
+            height: img.height,
+            url: img.url,
+        }));
+
+        /* Package Album Tracks */
+        const tracks: Track[] = dbAlbum.tracks.map((track: DBTrackWithRelations) => 
+            this.parseTrack(track)
+        );
+
+        return ({
+            /* Album Data */
+            spotifyId: dbAlbum.spotifyId,
+            total_tracks: dbAlbum.total_tracks,
+            external_urls: {
+            },
+            title: dbAlbum.title,
+            release_date: dbAlbum.release_date,
+
+            /* Relational Data */
+            images: images,
+            artists: artists,
+            tracks: tracks,
+        })
+
+    }
+
+    /* 
+        Parse a DBTrack (with relations) into a universal Track.
+    */
+    private parseTrack(dbTrack: DBTrackWithRelations): Track {
+
+        /* Package artists. */
+        const artists: Artist[] = dbTrack.artists.map((artist: DBArtist) => ({
+            id: artist.id,
+            spotifyId: artist.spotifyId,
+            name: artist.name,
+            followers: artist.followers,
+            external_urls: {
+                /* !!! Add external urls later */
+            },
+        }));
+
+        const images: Img[] = dbTrack.images.map((img: DBAlbumImg) => ({
+            width: img.width,
+            height: img.height,
+            url: img.url,
+        }));
+
+        const album_title: string = dbTrack.albumId || "";
+
+        return (
+            {
+                spotifyId: dbTrack.spotifyId,
+                title: dbTrack.title,
+                artists: artists,
+                album_title: album_title,
+                images: images,
+            }
+        )
+    }
+
 }
 export default PrismaWrapper.getInstance();

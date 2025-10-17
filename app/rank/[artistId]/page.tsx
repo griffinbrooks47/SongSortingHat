@@ -1,4 +1,9 @@
 
+/* Auth */
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+
 /* SSH Types */
 import { Artist, Album, Track } from "@/types/artist";
 
@@ -14,27 +19,27 @@ export default async function Rank({
     params: Promise<{ artistId: string }>
 }) {
 
+    /* Check if user is logged in. */
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+    if (!session) {
+        redirect("/login");
+    }
+
     /* Artist ID */
     const artistId = (await params).artistId;
 
     /* Get the tracks by the request artist. */
-    const tracks: Track[] | null = await prisma.getTracksByArtist(artistId);
-    if(!tracks) {
-        return;
-    }
-    const filteredTracks: Track[] = [];
-
-    for(const track of tracks) {
-        if(!track.images[0]) {
-            console.log(track);
-        } else {
-            filteredTracks.push(track);
-        }
-    }
+    const albums: Album[] | null = await prisma.getAlbumsByArtist(artistId);
+    const singles: Track[] | null = await prisma.getSinglesByArtist(artistId);    
 
     return (
         <main className="flex justify-center items-center h-screen pt-[4rem]">
-            <RankerInterface tracks={filteredTracks || []}/>
+            <RankerInterface 
+                albums={albums || []}
+                singles={singles || []}
+            />
         </main>
     );
 }

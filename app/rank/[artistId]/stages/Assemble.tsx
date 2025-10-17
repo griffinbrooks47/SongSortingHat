@@ -11,6 +11,8 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel"
 
+import { IconMusic, IconPointer, IconArrowBadgeLeft, IconArrowBadgeRight } from "@tabler/icons-react";
+
 export default function Assemble(
     { tracks, onEnd }: { tracks: Track[] ,onEnd: (selectedIds: string[]) => void }
 ) {
@@ -67,51 +69,70 @@ export default function Assemble(
     }, [api]);
 
     return (
-        <div className="max-w-[75%] mb-[0rem] flex flex-col justify-center">
+        <div className="h-[calc(100vh-4rem)] w-full pt-[2rem] mb-[0rem] flex flex-col items-center">
+            <nav className="w-[50rem] flex flex-row justify-between items-center">
+                <button
+                    className="btn btn-md btn-outline bg-base-100 rounded-md"
+                    onClick={() => {
+                        // Back to Artist functionality
+                    }}
+                >
+                    Prev
+                </button>
+                <header className="flex flex-row items-center font-semibold gap-2">
+                    <IconMusic />
+                    <h1 className="text-xl">Choose Songs</h1>
+                </header>   
+                <button 
+                    className="btn btn-outline bg-secondary btn-md rounded-md"
+                    onClick={() => {
+                        onEnd(Array.from(selectedIds))
+                    }}
+                >
+                    Next
+                </button>
+            </nav>
+            <hr className="border-black opacity-10 w-[50rem] mx-auto mt-1"></hr>
+            <header className="mt-6 mb-6 flex justify-center items-center">
+                <div className="badge badge-outline badge-black bg-secondary">
+                    <IconPointer className="size-[1rem]" />
+                    <p className="text-center opacity-80 text-black pr-[0.25rem]">{`Select the songs you want to include!`}</p>
+                </div>
+            </header>
             <Carousel setApi={setApi}>
                 <CarouselContent>
                     {slides.map((trackChunk, index) => (
                         <CarouselItem className="w-fit" key={index}>
                             <MemoCarouselPage 
-                                tracks={trackChunk} 
+                                tracks={trackChunk}
                                 toggleId={toggleIdToRemove}
                             />
                         </CarouselItem>
                     ))}
                 </CarouselContent>
             </Carousel>
-            <section className="mt-8 flex flex-row items-center justify-between w-full">
-                    <button className="btn btn-outline btn-lg rounded-sm">
-                        Back to Artist
-                    </button>
-                    
-                    <div className="flex items-center gap-4">
-                        <button 
-                            className="btn btn-outline btn-md rounded-sm"
-                            onClick={() => api?.scrollPrev()}
-                            disabled={currentSlide === 0}
-                        >
-                            Prev
-                        </button>
-                        <div className="text-center text-sm text-muted-foreground">
-                            {currentSlide + 1} of {totalSlides}
-                        </div>
-                        <button 
-                            className="btn btn-outline btn-md rounded-sm"
-                            onClick={() => api?.scrollNext()}
-                            disabled={currentSlide === totalSlides - 1}
-                        >
-                            Next
-                        </button>
-                    </div>
-                    
+            
+            <section className="mt-6 flex flex-row items-center justify-center w-full">
+                <div className="flex items-center gap-4">
                     <button 
-                        className="btn btn-outline btn-lg rounded-sm"
-                        onClick={() => onEnd(Array.from(selectedIds))}
+                        className="btn btn-outline btn-md rounded-full"
+                        onClick={() => api?.scrollPrev()}
+                        disabled={currentSlide === 0}
                     >
-                        Next Stage
+                        <IconArrowBadgeLeft />
                     </button>
-                </section>
+                    <div className="text-center text-sm text-muted-foreground">
+                        {currentSlide + 1} of {totalSlides}
+                    </div>
+                    <button 
+                        className="btn btn-outline btn-md rounded-full"
+                        onClick={() => api?.scrollNext()}
+                        disabled={currentSlide === totalSlides - 1}
+                    >
+                        <IconArrowBadgeRight />
+                    </button>
+                </div>
+            </section>
         </div>
     )
 }
@@ -126,7 +147,7 @@ const MemoCarouselPage = memo(function CarouselPage({
 }) {
     return (
         <div className="h-full flex items-center justify-center py-2">
-            <main className="grid grid-cols-5 grid-rows-3 gap-4">
+            <main className="grid grid-cols-3 grid-rows-5 gap-4 place-items-center">
                 {tracks.map((track) => (
                     <SongCard 
                         key={track.spotifyId} 
@@ -152,7 +173,7 @@ const SongCard = memo(function SongCard({ track, onClick }: {
 
     return (
         <motion.div 
-            className={`relative h-[11rem] w-[11rem] cursor-pointer rounded-md ${
+            className={`relative h-[5rem] w-[16rem] cursor-pointer rounded-md ${
                 isSelected 
                     ? 'shadow-sm border-black bg-accent border-2' 
                     : 'shadow-md border-black bg-base-100 border-2'
@@ -161,27 +182,30 @@ const SongCard = memo(function SongCard({ track, onClick }: {
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
-            <div className={`relative card w-full h-full p-2 rounded-sm transition-opacity ${
+            <div className={`relative flex flex-row w-full h-full p-2 rounded-sm gap-3 transition-opacity ${
                 isSelected 
                     ? 'opacity-100' 
                     : 'opacity-100'
             }`}>
-                <figure className={`h-full w-full aspect-square rounded-sm border-2 border-black overflow-hidden`}>
+                {/* Album Cover */}
+                <figure className={`h-full aspect-square rounded-sm border-2 border-black overflow-hidden flex-shrink-0`}>
                     <Image 
                         src={track.images[0].url}
                         width={track.images[0].width}
                         height={track.images[0].height}
                         alt={track.title}
-                        className="object-cover"
+                        className="object-cover w-full h-full"
                         priority={false}
                         loading="lazy"
                     />
                 </figure>
-                <div className="flex flex-col items-center py-1">
-                    <strong className="text-sm font-bold truncate max-w-[14ch]">
+                
+                {/* Track Info */}
+                <div className="flex flex-col justify-center flex-1 min-w-0">
+                    <strong className="text-sm font-bold truncate">
                         {track.title}
                     </strong>
-                    <p className="text-xs mt-[-0.25rem] truncate max-w-[14ch]">
+                    <p className="text-xs truncate text-muted-foreground">
                         {track.artists[0].name}
                     </p>
                 </div>
@@ -189,12 +213,12 @@ const SongCard = memo(function SongCard({ track, onClick }: {
             
             {/* Framer Motion hover overlay */}
             <motion.div 
-                className="w-full h-full inset-0 bg-black/90 border-2 border-black rounded-sm absolute flex items-center justify-center"
+                className="w-full h-full inset-0 bg-black/90 border-2 border-black rounded-sm absolute flex items-center justify-center px-4"
                 initial={{ opacity: 0 }}
                 whileHover={{ opacity: 1 }}
                 transition={{ duration: 0.075 }}
             >
-                <strong className="text-sm text-white font-bold truncate max-w-[14ch]">
+                <strong className="text-sm text-white font-bold truncate">
                     {track.title}
                 </strong>
             </motion.div>
