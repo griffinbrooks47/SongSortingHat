@@ -33,13 +33,13 @@ export default async function SortingPage({
     const tracks: Track[] = sorting.tracks
 
     return (
-        <main className="min-h-[calc(100vh-4rem)] w-full pt-[4rem] mb-[2rem] flex flex-col items-center">
+        <main className="min-h-[calc(100vh-4rem)] w-full pt-16 mb-8 flex flex-col items-center">
             {/* Artist Header */}
-            <section className="relative w-full mt-[4rem] mb-[2rem] flex flex-row justify-center items-center">
+            <section className="relative w-full mt-16 mb-8 flex flex-row justify-center items-center">
                 {/* Artist Image */}
                 {sorting.artist.images && sorting.artist.images.length > 0 && (
                     <figure className="avatar">
-                        <div className="mask mask-squircle h-[11rem]">
+                        <div className="mask mask-squircle h-44">
                             <Image
                                 src={sorting.artist.images[0].url}
                                 width={280}
@@ -52,8 +52,8 @@ export default async function SortingPage({
                 )}
 
                 {/* Artist Info */}
-                <section className="px-[3rem]">
-                    <div className="mb-[0.25rem] text-[2.75rem] font-bold leading-[3.25rem] line-clamp-2">
+                <section className="px-12">
+                    <div className="mb-1 text-[2.75rem] font-bold leading-13 line-clamp-2">
                         {sorting.artist.name.length > 40
                             ? sorting.artist.name.slice(0, 40) + "..."
                             : sorting.artist.name}
@@ -73,16 +73,16 @@ export default async function SortingPage({
                 </section>
             </section>
 
-            <hr className="border-black opacity-10 w-[50rem] mx-auto"></hr>
+            <hr className="border-black opacity-10 w-200 mx-auto"></hr>
 
             {/* Sorted Tracks List */}
-            <section className="w-[50rem] flex flex-col items-center gap-3 pb-8 mt-8">
+            <section className="w-200 flex flex-col items-center gap-3 pb-8 mt-8">
                 {tracks.map((track, index) => (
                     <div
                         key={track.spotifyId}
                         className="flex items-center gap-3"
                     >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-base-200 font-bold text-sm flex-shrink-0">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-base-200 font-bold text-sm shrink-0">
                             {index + 1}
                         </div>
                         <SongCard track={track} />
@@ -95,10 +95,10 @@ export default async function SortingPage({
 
 function SongCard({ track }: { track: Track }) {
     return (
-        <div className="relative h-[4.5rem] w-[35rem] flex-shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1">
+        <div className="relative h-18 w-140 shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1">
             {/* Album Cover */}
             {track.images && track.images.length > 0 && (
-                <figure className="h-full aspect-square rounded-sm flex-shrink-0 overflow-hidden">
+                <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
                     <Image
                         src={track.images[0].url}
                         width={track.images[0].width}

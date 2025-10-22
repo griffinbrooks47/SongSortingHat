@@ -18,8 +18,8 @@ export default function Sorting(
     };
 
     return (
-        <main className="min-h-[calc(100vh-4rem)] w-full pt-[2rem] mb-[0rem] flex flex-col items-center">
-            <nav className="w-[50rem] flex flex-row justify-between items-center">
+        <main className="min-h-[calc(100vh-4rem)] w-full pt-8 mb-0 flex flex-col items-center">
+            <nav className="w-200 flex flex-row justify-between items-center">
                 <button
                     className="btn btn-md btn-outline btn-disabled bg-base-100 rounded-md"
                     onClick={() => {
@@ -39,15 +39,15 @@ export default function Sorting(
                     Done
                 </button>
             </nav>
-            <hr className="border-black opacity-10 w-[50rem] mx-auto mt-1"></hr>
+            <hr className="border-black opacity-10 w-200 mx-auto mt-1"></hr>
             <header className="mt-6 mb-6 flex justify-center items-center">
                 <div className="badge badge-outline badge-black bg-primary">
-                    <IconPointerFilled className="size-[1rem]" />
-                    <p className="text-center opacity-80 text-black pr-[0.25rem]">{`Drag to rearrange!`}</p>
+                    <IconPointerFilled className="size-4" />
+                    <p className="text-center opacity-80 text-black pr-1">{`Drag to rearrange!`}</p>
                 </div>
             </header>
          
-            <section className="w-[50rem] flex flex-col gap-3 pb-8 flex flex-col items-center">
+            <section className="w-200 flex flex-col gap-3 pb-8 flex flex-col items-center">
                 <Reorder.Group 
                     axis="y" 
                     values={orderedTracks} 
@@ -60,7 +60,7 @@ export default function Sorting(
                             value={track}
                             className="flex items-center gap-3 mr-8"
                         >
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-base-200 font-bold text-sm flex-shrink-0">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-base-200 font-bold text-sm shrink-0">
                                 {index + 1}
                             </div>
                             <SongCard trackId={track.spotifyId} track={track} />
@@ -78,10 +78,10 @@ function SongCard(
     return (
         <div 
             key={trackId}
-            className="relative h-[4.5rem] w-[35rem] flex-shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1"
+            className="relative h-18 w-140 shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1"
         >
             {/* Album Cover */}
-            <figure className="h-full aspect-square rounded-sm flex-shrink-0 overflow-hidden">
+            <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
                 <Image 
                     src={track.images[0].url}
                     width={track.images[0].width}

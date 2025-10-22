@@ -32,7 +32,7 @@ export default function ChooseAlbums(
     }, [albums])
 
     return (
-        <main className="h-[calc(100vh-4rem)] pt-[2rem]">
+        <main className="h-[calc(100vh-4rem)] pt-8">
             <nav className="rounded-md flex flex-row flex justify-between items-center">
                 <button 
                     className="btn btn-md btn-outline btn-disabled bg-base-100 rounded-md"
@@ -52,7 +52,7 @@ export default function ChooseAlbums(
                     Next
                 </button>
             </nav>
-            <hr className="border-black opacity-10 w-[100%] mx-auto mt-1"></hr>
+            <hr className="border-black opacity-10 w-full mx-auto mt-1"></hr>
             <header className="mt-6 mb-6 flex justify-center items-center">
                 <div className="badge badge-outline badge-black bg-warning">
                     <svg className="size-[1em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="currentColor"><rect x="1.972" y="11" width="20.056" height="2" transform="translate(-4.971 12) rotate(-45)" fill="currentColor" strokeWidth={0}></rect><path d="m12,23c-6.065,0-11-4.935-11-11S5.935,1,12,1s11,4.935,11,11-4.935,11-11,11Zm0-20C7.038,3,3,7.037,3,12s4.038,9,9,9,9-4.037,9-9S16.962,3,12,3Z" strokeWidth={0} fill="currentColor"></path></g></svg>
@@ -91,7 +91,7 @@ export const AlbumCard = memo(function AlbumCard({
 
     return (
         <motion.div
-            className={`relative h-[12rem] w-[12rem] cursor-pointer rounded-md border-2 ${
+            className={`relative h-48 w-48 cursor-pointer rounded-md border-2 ${
                 isSelected
                     ? "border-black bg-base-100 shadow-md"
                     : "border-black/10 bg-base-100/50"
@@ -124,7 +124,7 @@ export const AlbumCard = memo(function AlbumCard({
                     }`}>
                         {album.title}
                     </strong>
-                    <p className={`text-xs mt-[-0.25rem] truncate max-w-[40ch] ${
+                    <p className={`text-xs -mt-1 truncate max-w-[40ch] ${
                         isSelected ? "opacity-100" : "opacity-30"
                     }`}>
                         {album.artists.map(artist => artist.name).join(', ')}

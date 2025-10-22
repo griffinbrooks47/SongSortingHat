@@ -11,19 +11,19 @@ export default function Navbar() {
     /* Default page is global. */
     const [page, setPage] = useState<number>(0);
 
-    const buttonStyle = "h-[2.5rem] px-[0.75rem] mx-[0.25rem] flex flex-row cursor-pointer justify-center items-center"
+    const buttonStyle = "h-10 px-3 mx-1 flex flex-row cursor-pointer justify-center items-center"
 
     return (
         <div className="flex flex-row justify-between">
             <section className="flex">
-                <ul className="bg-base-100 rounded-md flex flex-row py-[0.25rem] shadow-sm">
+                <ul className="bg-base-100 rounded-md flex flex-row py-1 shadow-sm">
                     <a className={`rounded-md ${page == 0 ? "bg-base-200" : ""} ${buttonStyle}`}
                         onClick={() => {
                             setPage(0);
                         }}
                     >
                         <IconWorld className={`${iconStyle}`} />
-                        <div className="font-semibold mx-[0.25rem]">Global</div>
+                        <div className="font-semibold mx-1">Global</div>
                     </a>
             
 
@@ -33,27 +33,27 @@ export default function Navbar() {
                         }}
                     >
                         <IconUsers className={`${iconStyle}`} />
-                        <div className="font-semibold mx-[0.25rem]">Friends</div>
+                        <div className="font-semibold mx-1">Friends</div>
                     </a>
                 </ul>
             </section>
             <a className={`${buttonStyle} bg-accent border-neutral border-2 opacity-90 rounded-md shadow-sm`}>
-                <IconCirclePlus className="h-[1.25rem] w-[1.25rem]" />
-                <div className="font-semibold mx-[0.25rem]">Create</div>
+                <IconCirclePlus className="h-5 w-5" />
+                <div className="font-semibold mx-1">Create</div>
             </a>
         </div>
     )
 }
 
 /* 
-<ul className="bg-base-100 rounded-md flex flex-row py-[0.25rem] shadow-sm mx-[0.25rem]">
+<ul className="bg-base-100 rounded-md flex flex-row py-1 shadow-sm mx-1">
                     <a className={`rounded-md ${page == 2 ? "bg-base-200" : ""} ${buttonStyle}`}
                         onClick={() => {
                             //setPage(2);
                         }}
                     >
                         <IconUsersGroup className={`${iconStyle}`} />
-                        <div className="font-semibold mx-[0.25rem]">Wiess</div>
+                        <div className="font-semibold mx-1">Wiess</div>
                     </a>
                     <a className={`rounded-md ${page == 3 ? "bg-base-200" : ""} ${buttonStyle}`}
                         onClick={() => {
@@ -61,7 +61,7 @@ export default function Navbar() {
                         }}
                     >
                         <IconUsersGroup className={`${iconStyle}`} />
-                        <div className="font-semibold mx-[0.25rem]">Rice</div>
+                        <div className="font-semibold mx-1">Rice</div>
                     </a>
                 </ul>
 */

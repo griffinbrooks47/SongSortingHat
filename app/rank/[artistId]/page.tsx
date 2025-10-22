@@ -35,7 +35,7 @@ export default async function Rank({
     const singles: Track[] | null = await prisma.getSinglesByArtist(artistId);    
 
     return (
-        <main className="flex justify-center items-center h-screen pt-[4rem]">
+        <main className="flex justify-center items-center h-screen pt-16">
             <RankerInterface 
                 artistSpotifyId={artistId}
                 albums={albums || []}

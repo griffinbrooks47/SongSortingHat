@@ -45,7 +45,7 @@ const AlbumCard = memo(({ image, name, priority = false, onClick, className = ""
 
     return (
         <motion.div 
-            className={`w-[12rem] h-[12rem] overflow-hidden relative cursor-pointer rounded-sm shadow-md hover:shadow-xl transition-shadow duration-300 group ${className}`}
+            className={`w-48 h-48 overflow-hidden relative cursor-pointer rounded-sm shadow-md hover:shadow-xl transition-shadow duration-300 group ${className}`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={onClick}
@@ -77,7 +77,7 @@ const AlbumCard = memo(({ image, name, priority = false, onClick, className = ""
                 
                 {/* Loading skeleton */}
                 {!imageLoaded && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+                    <div className="absolute inset-0 bg-linear-to-br from-gray-200 to-gray-300 animate-pulse" />
                 )}
             </div>
 

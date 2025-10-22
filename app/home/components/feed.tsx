@@ -24,7 +24,7 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
     const user: TUser = sorting.user
 
     return (
-        <div className="w-full rounded-md card-sm py-[0.5rem]">
+        <div className="w-full rounded-md card-sm py-2">
             <div className="flex flex-col">
                 {/* User Info */}
                 <div 
@@ -34,7 +34,7 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
                             <IconUser className="h-full w-full"/>
                         </div>
                     </div>
-                    <div className="h-full flex flex-row items-center px-[1rem]">
+                    <div className="h-full flex flex-row items-center px-4">
                         <h2 className="text-[1rem]">
                             <Link href={`/user/${user.id}`} className="font-bold">{user.username}</Link>
                             {" sorted "}
@@ -44,10 +44,10 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
                 </div>
 
                 {/* Top 3 Tracks */}
-                <div className="flex flex-col gap-2 mt-4 px-[0.5rem]">
+                <div className="flex flex-col gap-2 mt-4 px-2">
                     {sorting.tracks.slice(0, 3).map((track, index) => (
                         <div key={track.id || index} className="flex items-center gap-3">
-                            <span className="text-lg font-bold text-black w-[1rem] flex-shrink-0">{index + 1}</span>
+                            <span className="text-lg font-bold text-black w-4 shrink-0">{index + 1}</span>
                             <div className="flex-1">
                                 <SongCard track={track} />
                             </div>
@@ -69,10 +69,10 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
 
 function SongCard({ track }: { track: Track }) {
     return (
-        <div className="relative h-[4.5rem] pr-auto flex-shrink-0 rounded-sm border-2 border-black bg-base-100 overflow-hidden flex flex-row items-center gap-2 p-1">
+        <div className="relative h-18 pr-auto shrink-0 rounded-sm border-2 border-black bg-base-100 overflow-hidden flex flex-row items-center gap-2 p-1">
             {/* Album Cover */}
             {track.images && track.images.length > 0 && (
-                <figure className="h-full aspect-square rounded-sm flex-shrink-0 overflow-hidden">
+                <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
                     <Image
                         src={track.images[0].url}
                         width={track.images[0].width}

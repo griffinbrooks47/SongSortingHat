@@ -48,7 +48,7 @@ const ArtistCard = memo(({ artist, img, width, height, priority = false, classNa
 
   return (
     <motion.div 
-      className={`w-[15rem] h-[15rem] overflow-hidden cursor-pointer relative rounded-sm shadow-sm hover:shadow-xl transition-shadow duration-300 ${className}`}
+      className={`w-60 h-60 overflow-hidden cursor-pointer relative rounded-sm shadow-sm hover:shadow-xl transition-shadow duration-300 ${className}`}
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -82,7 +82,7 @@ const ArtistCard = memo(({ artist, img, width, height, priority = false, classNa
         
         {/* Loading skeleton */}
         {!imageLoaded && (
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+          <div className="absolute inset-0 bg-linear-to-br from-gray-200 to-gray-300 animate-pulse" />
         )}
       </div>
              

@@ -74,8 +74,8 @@ export default function Assemble(
     }, [api]);
 
     return (
-        <div className="h-[calc(100vh-4rem)] w-full pt-[2rem] mb-[0rem] flex flex-col items-center">
-            <nav className="w-[50rem] flex flex-row justify-between items-center">
+        <div className="h-[calc(100vh-4rem)] w-full pt-8 mb-0 flex flex-col items-center">
+            <nav className="w-200 flex flex-row justify-between items-center">
                 <button
                     className="btn btn-md btn-outline btn-disabled bg-base-100 rounded-md"
                     onClick={() => {
@@ -110,11 +110,11 @@ export default function Assemble(
                 
                 }
             </nav>
-            <hr className="border-black opacity-10 w-[50rem] mx-auto mt-1"></hr>
+            <hr className="border-black opacity-10 w-200 mx-auto mt-1"></hr>
             <header className="mt-6 mb-6 flex justify-center items-center">
                 <div className="badge badge-outline badge-black bg-secondary">
-                    <IconPointerFilled className="size-[1rem]" />
-                    <p className="text-center opacity-80 text-black pr-[0.25rem]">{`Select the songs you want to include!`}</p>
+                    <IconPointerFilled className="size-4" />
+                    <p className="text-center opacity-80 text-black pr-1">{`Select the songs you want to include!`}</p>
                 </div>
             </header>
             <Carousel setApi={setApi}>
@@ -191,7 +191,7 @@ const SongCard = memo(function SongCard({ track, onClick }: {
 
     return (
         <motion.div 
-            className={`relative h-[5rem] w-[16rem] cursor-pointer rounded-md ${
+            className={`relative h-20 w-[16rem] cursor-pointer rounded-md ${
                 isSelected 
                     ? 'shadow-sm border-black bg-accent border-2' 
                     : 'shadow-md border-black bg-base-100 border-2'
@@ -206,7 +206,7 @@ const SongCard = memo(function SongCard({ track, onClick }: {
                     : 'opacity-100'
             }`}>
                 {/* Album Cover */}
-                <figure className={`h-full aspect-square rounded-sm border-2 border-black overflow-hidden flex-shrink-0`}>
+                <figure className={`h-full aspect-square rounded-sm border-2 border-black overflow-hidden shrink-0`}>
                     <Image 
                         src={track.images[0].url}
                         width={track.images[0].width}

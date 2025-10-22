@@ -21,7 +21,7 @@ export const SortingCard = memo(function AlbumCard({
     return (
         <Link
             href={`/sorting/${sorting.id}`}
-            className={`relative h-[12rem] w-[12rem] cursor-pointer rounded-md border-2 ${
+            className={`relative h-48 w-48 cursor-pointer rounded-md border-2 ${
                 isSelected
                     ? "border-black bg-base-100 shadow-md"
                     : "border-black/10 bg-base-100/50"

@@ -17,7 +17,7 @@ export default function Explore() {
 
     return (
         <main className="flex justify-center items-center flex-col">
-            <p className="mt-[7.5rem]">Logo</p>
+            <p className="mt-30">Logo</p>
             <p className="text-[2rem] font-semibold">Explore Artists</p>
             <p>Subtext</p>
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -25,10 +25,10 @@ export default function Explore() {
                     {...register("searchString")} 
                     type="text" 
                     placeholder="Search for an artist..." 
-                    className="input input-bordered input-ghost input-md w-[40rem] mb-[0.5rem] mt-[1rem]"
+                    className="input input-bordered input-ghost input-md w-160 mb-2 mt-4"
                 />
             </form>
-            <section className="favorites w-[70%] mt-[0.5rem]">
+            <section className="favorites w-[70%] mt-2">
                 <p>My Favorites</p>
                 <div>
 

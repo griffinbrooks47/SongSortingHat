@@ -110,10 +110,10 @@ export default async function ArtistPage({
     <main className="page w-fit flex flex-col items-center mx-auto">
 
       {/* Artist Data */}
-      <section className="relative w-full mt-[4rem] mb-[2rem] flex flex-row justify-center items-center">
+      <section className="relative w-full mt-16 mb-8 flex flex-row justify-center items-center">
         {/* Artist Image */}
         <figure className="avatar">
-          <div className="mask mask-squircle h-[11rem]">
+          <div className="mask mask-squircle h-44">
             <Image
               src={images?.[0]?.url ?? '/images/placeholder-280.png'}
               width={280} 
@@ -127,12 +127,12 @@ export default async function ArtistPage({
         </figure>
         
         {/* Artist Info */}
-        <section className="px-[3rem]">
+        <section className="px-12">
           {/* Artist Name */}
           
           {/* Artist Metadata */}
           <div className="">
-            <div className="mb-[0.25rem] text-[2.75rem] font-bold leading-[3.25rem] line-clamp-2">
+            <div className="mb-1 text-[2.75rem] font-bold leading-13 line-clamp-2">
               {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
             </div>
             <p className="text-[1.15rem] font-semibold uppercase opacity-80 truncate max-w-[40ch] leading-[1.15rem]">
@@ -155,10 +155,10 @@ export default async function ArtistPage({
               </span>
               {' followers'}
             </p>
-            <p className="text-[0.95rem] my-[0.25rem] font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1.15rem]">
+            <p className="text-[0.95rem] my-1 font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1.15rem]">
               {albums.length} projects
             </p>
-            <button className="my-[0.25rem] btn btn-outline btn-circle">
+            <button className="my-1 btn btn-outline btn-circle">
               <IconHeart />
             </button>
           </div>
@@ -168,7 +168,7 @@ export default async function ArtistPage({
       </section>
 
       {/* Navigation */}
-      <ul className="w-full my-[2rem] flex justify-center items-center">
+      <ul className="w-full my-8 flex justify-center items-center">
         <li>
           <Link 
             href={`/rank/${artist.spotifyId}`} 

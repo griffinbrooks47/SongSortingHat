@@ -49,8 +49,8 @@ export default function Rank(
     }
 
     return (
-    <main className="h-[calc(100vh-4rem)] w-full pt-[2rem] mb-[0rem] flex flex-col items-center">
-        <nav className="w-[50rem] flex flex-row justify-between items-center">
+    <main className="h-[calc(100vh-4rem)] w-full pt-8 mb-0 flex flex-col items-center">
+        <nav className="w-200 flex flex-row justify-between items-center">
             <button
                 className="btn btn-md btn-outline btn-disabled bg-base-100 rounded-md"
                 onClick={() => {
@@ -69,11 +69,11 @@ export default function Rank(
                 Next
             </button>
         </nav>
-        <hr className="border-black opacity-10 w-[50rem] mx-auto mt-1"></hr>
+        <hr className="border-black opacity-10 w-200 mx-auto mt-1"></hr>
         <header className="mt-6 mb-6 flex justify-center items-center">
             <div className="badge badge-outline badge-black bg-primary">
-                <IconPointerFilled className="size-[1rem]" />
-                <p className="text-center opacity-80 text-black pr-[0.25rem]">{`Choose the better song!`}</p>
+                <IconPointerFilled className="size-4" />
+                <p className="text-center opacity-80 text-black pr-1">{`Choose the better song!`}</p>
             </div>
         </header>
         {isComplete && 
@@ -85,7 +85,7 @@ export default function Rank(
                 {/* Rank Choices */}
                 <menu className="flex gap-4">
                     <motion.button
-                        className="relative h-[20rem] w-[16rem] cursor-pointer rounded-md shadow-md border-black bg-base-100 border-2 p-2"
+                        className="relative h-80 w-[16rem] cursor-pointer rounded-md shadow-md border-black bg-base-100 border-2 p-2"
                         onClick={() => {
                             makeChoice(currentMatchup[0], currentMatchup[1])
                         }}
@@ -109,7 +109,7 @@ export default function Rank(
                                 <strong className="text-sm font-bold truncate max-w-[14ch]">
                                     {track1.title}
                                 </strong>
-                                <p className="text-xs mt-[-0.25rem] truncate max-w-[40ch]">
+                                <p className="text-xs -mt-1 truncate max-w-[40ch]">
                                     {track2.artists.map(artist => artist.name).join(', ')}
                                 </p>
                             </div>
@@ -129,7 +129,7 @@ export default function Rank(
                     </motion.button>
 
                     <motion.button
-                        className="relative h-[20rem] w-[16rem] cursor-pointer rounded-md shadow-md border-black bg-base-100 border-2 p-2"
+                        className="relative h-80 w-[16rem] cursor-pointer rounded-md shadow-md border-black bg-base-100 border-2 p-2"
                         onClick={() => {
                             makeChoice(currentMatchup[1], currentMatchup[0])
                         }}
@@ -153,7 +153,7 @@ export default function Rank(
                                 <strong className="text-sm font-bold truncate max-w-[14ch]">
                                     {track2.title}
                                 </strong>
-                                <p className="text-xs mt-[-0.25rem] truncate max-w-[14ch]">
+                                <p className="text-xs -mt-1 truncate max-w-[14ch]">
                                     {track2.artists[0].name}
                                 </p>
                             </div>
@@ -174,7 +174,7 @@ export default function Rank(
                 </menu>
 
                 {/* Current Sorting */}
-                <footer className="w-[50rem] mt-[2rem] flex flex-col gap-2 p-4 bg-base-200 rounded-md">
+                <footer className="w-200 mt-8 flex flex-col gap-2 p-4 bg-base-200 rounded-md">
                     <h3 className="text-center font-bold text-lg">Current Rankings</h3>
                     <hr className="w-full border-black opacity-10 mx-auto mt-1"></hr>
                     <div className="flex flex-col gap-3">
@@ -247,10 +247,10 @@ function SongCard(
     return (
         <div 
             key={trackId}
-            className="relative h-[4rem] w-[9rem] flex-shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1"
+            className="relative h-16 w-36 shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1"
         >
             {/* Album Cover */}
-            <figure className="h-full aspect-square rounded-sm flex-shrink-0 overflow-hidden">
+            <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
                 <Image 
                     src={track.images[0].url}
                     width={track.images[0].width}

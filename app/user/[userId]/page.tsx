@@ -43,7 +43,7 @@ export default async function UserProfile({
     return (
         <main className="page w-fit flex flex-col items-center mx-auto">
             {/* User Profile Header */}
-            <section className="relative w-full mt-[4rem] mb-[2rem] flex flex-row justify-center items-center">
+            <section className="relative w-full mt-16 mb-8 flex flex-row justify-center items-center">
                 {/* User Avatar */}
                 <div className="avatar h-30 w-30">
                     <div className="p-4 ring-black ring-offset-base-100 bg-secondary w-full rounded-full ring-2 ring-offset-2">
@@ -52,12 +52,12 @@ export default async function UserProfile({
                 </div>
                 
                 {/* User Info */}
-                <section className="px-[3rem] flex flex-col justify-between items-start gap-4">
+                <section className="px-12 flex flex-col justify-between items-start gap-4">
                     <div className="">
-                        <div className="text-[2.25rem] m-0 font-bold leading-[3rem] line-clamp-2">
+                        <div className="text-[2.25rem] m-0 font-bold leading-12 line-clamp-2">
                             {user.name}
                         </div>
-                        <div className="text-[1.25rem] text-gray-700 leading-[1.5rem] line-clamp-2">
+                        <div className="text-[1.25rem] text-gray-700 leading-6 line-clamp-2">
                             @{user.username}
                         </div>
                     </div>
@@ -77,10 +77,10 @@ export default async function UserProfile({
             </section>
         
             {/* Sortings Section */}
-            <section className="mt-[4rem] flex flex-col items-start">
+            <section className="mt-16 flex flex-col items-start">
                 <h1 className="text-xl font-bold">Sortings</h1>
-                <hr className="border-black opacity-10 w-[50rem] mt-1"></hr>
-                <div className="my-[1rem] grid grid-cols-4 gap-4">
+                <hr className="border-black opacity-10 w-200 mt-1"></hr>
+                <div className="my-4 grid grid-cols-4 gap-4">
                     {sortings && sortings.map((sorting) => (
                         <SortingCard 
                             key={sorting.artistId}

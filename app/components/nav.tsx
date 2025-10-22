@@ -50,17 +50,17 @@ export default function Navbar() {
   const userId = session?.user?.id;
 
   return (
-      <nav className="fixed top-0 px-[1.5rem] h-[4rem] w-full py-[0.5rem] bg-base-100 flex justify-between items-center z-10 shadow-sm">
-        <div className='flex justify-center items-center ml-[1.5rem]'>
-          <Link href="/home" className="mr-[1.5rem] pb-[1px] cursor-pointer font-semibold">
+      <nav className="fixed top-0 px-6 h-16 w-full py-2 bg-base-100 flex justify-between items-center z-10 shadow-sm">
+        <div className='flex justify-center items-center ml-6'>
+          <Link href="/home" className="mr-6 pb-px cursor-pointer font-semibold">
             Song Sorting Hat
           </Link>
           <button 
-            className="opacity-100 mx-[0.75rem] cursor-pointer"
+            className="opacity-100 mx-3 cursor-pointer"
             onClick={() => setSearchToggled(true)}
             aria-label="Search"
           >
-            <IconSearch className="h-[1.5rem] w-[1.5rem] pt-[2px]"/>
+            <IconSearch className="h-6 w-6 pt-[2px]"/>
           </button>
         </div>
 
@@ -69,15 +69,15 @@ export default function Navbar() {
         ) : authenticated ? (
           <div className='flex justify-center items-center'>
             
-            <Link href={`/user/${userId}`} className='mx-[1.25rem] cursor-pointer font-semibold flex items-center'>
+            <Link href={`/user/${userId}`} className='mx-5 cursor-pointer font-semibold flex items-center'>
               <IconSitemap />
-              <p className='mx-[0.5rem]'>My Sortings</p>
+              <p className='mx-2'>My Sortings</p>
             </Link>
             
             
             {/* Profile Dropdown */}
             <button 
-              className='ml-[0.5rem] mr-[0.5rem] h-[2.25rem] w-[2.25rem] opacity-90'
+              className='ml-2 mr-2 h-9 w-9 opacity-90'
               popoverTarget="profile-popover"
               style={{ anchorName: "--profile-anchor" } as React.CSSProperties}
             >
@@ -89,7 +89,7 @@ export default function Navbar() {
             </button>
 
             <ul 
-              className="dropdown menu w-[18rem] mt-[1rem] mr-[-2.25rem] pt-[1rem] bg-base-100 rounded-md shadow-sm border-black border-2 [&_li>*]:rounded-sm [&_li>*]:mx-0"
+              className="dropdown menu w-[18rem] mt-4 -mr-9 pt-4 bg-base-100 rounded-md shadow-sm border-black border-2 [&_li>*]:rounded-sm [&_li>*]:mx-0"
               popover="auto"
               id="profile-popover"
               style={{ 
@@ -100,7 +100,7 @@ export default function Navbar() {
               {/* View Profile */}
               <Link 
                 href={`/user/${userId}`}
-                className="h-[3.5rem] mx-[0.75rem] flex flex-row items-center gap-4">
+                className="h-14 mx-3 flex flex-row items-center gap-4">
                 <button 
                   className='h-full opacity-90'
                   popoverTarget="profile-popover"
@@ -118,13 +118,13 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              <hr className="border-black opacity-10 w-[100%] mx-auto my-[0.5rem]"></hr>
+              <hr className="border-black opacity-10 w-full mx-auto my-2"></hr>
 
-              <li className="h-[2.5rem] w-ful">
+              <li className="h-10 w-ful">
                 <a className="h-full w-full flex items-center"
                   onClick={signOut}
                 >
-                  <IconLogout2 className="h-[90%] mx-[0.25rem]" />
+                  <IconLogout2 className="h-[90%] mx-1" />
                   Sign out
                 </a>
               </li>
@@ -135,10 +135,10 @@ export default function Navbar() {
           </div>
         ) : (
           <div className='flex justify-center items-center'>
-            <Link href='/login' className="btn btn-default mx-[0.5rem] rounded-lg">
+            <Link href='/login' className="btn btn-default mx-2 rounded-lg">
               Sign up
             </Link>
-            <Link href='/login' className="btn btn-outline rounded-lg mx-[0.5rem]">
+            <Link href='/login' className="btn btn-outline rounded-lg mx-2">
               Log in
             </Link>
           </div>
@@ -151,11 +151,11 @@ export default function Navbar() {
               submit={() => setSearchToggled(false)} 
             />
             <button 
-              className="absolute right-[1rem] h-full top-0 flex items-center cursor-pointer"
+              className="absolute right-4 h-full top-0 flex items-center cursor-pointer"
               onClick={() => setSearchToggled(false)}
               aria-label="Close search"
             >
-              <IconX className="h-[2rem] w-[2rem] opacity-70" />
+              <IconX className="h-8 w-8 opacity-70" />
             </button>
           </nav>
         )}

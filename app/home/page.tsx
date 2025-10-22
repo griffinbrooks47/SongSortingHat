@@ -25,15 +25,15 @@ export default async function Home() {
 
   return (
     <main className="min-h-[calc(100vh-4rem)] page relative bg-base-200 flex justify-center items-start">
-      <section className="w-[50rem] flex flex-col justify-center">
-          <nav className="sticky top-[4rem] w-full z-10 bg-base-200 pt-[1rem]">
+      <section className="w-200 flex flex-col justify-center">
+          <nav className="sticky top-16 w-full z-10 bg-base-200 pt-4">
               <Navbar />
-              <hr className="border-black opacity-10 w-[100%] mx-auto mt-[5px]"></hr>
+              <hr className="border-black opacity-10 w-full mx-auto mt-[5px]"></hr>
           </nav>
-          <main className="relative pt-[1rem]">
-            <nav className="h-[3rem] rounded-md mb-[1.5rem]">
+          <main className="relative pt-4">
+            <nav className="h-12 rounded-md mb-6">
               <p className="font-bold text-[1.35rem]">{"Welcome back!"}</p>
-              <p className="mb-[0.5rem] opacity-80">{"Here's what people are sorting..."}</p>
+              <p className="mb-2 opacity-80">{"Here's what people are sorting..."}</p>
             </nav>
             <Feed 
               sortings={feedSortings}

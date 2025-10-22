@@ -34,12 +34,12 @@ export const SearchBar = ({ placeholder, submit }: { placeholder: string, submit
                     placeholder={placeholder}
                     defaultValue={searchParams.get('query')?.toString()}
                     className=" 
-                            w-full h-[4rem] pl-[5rem] 
+                            w-full h-16 pl-20 
                             text-[1rem] bg-base-300
                             focus:outline-none focus:ring-0 focus:border-transparent
                         "
                 />
-                <button className="absolute left-[2rem] opacity-80">
+                <button className="absolute left-8 opacity-80">
                     <IconSearch className=""/>
                 </button>
             </div>

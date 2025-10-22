@@ -33,12 +33,12 @@ export const SearchBar = ({ placeholder }: { placeholder: string }) => {
                     placeholder={placeholder}
                     defaultValue={searchParams.get('query')?.toString()}
                     className=" 
-                            w-full h-[2.75rem] mb-[1rem] mt-[1rem] pl-[3.5rem] 
+                            w-full h-11 mb-4 mt-4 pl-14 
                             rounded-md text-[1rem] bg-base-100 shadow-sm
                             focus:outline-none focus:ring-0 focus:border-transparent
                         "
                 />
-                <button className="absolute left-[1rem] opacity-30">
+                <button className="absolute left-4 opacity-30">
                     <IconSearch className=""/>
                 </button>
             </div>
