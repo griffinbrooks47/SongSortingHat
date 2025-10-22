@@ -50,7 +50,7 @@
     "@types/react-dom": "19.1.9",
     "@types/react-slick": "^0.23.13",
     "@types/underscore": "^1.13.0",
-    "daisyui": "^5.1.8",
+    "daisyui": "^5.3.7",
     "eslint": "^9.35.0",
     "eslint-config-next": "15.5.4",
     "postcss": "^8",
