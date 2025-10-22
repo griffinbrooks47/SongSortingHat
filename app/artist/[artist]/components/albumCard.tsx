@@ -34,8 +34,8 @@ const AlbumCard = memo(({ image, name, priority = false, onClick, className = ""
     // Animation variants for better performance
     const cardVariants = {
         initial: { scale: 1 },
-        hover: { scale: 1.05 },
-        tap: { scale: 0.95 }
+        hover: { scale: 1.01 },
+        tap: { scale: 1 }
     };
 
     const overlayVariants = {
@@ -45,7 +45,7 @@ const AlbumCard = memo(({ image, name, priority = false, onClick, className = ""
 
     return (
         <motion.div 
-            className={`w-[15rem] h-[15rem] overflow-hidden relative cursor-pointer rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 group ${className}`}
+            className={`w-[12rem] h-[12rem] overflow-hidden relative cursor-pointer rounded-sm shadow-md hover:shadow-xl transition-shadow duration-300 group ${className}`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={onClick}
@@ -112,29 +112,7 @@ const AlbumCard = memo(({ image, name, priority = false, onClick, className = ""
                 </p>
             </motion.div>
 
-            {/* Optional play/info icon on hover */}
-            <motion.div
-                className="absolute top-3 right-3 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center pointer-events-none"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ 
-                    opacity: isHovered ? 1 : 0,
-                    scale: isHovered ? 1 : 0.8
-                }}
-                transition={{ duration: 0.2, delay: 0.1 }}
-            >
-                {/* Play icon */}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                    <path d="M8 5.14v14l11-7-11-7z"/>
-                </svg>
-            </motion.div>
-
-            {/* Subtle border highlight on hover */}
-            <motion.div
-                className="absolute inset-0 border-2 border-white/30 rounded-lg pointer-events-none"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isHovered ? 1 : 0 }}
-                transition={{ duration: 0.3 }}
-            />
+           
         </motion.div>
     );
 });

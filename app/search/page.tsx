@@ -3,6 +3,11 @@ import { SearchBar } from "./components/search";
 
 import { Artist } from "@/types/artist";
 
+/* Auth */
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+
 interface SpotifySearchResponse {
     artists: {
         items: Artist[];
@@ -14,6 +19,14 @@ export default async function Search(props: {
         artist?: string;
     }>;
 }){
+
+    /* Check if user is logged in. */
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+    if (!session) {
+        redirect("/login");
+    }
 
     /* Spotify API Functions. */
     async function getToken(clientId: string | undefined, clientSecret: string | undefined): Promise<string | null> {

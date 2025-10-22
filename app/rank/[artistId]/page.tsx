@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 /* SSH Types */
-import { Artist, Album, Track } from "@/types/artist";
+import { Album, Track } from "@/types/artist";
 
 /* Components */
 import RankerInterface from "./stages/RankerInterface";
@@ -37,6 +37,7 @@ export default async function Rank({
     return (
         <main className="flex justify-center items-center h-screen pt-[4rem]">
             <RankerInterface 
+                artistSpotifyId={artistId}
                 albums={albums || []}
                 singles={singles || []}
             />

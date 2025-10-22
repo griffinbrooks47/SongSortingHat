@@ -29,14 +29,13 @@ export default function ChooseAlbums(
         const allAlbumIds: Set<string> = new Set();
         albums.forEach(album => allAlbumIds.add(album.spotifyId));
         setAlbumSet(allAlbumIds)
-        console.log(allAlbumIds)
     }, [albums])
 
     return (
         <main className="h-[calc(100vh-4rem)] pt-[2rem]">
             <nav className="rounded-md flex flex-row flex justify-between items-center">
                 <button 
-                    className="btn btn-md btn-outline bg-base-100 rounded-md"
+                    className="btn btn-md btn-outline btn-disabled bg-base-100 rounded-md"
                 >
                     Back
                 </button>

@@ -29,29 +29,11 @@ export default function Navbar() {
 
                     <a className={`rounded-md ${page == 1 ? "bg-base-200" : ""} ${buttonStyle}`}
                         onClick={() => {
-                            setPage(1);
+                            //setPage(1);
                         }}
                     >
                         <IconUsers className={`${iconStyle}`} />
                         <div className="font-semibold mx-[0.25rem]">Friends</div>
-                    </a>
-                </ul>
-                <ul className="bg-base-100 rounded-md flex flex-row py-[0.25rem] shadow-sm mx-[0.25rem]">
-                    <a className={`rounded-md ${page == 2 ? "bg-base-200" : ""} ${buttonStyle}`}
-                        onClick={() => {
-                            setPage(2);
-                        }}
-                    >
-                        <IconUsersGroup className={`${iconStyle}`} />
-                        <div className="font-semibold mx-[0.25rem]">Wiess</div>
-                    </a>
-                    <a className={`rounded-md ${page == 3 ? "bg-base-200" : ""} ${buttonStyle}`}
-                        onClick={() => {
-                            setPage(3);
-                        }}
-                    >
-                        <IconUsersGroup className={`${iconStyle}`} />
-                        <div className="font-semibold mx-[0.25rem]">Rice</div>
                     </a>
                 </ul>
             </section>
@@ -62,3 +44,24 @@ export default function Navbar() {
         </div>
     )
 }
+
+/* 
+<ul className="bg-base-100 rounded-md flex flex-row py-[0.25rem] shadow-sm mx-[0.25rem]">
+                    <a className={`rounded-md ${page == 2 ? "bg-base-200" : ""} ${buttonStyle}`}
+                        onClick={() => {
+                            //setPage(2);
+                        }}
+                    >
+                        <IconUsersGroup className={`${iconStyle}`} />
+                        <div className="font-semibold mx-[0.25rem]">Wiess</div>
+                    </a>
+                    <a className={`rounded-md ${page == 3 ? "bg-base-200" : ""} ${buttonStyle}`}
+                        onClick={() => {
+                            //setPage(3);
+                        }}
+                    >
+                        <IconUsersGroup className={`${iconStyle}`} />
+                        <div className="font-semibold mx-[0.25rem]">Rice</div>
+                    </a>
+                </ul>
+*/

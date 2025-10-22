@@ -8,6 +8,8 @@ import { DBArtist, DBAlbum, DBTrack, DBArtistImg, DBAlbumImg, DBGenre } from "@p
 
 /* Universal artist types. */
 import { Album, Artist, Genre, Img, Track } from "@/types/artist";
+import { TSorting } from "@/types/sorting";
+import { TUser } from "@/types/user";
 
 const trackInclude = {
     images: true, 
@@ -41,6 +43,48 @@ const artistInclude = {
 };
 type DBArtistWithRelations = Prisma.DBArtistGetPayload<{
     include: typeof artistInclude;
+}>;
+
+const sortingInclude = {
+    artist: {
+        include: {
+            images: true,
+        }
+    },
+    entries: {
+        include: {
+            track: {
+                include: trackInclude,
+            },
+        },
+        orderBy: {
+            position: 'asc' as const,
+        },
+    },
+    user: true,
+};
+
+type DBSortingWithRelations = Prisma.DBSortingGetPayload<{
+    include: typeof sortingInclude;
+}>;
+
+const userInclude = {
+    followers: true,
+    following: true,
+    favoriteArtists: {
+        include: {
+            artist: true,
+        }
+    },
+    sortings: {
+        include: sortingInclude,
+        orderBy: {
+            createdAt: 'desc' as const,
+        }
+    }
+};
+type DBUserWithRelations = Prisma.UserGetPayload<{
+    include: typeof userInclude;
 }>;
 
 
@@ -159,6 +203,67 @@ class PrismaWrapper {
             throw error;
         }
     }
+    public async getSorting(sortingId: string): Promise<TSorting | null> {
+        try {
+            const sortingWithRelations = await prisma.dBSorting.findUnique({
+                where: {
+                    id: sortingId
+                },
+                include: sortingInclude,
+            });
+
+            if (!sortingWithRelations) {
+                return null;
+            }
+
+            return this.parseSorting(sortingWithRelations);
+
+        } catch (error) {
+            console.error("Error in getSorting:", error);
+            throw error;
+        }
+    }
+    public async getUser(userId: string): Promise<TUser | null> {
+        try {
+            const user = await prisma.user.findUnique({
+                where: { 
+                    id: userId
+                },
+                include: userInclude,
+            });
+
+            if (!user) return null;
+
+            return this.parseUser(user);
+
+        } catch (error) {
+            console.error("Error in getUser:", error);
+            throw error;
+        }
+    }
+    public async getGlobalSortings(userId?: string): Promise<TSorting[]> {
+        try {
+            const sortings = await prisma.dBSorting.findMany({
+                where: {
+                    userId: {
+                        not: userId,
+                    },
+                    published: true,
+                },
+                include: sortingInclude,
+                orderBy: {
+                    createdAt: 'desc',
+                },
+                take: 100,
+            });
+
+            return sortings.map(sorting => this.parseSorting(sorting));
+
+        } catch (error) {
+            console.error("Error in getGlobalSortings:", error);
+            throw error;
+        }
+    }             
 
     /* 
         DATABASE CREATE
@@ -442,12 +547,59 @@ class PrismaWrapper {
         }
         console.log(`Artist ${artist.name} created successfully.`);
     }
+    public async createSorting(
+        userId: string,
+        artistSpotifyId: string,
+        sortingSpotifyIds: string[]
+    ) {
+        if (!sortingSpotifyIds || sortingSpotifyIds.length === 0) {
+            throw new Error("At least one track ID must be provided.");
+        }
+
+        /* Resolve the artist's internal DB id (prisma relation expects artistId, not nested connect) */
+        const dbArtist = await prisma.dBArtist.findUnique({
+            where: { spotifyId: artistSpotifyId },
+            select: { id: true },
+        });
+        if (!dbArtist) {
+            throw new Error(`Artist with spotifyId ${artistSpotifyId} not found.`);
+        }
+
+        /* Create sorting with nested entries */
+        const sorting = await prisma.dBSorting.create({
+            data: {
+                userId,
+                artistId: dbArtist.id,
+                entries: {
+                    create: sortingSpotifyIds.map((trackSpotifyId, index) => ({
+                        position: index + 1, // assign position 1..n
+                        track: {
+                            connect: { spotifyId: trackSpotifyId },
+                        },
+                    })),
+                },
+                tracks: {
+                    connect: sortingSpotifyIds.map((spotifyId) => ({ 
+                        spotifyId: spotifyId 
+                    })),
+                },
+            },
+            include: {
+                entries: {
+                    include: { track: true },
+                },
+                tracks: true,
+                artist: true,
+                user: true,
+            },
+        });
+
+        return sorting;
+    }
 
     /* PRIVATE HELPERS - PARSING DATA */
 
-    /*
-        Parse a DBArtist (with relations) into a universal Artist.
-    */
+    
     private parseArtist(dbArtist: DBArtistWithRelations): Artist {
 
         /* Package Artist Albums */
@@ -490,10 +642,6 @@ class PrismaWrapper {
             followers: dbArtist.followers,
         };
     }
-
-    /* 
-        Parse a DBAlbum (with relations) into a universal Album.
-    */
     private parseAlbum(dbAlbum: DBAlbumWithRelations): Album {
 
         /* Package Album Artists */
@@ -527,6 +675,7 @@ class PrismaWrapper {
             },
             title: dbAlbum.title,
             release_date: dbAlbum.release_date,
+            album_type: "album",
 
             /* Relational Data */
             images: images,
@@ -535,10 +684,6 @@ class PrismaWrapper {
         })
 
     }
-
-    /* 
-        Parse a DBTrack (with relations) into a universal Track.
-    */
     private parseTrack(dbTrack: DBTrackWithRelations): Track {
 
         /* Package artists. */
@@ -570,6 +715,76 @@ class PrismaWrapper {
             }
         )
     }
+    private parseSorting(dbSorting: DBSortingWithRelations): TSorting {
+        
+        const sortedEntries = dbSorting.entries.sort((a, b) => a.position - b.position);
+        
+        const tracks = sortedEntries.map(entry => this.parseTrack(entry.track));
 
+        const artist: Artist = {
+            id: dbSorting.artist.id,
+            spotifyId: dbSorting.artist.spotifyId,
+            name: dbSorting.artist.name,
+            followers: dbSorting.artist.followers,
+            external_urls: {
+                /* !!! Add external urls later */
+            },
+            images: dbSorting.artist.images.map((img: DBArtistImg) => ({
+                width: img.width,
+                height: img.height,
+                url: img.url,
+            })),
+        };
+
+        const user = {
+            id: dbSorting.user.id,
+            createdAt: dbSorting.user.createdAt,
+            updatedAt: dbSorting.user.updatedAt,
+            email: dbSorting.user.email,
+            emailVerified: dbSorting.user.emailVerified,
+            name: dbSorting.user.name,
+            username: dbSorting.user.username || "",
+            image: dbSorting.user.image,
+        };
+
+        return {
+            id: dbSorting.id,
+            isPublic: dbSorting.isPublic,
+            createdAt: dbSorting.createdAt,
+            updatedAt: dbSorting.updatedAt,
+            published: dbSorting.published,
+
+            artist: artist,
+            artistId: dbSorting.artist!.spotifyId,
+
+            user: user,
+            userId: dbSorting.userId,
+
+            tracks,
+        };
+    }
+    private parseUser(dBUserWithRelations: DBUserWithRelations): TUser {
+
+        const favoriteArtists: Artist[] = dBUserWithRelations.favoriteArtists.map(fav => ({
+            id: fav.artist.id,
+            spotifyId: fav.artist.spotifyId,
+            name: fav.artist.name,
+            followers: fav.artist.followers,
+            external_urls: {
+                /* !!! Add external urls later */
+            },
+        }));
+
+        const sortings: TSorting[] = dBUserWithRelations.sortings.map(sorting => this.parseSorting(sorting));
+
+        return {
+            id: dBUserWithRelations.id,
+            name: dBUserWithRelations.name,
+            username: dBUserWithRelations.username || "",
+            image: dBUserWithRelations.image,
+            favoriteArtists: favoriteArtists,
+            sortings: sortings,
+        };
+   }
 }
 export default PrismaWrapper.getInstance();

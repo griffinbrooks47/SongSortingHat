@@ -32,12 +32,15 @@ export default function Login() {
                     </button>
                     
                 </div>
-                <div className="divider">or</div>
-                <input type="text" placeholder="Email" className="input input-bordered w-full my-[0.5rem] rounded-md" />
-                <input type="text" placeholder="Password" className="input input-bordered w-full my-[0.5rem] rounded-md" />
-                <a className="flex justify-end mb-[0.5rem] mt-[0.25rem] ml-auto font-semibold text-[0.8rem]">Forgot Password?</a>
-                <button className="btn btn-accent my-[0.5rem] rounded-md w-full">Login</button>
             </div>
         </main>
     )
 }
+
+/* 
+<div className="divider">or</div>
+                <input type="text" placeholder="Email" className="input input-bordered w-full my-[0.5rem] rounded-md" />
+                <input type="text" placeholder="Password" className="input input-bordered w-full my-[0.5rem] rounded-md" />
+                <a className="flex justify-end mb-[0.5rem] mt-[0.25rem] ml-auto font-semibold text-[0.8rem]">Forgot Password?</a>
+                <button className="btn btn-accent my-[0.5rem] rounded-md w-full">Login</button>`
+*/

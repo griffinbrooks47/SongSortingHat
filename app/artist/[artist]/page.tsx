@@ -1,8 +1,14 @@
+
 /* Next Imports. */
 import Link from "next/link";
 import Image from "next/image"
 import { unstable_cache } from 'next/cache';
 import { cache } from 'react';
+
+/* Auth */
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 /* Universal Types */
 import { Artist, Album } from "@/types/artist";
@@ -17,7 +23,8 @@ import prisma from "@/utils/prismaClient";
 import { AlbumCard } from "./components/albumCard";
 
 /* UI Components. */
-import { IconHeart, IconSwitch } from "@tabler/icons-react";
+import { IconHeart, IconSwitch, IconDirectionSign, IconCategoryPlus, IconHeartFilled } from "@tabler/icons-react";
+import Catalogue from "./components/catalogue";
 
 
 // React cache for request deduplication during render
@@ -71,6 +78,15 @@ export default async function ArtistPage({
 }: {
   params: Promise<{ artist: string }>
 }) {
+
+  /* Check if user is logged in. */
+  const session = await auth.api.getSession({
+      headers: await headers(),
+  });
+  if (!session) {
+      redirect("/login");
+  }
+
   const artistId = (await params).artist;
   
   const { artist, albums } = await getCachedArtistData(artistId);
@@ -85,90 +101,85 @@ export default async function ArtistPage({
   }
    
   return (
-    <main className="page flex justify-center items-center flex-col">
-      <div className="mt-[5rem]">
-        <div className="relative h-[17.5rem] mb-[2rem] flex flex-row gap-6">
-          {/* Artist Image */}
-          <figure className="h-full aspect-square">
+    <main className="page w-fit flex flex-col items-center mx-auto">
+
+      {/* Artist Data */}
+      <section className="relative w-full mt-[4rem] mb-[2rem] flex flex-row justify-center items-center">
+        {/* Artist Image */}
+        <figure className="avatar">
+          <div className="mask mask-squircle h-[11rem]">
             <Image
               src={artist.images[0].url}
               width={280} 
               height={280}
               alt={`${artist.name} profile picture`}
-              className="h-full rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.8)] object-cover"
               priority
               placeholder="blur"
               blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             />
-          </figure>
+          </div>
+        </figure>
+        
+        {/* Artist Info */}
+        <section className="px-[3rem]">
+          {/* Artist Name */}
           
-          {/* Artist Info */}
-          <div className="my-auto pr-[5rem] min-w-[30rem]">
-            <p className="text-[2.75rem] font-bold leading-[3.65rem] line-clamp-2">
+          {/* Artist Metadata */}
+          <div className="">
+            <div className="mb-[0.25rem] text-[2.75rem] font-bold leading-[3.25rem] line-clamp-2">
               {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
+            </div>
+            <p className="text-[1.15rem] font-semibold uppercase opacity-80 truncate max-w-[40ch] leading-[1.15rem]">
+              <span className={`drop-shadow-[0_0_0.5px_rgba(0,0,0,1)] ${
+                artist.followers >= 30000000 
+                  ? 'text-amber-400' 
+                  : artist.followers >= 10000000 
+                  ? 'text-purple-400' 
+                  : artist.followers >= 1000000 
+                  ? 'text-blue-400' 
+                  : artist.followers >= 100000 
+                  ? 'text-pink-700' 
+                  : ''
+              }`}>
+                {artist.followers >= 1000000 
+                  ? `${(artist.followers / 1000000).toFixed(1).replace(/\.0$/, '')}M` 
+                  : artist.followers >= 1000 
+                  ? `${(artist.followers / 1000).toFixed(1).replace(/\.0$/, '')}K` 
+                  : artist.followers}
+              </span>
+              {' followers'}
             </p>
-            <p className="text-[1.15rem] font-semibold opacity-80 truncate max-w-[40ch] leading-[1.25rem]">
-              {artist.followers.toLocaleString()} followers
-            </p>
-            <p className="text-[0.95rem] my-[0.25rem] font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1rem]">
+            <p className="text-[0.95rem] my-[0.25rem] font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1.15rem]">
               {albums.length} projects
             </p>
-            <button className="mt-[0.5rem] w-[3.25rem] h-[3.25rem] border-2 border-neutral opacity-80 flex rounded-full justify-center items-center hover:opacity-100 transition-opacity">
-              <IconHeart className="w-8 h-8" />
+            <button className="my-[0.25rem] btn btn-outline btn-circle">
+              <IconHeart />
             </button>
           </div>
-        </div>
-      </div>
-      
-      <section className="relative">
-        {/* Future content area */}
+
+        </section>
+
       </section>
+
+      {/* Navigation */}
+      <ul className="w-full my-[2rem] flex justify-center items-center">
+        <li>
+          <Link 
+            href={`/rank/${artist.spotifyId}`} 
+            className="btn btn-lg btn-outline bg-secondary border-2 rounded-lg"
+          >
+            <IconCategoryPlus className="w-8 h-8 group-hover:rotate-180 transition-transform duration-300" />
+            <p className="font-semibold text-[1rem] color-accent mr-2">Start Sorting</p>
+          </Link>
+        </li>
+      </ul>
+
       
-      <section className="flex justify-center items-start flex-col mt-[0.5rem]">
-        <ul className="flex justify-center items-center w-full my-[0.5rem]">
-          <li className="mx-[0.25rem]">
-            <Link 
-              href={`/rank/${artist.spotifyId}`} 
-              className="mt-auto px-[1.5rem] py-[0.5rem] border-2 bg-accent border-neutral shadow-sm opacity-80 flex rounded-md justify-center items-center hover:opacity-100 transition-opacity group"
-            >
-              <p className="font-semibold text-[1rem] color-accent mr-2">Start Sorting</p>
-              <IconSwitch className="w-8 h-8 group-hover:rotate-180 transition-transform duration-300" />
-            </Link>
-          </li>
-        </ul>
-        
-        <hr className="border-black opacity-10 w-full my-[0.05rem]" />
-        
-        <div className="flex ml-[1rem] justify-between w-full">
-          <ul className="ml-auto my-[1rem] mr-[2rem] bg-base-100 shadow-sm rounded-md flex justify-center items-center py-[0.25rem]">
-            <li>
-              <button className="h-[2.5rem] rounded-sm flex justify-center items-center px-[1rem] ml-[0.25rem] mr-[0.25rem] bg-base-200 transition-colors hover:bg-base-300">
-                Albums
-              </button>
-            </li>
-            <li>
-              <button className="h-[2.5rem] rounded-sm flex justify-center items-center px-[1rem] mr-[0.25rem] bg-base-100 transition-colors hover:bg-base-200">
-                Songs
-              </button>
-            </li>
-            <li>
-              <button className="h-[2.5rem] rounded-sm flex justify-center items-center px-[1rem] mr-[0.25rem] bg-base-100 transition-colors hover:bg-base-200">
-                Lists
-              </button>
-            </li>
-          </ul>
-        </div>
-        
-        <div className="grid grid-cols-4 gap-3">
-          {albums.map((album) => (
-            <AlbumCard
-              image={album.images[0]}
-              name={album.title}
-              key={album.spotifyId}
-            />
-          ))}
-        </div>
-      </section>
+      {/* Artist Catalogue */}
+      <Catalogue 
+        albums={albums} 
+        tracks={[]}
+      />
     </main>
   )
 }

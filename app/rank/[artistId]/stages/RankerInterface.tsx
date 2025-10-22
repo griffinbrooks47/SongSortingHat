@@ -1,19 +1,23 @@
 'use client'
 
-import { Album, Track } from "@/types/artist"
+/* React */
+import { useEffect, useState } from "react";
 
-/* Import ranker stages */
+/* Next Server Actions */
+import { saveSorting } from '../actions';
+
+/* Ranker Stages */
 import ChooseAlbums from "./ChooseAlbums";
 import Assemble from "./Assemble";
 import Rank from "./Rank";
 import Sorting from "./Sorting";
 
-/* React Imports */
-import { useEffect, useState } from "react";
-import { set } from "zod";
+/* Types */
+import { Album, Track } from "@/types/artist"
+import { useRouter } from "next/navigation";
 
 export default function RankerInterface(
-    { albums, singles }: { albums: Album[], singles: Track[] }
+    { artistSpotifyId, albums, singles }: { artistSpotifyId: string, albums: Album[], singles: Track[] }
 ) {
 
     /* Current Ranking Stage */
@@ -25,6 +29,8 @@ export default function RankerInterface(
     const [songMap, setSongMap] = useState<Map<string, Track>>(new Map());
     const [songList, setSongList] = useState<Track[]>([]);
 
+    const router = useRouter();
+
     /* 
         Choose Albums
         - Select which albums to include in the ranking. 
@@ -32,6 +38,7 @@ export default function RankerInterface(
     const chooseAlbums = (selectedAlbumIds: string[]) : void => {
 
         const newSongList: Track[] = [];
+        const newSongMap: Map<string, Track> = songMap;
         
         const newAlbumMap: Map<string, Album> = new Map();
         for(const albumId of selectedAlbumIds) {
@@ -43,6 +50,7 @@ export default function RankerInterface(
 
             for(const track of album.tracks) {
                 newSongList.push(track);
+                newSongMap.set(track.spotifyId, track);
             }
 
         }
@@ -52,6 +60,7 @@ export default function RankerInterface(
 
         setSongList(newSongList);
         setAlbumMap(newAlbumMap);
+        setSongMap(newSongMap);
 
         setStage(prev => {
             return prev + 1;
@@ -63,20 +72,16 @@ export default function RankerInterface(
         - Remove the specified tracks from the ranking pool. 
     */
     const assemble = (selectedIds: string[]) : void => {
-        
-        const newSongList: Track[] = [];
-        const newSongMap: Map<string, Track> = new Map();
 
+        const newSongList: Track[] = [];
         for(const newId of selectedIds) {
             const track = songMap.get(newId);
             if (track === undefined)
                 continue;
             newSongList.push(track);
-            newSongMap.set(newId, track);
         }
 
         setSongList(newSongList);
-        setSongMap(newSongMap);
 
         setStage(prev => {
             return prev + 1;
@@ -89,38 +94,33 @@ export default function RankerInterface(
     */
     const rank = (finalList: string[]) : void => {
 
-        for(const id of finalList) {
-            console.log(songMap.get(id)?.title);
-        }
-
         const newSongList: Track[] = [];
-        const newSongMap: Map<string, Track> = new Map();
 
         for(const newId of finalList) {
             const track = songMap.get(newId);
             if (track === undefined)
                 continue;
             newSongList.push(track);
-            newSongMap.set(newId, track);
         }
 
         setSongList(newSongList);
-        setSongMap(newSongMap);
 
         setStage(prev => {
             return prev + 1;
         })
-
-        console.log("Final Ranking: ", finalList);
     }
 
-    /* 
-        Sorting
-        - Display the final ranking. 
-    */
-   const sorting = (selectedIds: string[]) : void => {
-
-   }
+    /* Save Sorting*/
+    const handleSaveSorting = async (finalRanking: string[]) => {
+        try {
+            const result = await saveSorting(artistSpotifyId, finalRanking);
+            console.log(result)
+            if(result)
+                router.push(`/sorting/${result.id}`)
+        } catch (error) {
+            console.error('Failed to save:', error);
+        }
+    };
     
     
     /* Only set the songMap on page refresh. */
@@ -167,11 +167,11 @@ export default function RankerInterface(
                     onEnd={rank}
                 ></Rank>
             }
-            {(stage == 3) &&
+            {(stage == 3) && 
                 <Sorting 
                     tracks={songList}
-                    onEnd={sorting}
-                ></Sorting>
+                    onEnd={handleSaveSorting}
+                />
             }
         </main>
     )

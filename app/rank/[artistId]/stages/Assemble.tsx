@@ -11,7 +11,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel"
 
-import { IconMusic, IconPointer, IconArrowBadgeLeft, IconArrowBadgeRight } from "@tabler/icons-react";
+import { IconMusic, IconPointerFilled, IconArrowBadgeLeft, IconArrowBadgeRight } from "@tabler/icons-react";
 
 export default function Assemble(
     { tracks, onEnd }: { tracks: Track[] ,onEnd: (selectedIds: string[]) => void }
@@ -72,7 +72,7 @@ export default function Assemble(
         <div className="h-[calc(100vh-4rem)] w-full pt-[2rem] mb-[0rem] flex flex-col items-center">
             <nav className="w-[50rem] flex flex-row justify-between items-center">
                 <button
-                    className="btn btn-md btn-outline bg-base-100 rounded-md"
+                    className="btn btn-md btn-outline btn-disabled bg-base-100 rounded-md"
                     onClick={() => {
                         // Back to Artist functionality
                     }}
@@ -95,7 +95,7 @@ export default function Assemble(
             <hr className="border-black opacity-10 w-[50rem] mx-auto mt-1"></hr>
             <header className="mt-6 mb-6 flex justify-center items-center">
                 <div className="badge badge-outline badge-black bg-secondary">
-                    <IconPointer className="size-[1rem]" />
+                    <IconPointerFilled className="size-[1rem]" />
                     <p className="text-center opacity-80 text-black pr-[0.25rem]">{`Select the songs you want to include!`}</p>
                 </div>
             </header>

@@ -1,19 +1,40 @@
 'use client'
 
-import { useEffect, useState } from "react"
-import { usePathname } from 'next/navigation'
-import Link from "next/link"
+/* Components */
 import { SearchBar } from "./search"
-import { IconSearch, IconSitemap, IconUserCircle, IconX } from "@tabler/icons-react"
+
+/* Icons */
+import { IconSearch, IconSitemap, IconUserCircle, IconX, IconLogout2, IconUserFilled, IconUser } from "@tabler/icons-react"
+
+/* Auth */
+import { authClient } from "@/lib/auth-client"
 import { useSession } from "@/lib/auth-client"
+
+/* Next */
+import Link from "next/link"
+import { useRouter, usePathname } from 'next/navigation'
+
+/* React */
+import { useEffect, useState } from "react"
 
 export default function Navbar() {
   
   const { data: session, isPending } = useSession();
+  const router = useRouter();
   
   const [searchToggled, setSearchToggled] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(true);
   const pathname = usePathname()
+
+  const signOut = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push('/login');
+        },
+      },
+    });
+  }
 
   useEffect(() => {
     if (pathname === '/login' || pathname === '/register') {
@@ -26,6 +47,7 @@ export default function Navbar() {
   if(!visible) return null;
 
   const authenticated = !!session;
+  const userId = session?.user?.id;
 
   return (
       <nav className="fixed top-0 px-[1.5rem] h-[4rem] w-full py-[0.5rem] bg-base-100 flex justify-between items-center z-10 shadow-sm">
@@ -47,7 +69,7 @@ export default function Navbar() {
         ) : authenticated ? (
           <div className='flex justify-center items-center'>
             
-            <Link href='/search' className='mx-[1.25rem] cursor-pointer font-semibold flex items-center'>
+            <Link href={`/user/${userId}`} className='mx-[1.25rem] cursor-pointer font-semibold flex items-center'>
               <IconSitemap />
               <p className='mx-[0.5rem]'>My Sortings</p>
             </Link>
@@ -60,14 +82,14 @@ export default function Navbar() {
               style={{ anchorName: "--profile-anchor" } as React.CSSProperties}
             >
               <div className="avatar h-full w-full">
-                <div className="ring-black ring-offset-base-100 w-24 rounded-full ring-2 ring-offset-2">
-                  <img src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp" />
+                <div className="ring-black ring-offset-base-100 bg-secondary w-24 p-1 rounded-full ring-2 ring-offset-2">
+                  <IconUser className="h-full w-full"/>
                 </div>
               </div>
             </button>
 
             <ul 
-              className="dropdown menu w-[15rem] px-[0.1rem] py-[0.25rem] mt-[1rem] mr-[-2.25rem] bg-base-100 rounded-md shadow-sm border-black border-2"
+              className="dropdown menu w-[18rem] mt-[1rem] mr-[-2.25rem] pt-[1rem] bg-base-100 rounded-md shadow-sm border-black border-2 [&_li>*]:rounded-sm [&_li>*]:mx-0"
               popover="auto"
               id="profile-popover"
               style={{ 
@@ -75,8 +97,34 @@ export default function Navbar() {
                 positionArea: "bottom left", // 👈 aligns right edge of dropdown with button
               } as React.CSSProperties}
             >
-              <li className="rounded-sm">
-                <a>Item 1</a>
+              {/* View Profile */}
+              <section className="h-[3.5rem] mx-[0.75rem] flex flex-row items-center gap-4">
+                <button 
+                  className='h-full opacity-90'
+                  popoverTarget="profile-popover"
+                  style={{ anchorName: "--profile-anchor" } as React.CSSProperties}
+                >
+                  <div className="avatar h-10 w-10">
+                    <div className="ring-black ring-offset-base-100 bg-secondary w-24 p-1 rounded-full ring-2 ring-offset-2">
+                      <IconUser className="h-full w-full"/>
+                    </div>
+                  </div>
+                </button>
+                <div>
+                  <h2 className="font-semibold">{session?.user?.name}</h2>
+                  <h2 className="">{session?.user?.name}</h2>
+                </div>
+              </section>
+
+              <hr className="border-black opacity-10 w-[100%] mx-auto my-[0.5rem]"></hr>
+
+              <li className="h-[2.5rem] w-ful">
+                <a className="h-full w-full flex items-center"
+                  onClick={signOut}
+                >
+                  <IconLogout2 className="h-[90%] mx-[0.25rem]" />
+                  Sign out
+                </a>
               </li>
             </ul>
 

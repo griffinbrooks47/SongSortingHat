@@ -48,7 +48,7 @@ const ArtistCard = memo(({ artist, img, width, height, priority = false, classNa
 
   return (
     <motion.div 
-      className={`w-[15rem] h-[15rem] overflow-hidden cursor-pointer relative rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 ${className}`}
+      className={`w-[15rem] h-[15rem] overflow-hidden cursor-pointer relative rounded-sm shadow-sm hover:shadow-xl transition-shadow duration-300 ${className}`}
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

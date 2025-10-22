@@ -1,70 +1,107 @@
 import { Track } from "@/types/artist";
-import { motion } from "motion/react";
+import { IconArrowsTransferUpDown, IconPointerFilled } from "@tabler/icons-react";
+import { motion, Reorder } from "motion/react";
 
 import Image from "next/image";
+import { useState } from "react";
 
 
 export default function Sorting(
     { tracks, onEnd }: { tracks: Track[], onEnd: (selectedIds: string[]) => void }
 ) {
+
+    const [orderedTracks, setOrderedTracks] = useState(tracks);
+
+    const handleSave = () => {
+        const orderedIds = orderedTracks.map(track => track.spotifyId);
+        onEnd(orderedIds);
+    };
+
     return (
-        <main className="max-h-[calc(100vh-4rem)] bg-base-200 p-8">
-            <div className="max-w-6xl mx-auto">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold mb-2">Your Top 10</h1>
-                    <p className="text-lg text-base-content/70">
-                        Drag to reorder your final rankings
-                    </p>
+        <main className="min-h-[calc(100vh-4rem)] w-full pt-[2rem] mb-[0rem] flex flex-col items-center">
+            <nav className="w-[50rem] flex flex-row justify-between items-center">
+                <button
+                    className="btn btn-md btn-outline btn-disabled bg-base-100 rounded-md"
+                    onClick={() => {
+                        // Back to Artist functionality
+                    }}
+                >
+                    Prev
+                </button>
+                <header className="flex flex-row items-center font-semibold gap-2">
+                    <IconArrowsTransferUpDown />
+                    <h1 className="text-xl">Your Sorting</h1>
+                </header>   
+                <button 
+                    className="btn btn-outline bg-secondary btn-md rounded-md"
+                    onClick={handleSave}
+                >
+                    Done
+                </button>
+            </nav>
+            <hr className="border-black opacity-10 w-[50rem] mx-auto mt-1"></hr>
+            <header className="mt-6 mb-6 flex justify-center items-center">
+                <div className="badge badge-outline badge-black bg-primary">
+                    <IconPointerFilled className="size-[1rem]" />
+                    <p className="text-center opacity-80 text-black pr-[0.25rem]">{`Drag to rearrange!`}</p>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    {tracks.slice(0, 10).map((track, index) => (
-                        <motion.div
+            </header>
+         
+            <section className="w-[50rem] flex flex-col gap-3 pb-8 flex flex-col items-center">
+                <Reorder.Group 
+                    axis="y" 
+                    values={orderedTracks} 
+                    onReorder={setOrderedTracks}
+                    className="flex flex-col gap-3"
+                >
+                    {orderedTracks.map((track: Track, index: number) => (
+                        <Reorder.Item
                             key={track.spotifyId}
-                            className="relative flex items-center gap-4 p-4 rounded-md shadow-md border-2 border-black bg-base-100"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
+                            value={track}
+                            className="flex items-center gap-3 mr-8"
                         >
-                            <div className="text-3xl font-bold text-base-content/30 min-w-[3rem]">
-                                #{index + 1}
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-base-200 font-bold text-sm flex-shrink-0">
+                                {index + 1}
                             </div>
-                            
-                            <figure className="w-24 h-24 rounded-sm border-2 border-black overflow-hidden flex-shrink-0">
-                                <Image 
-                                    src={track.images[0].url}
-                                    width={track.images[0].width}
-                                    height={track.images[0].height}
-                                    alt={track.title}
-                                    className="object-cover w-full h-full"
-                                    priority={false}
-                                    loading="lazy"
-                                />
-                            </figure>
-
-                            <div className="flex flex-col flex-1 min-w-0">
-                                <strong className="text-lg font-bold truncate">
-                                    {track.title}
-                                </strong>
-                                <p className="text-sm text-base-content/70 truncate">
-                                    {track.artists[0].name}
-                                </p>
-                            </div>
-                        </motion.div>
+                            <SongCard trackId={track.spotifyId} track={track} />
+                        </Reorder.Item>
                     ))}
-                </div>
-
-                <div className="flex justify-center">
-                    <motion.button
-                        className="btn btn-lg border-2 border-black bg-accent hover:bg-accent/90 shadow-md px-8"
-                        onClick={() => onEnd(tracks.slice(0, 10).map(t => t.spotifyId))}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    >
-                        Confirm Rankings
-                    </motion.button>
-                </div>
-            </div>
+                </Reorder.Group>
+            </section>
         </main>
     );
+}
+
+function SongCard(
+    { trackId, track } : { trackId: string, track: Track}
+) {
+    return (
+        <div 
+            key={trackId}
+            className="relative h-[4.5rem] w-[35rem] flex-shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1"
+        >
+            {/* Album Cover */}
+            <figure className="h-full aspect-square rounded-sm flex-shrink-0 overflow-hidden">
+                <Image 
+                    src={track.images[0].url}
+                    width={track.images[0].width}
+                    height={track.images[0].height}
+                    alt={track.title}
+                    className="object-cover w-full h-full"
+                    priority={false}
+                    loading="lazy"
+                />
+            </figure>
+            
+            {/* Track Info */}
+            <div className="flex flex-col justify-center flex-1 min-w-0 gap-0.5">
+                <strong className="text-sm font-bold truncate leading-tight">
+                    {track.title}
+                </strong>
+                <p className="text-[0.65rem] truncate text-gray-500 leading-tight">
+                    {track.artists[0].name}
+                </p>
+            </div>
+        </div>
+    )
 }
