@@ -33,6 +33,7 @@ export type Album = {
     /* Metadata */
     title: string;
     total_tracks: number;
+    album_type: string; // album, single, compilation
     release_date: string;
     external_urls: {
         spotify?: string;

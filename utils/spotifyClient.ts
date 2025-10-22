@@ -34,6 +34,7 @@ interface SimpleTrack {
     id: string;
     name: string;
     track_number: number;
+    duration: number;
     // images
     // album title
 }
@@ -125,16 +126,18 @@ class SpotifyWrapper {
             const album_artists: Artist[] = album.artists;
             
             /* If album has one track, append as single. */
-            if(album.tracks.length === 1) {
-                const track: Track = {
-                    artists: album_artists,
-                    spotifyId: album.spotifyId,
-                    title: album.title,
-                    album_title: "",
-                    images: album.images,
+            if(album.album_type === "single") {
+                for(const single of album.tracks) {
+                    const track: Track = {
+                        artists: album_artists,
+                        spotifyId: single.spotifyId,
+                        title: single.title,
+                        album_title: "",
+                        images: single.images,
 
+                    }
+                    singles.push(track);
                 }
-                singles.push(track);
             }
 
             /* If album has more than one track, append as album. */
@@ -181,27 +184,38 @@ class SpotifyWrapper {
         const albums: Album[] = [];
         for(const detailedAlbum of detailedAlbums.albums) {
 
+            /* Check album types. */
+            const album_type: "album" | "single" | "compilation" = this.categorizeAlbum(detailedAlbum);
+
             /* Convert artist objects. */
             const artists: Artist[] = []
             for(const simpleArtist of detailedAlbum.artists) {
                 artists.push(this.parseArtist(simpleArtist));
             }
-
-            const imgs: Img[] = detailedAlbum.images;
+            let imgs: Img[] = [];
+            if (detailedAlbum.images?.length) {
+                const largestImg = detailedAlbum.images.reduce((max, img) =>
+                    img.width > max.width ? img : max
+                );
+                imgs = [{
+                    width: largestImg.width,
+                    height: largestImg.height,
+                    url: largestImg.url,
+                }];
+            }
             const album_title = detailedAlbum.name;
-
             const tracks: Track[] = [];
             for(const simpleTrack of detailedAlbum.tracks.items) {
                 tracks.push(this.parseTrack(simpleTrack, album_title, imgs))
             }   
-
             /* Convert album. */
             const album: Album = {
                 total_tracks: detailedAlbum.total_tracks,
                 external_urls: detailedAlbum.external_urls,
                 spotifyId: detailedAlbum.id,
-                images: detailedAlbum.images,
+                images: imgs,
                 title: detailedAlbum.name,
+                album_type: album_type,
                 release_date: detailedAlbum.release_date,
                 artists: artists,
                 tracks: tracks,
@@ -212,6 +226,115 @@ class SpotifyWrapper {
         }
 
         return albums;
+    }
+    private categorizeAlbum(detailedAlbum: DetailedAlbum): "album" | "single" | "compilation" {
+        const track_count = detailedAlbum.total_tracks;
+        const tracks = detailedAlbum.tracks.items;
+
+        // Very few tracks = single
+        if (track_count < 3) {
+            return "single";
+        }
+
+        // For 3-10 tracks, check if they're all versions of the same song
+        if (track_count <= 6) {
+            const cleanedNames = tracks.map(track => this.cleanTrackName(track.name));
+            const uniqueSongs = this.countUniqueSongs(cleanedNames);
+
+            // If most tracks are the same song, it's a single
+            if (uniqueSongs <= 2) {
+                return "single";
+            }
+
+            // If we have decent variety, it's an album
+            return "album";
+        }
+
+        // More than 10 tracks = album
+        return "album";
+    }
+    private cleanTrackName(name: string): string {
+        let cleaned = name.toLowerCase().trim();
+
+        cleaned = cleaned.replace(/\([^)]*\)/g, '');
+        cleaned = cleaned.replace(/\[[^\]]*\]/g, '');
+
+        const keywords = ['remix', 'mix', 'edit', 'acoustic', 'live', 'instrumental',
+                        'radio', 'extended', 'remaster', 'feat', 'ft', 'featuring'];
+
+        keywords.forEach(keyword => {
+            const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+            cleaned = cleaned.replace(regex, '');
+        });
+
+        cleaned = cleaned.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+        return cleaned;
+    }
+    private countUniqueSongs(cleanedNames: string[]): number {
+        const groups: string[][] = [];
+        const used = new Set<number>();
+
+        for (let i = 0; i < cleanedNames.length; i++) {
+            if (used.has(i) || !cleanedNames[i]) continue;
+
+            const group = [cleanedNames[i]];
+            used.add(i);
+
+            for (let j = i + 1; j < cleanedNames.length; j++) {
+                if (used.has(j) || !cleanedNames[j]) continue;
+
+                // Check if tracks are very similar (75% threshold)
+                if (this.areSimilar(cleanedNames[i], cleanedNames[j], 0.75)) {
+                    group.push(cleanedNames[j]);
+                    used.add(j);
+                }
+            }
+
+            groups.push(group);
+        }
+
+        return groups.length;
+    }
+    private areSimilar(str1: string, str2: string, threshold: number): boolean {
+        if (str1 === str2) return true;
+        if (!str1 || !str2) return false;
+
+        const longer = str1.length > str2.length ? str1 : str2;
+        const shorter = str1.length > str2.length ? str2 : str1;
+
+        if (longer.length === 0) return true;
+
+        const editDistance = this.levenshteinDistance(longer, shorter);
+        const similarity = (longer.length - editDistance) / longer.length;
+
+        return similarity >= threshold;
+    }
+    private levenshteinDistance(str1: string, str2: string): number {
+        const matrix: number[][] = [];
+
+        for (let i = 0; i <= str2.length; i++) {
+            matrix[i] = [i];
+        }
+
+        for (let j = 0; j <= str1.length; j++) {
+            matrix[0][j] = j;
+        }
+
+        for (let i = 1; i <= str2.length; i++) {
+            for (let j = 1; j <= str1.length; j++) {
+                if (str2[i - 1] === str1[j - 1]) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j] + 1
+                    );
+                }
+            }
+        }
+
+        return matrix[str2.length][str1.length];
     }
 
     /* 
@@ -333,17 +456,18 @@ class SpotifyWrapper {
     private parseArtist(simpleArtist: SimpleArtist): Artist {
 
         /* Package Imgs */
-        const artistImgs: Img[] = [];
-        if(simpleArtist.images){
-            for(const img of simpleArtist.images) {
-                const artistImg: Img = {
-                    width: img.width,
-                    height: img.height,
-                    url: img.url,
-                }
-                artistImgs.push(artistImg)
-            }
+        let artistImgs: Img[] = [];
+        if (simpleArtist.images && simpleArtist.images.length > 0) {
+            const largestImg = simpleArtist.images.reduce((max, img) => 
+                img.width > max.width ? img : max
+            );
+            artistImgs = [{
+                width: largestImg.width,
+                height: largestImg.height,
+                url: largestImg.url,
+            }];
         }
+
 
         /* Package genres. */
         const artistGenres: Genre[] = [];

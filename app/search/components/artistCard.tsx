@@ -1,61 +1,124 @@
 'use client'
-
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import Image from "next/image"
 import { useRouter } from 'next/navigation'
+import { useCallback, useState, memo } from 'react';
 
-interface Artist {
-    id: string;
-    name: string;
-    images: Image[];
+import { Artist } from "@/types/artist";
+
+interface ArtistCardProps {
+  artist: Artist;
+  img: string;
+  width: number;
+  height: number;
+  priority?: boolean; // For above-fold cards
+  className?: string;
 }
-interface Image {
-    width: number;
-    height: number;
-    url: string;
-}
 
-export const ArtistCard = (props: {artist: Artist, img: string, width: number, height: number}) => {
+// Memoized component to prevent unnecessary re-renders
+const ArtistCard = memo(({ artist, img, width, height, priority = false, className = "" }: ArtistCardProps) => {
+  const router = useRouter();
+  const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Memoized click handler
+  const handleClick = useCallback(() => {
+    router.push(`/artist/${artist.id}`);
+  }, [router, artist.id]);
 
-    const router = useRouter();
+  // Memoized hover handlers
+  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
+  const handleMouseLeave = useCallback(() => setIsHovered(false), []);
+  const handleImageLoad = useCallback(() => setImageLoaded(true), []);
 
-    return (
-        <div className="w-[15rem] h-[15rem] overflow-hidden cursor-pointer relative group cursor-pointer rounded-sm shadow-md"
-            onClick={() => {
-                /* Add selected artist to local storage cache. */                
-                localStorage.setItem(`${props.artist.name}`, JSON.stringify(props.artist))
-                router.push(`/artist/${props.artist.id}`)
-            }}
+  // Optimized name truncation
+  const displayName = artist.name.length > 30 ? `${artist.name.slice(0, 30)}...` : artist.name;
+
+  // Animation variants for better performance
+  const cardVariants = {
+    initial: { scale: 1 },
+    hover: { scale: 1.025 },
+    tap: { scale: 0.95 }
+  };
+
+  const overlayVariants = {
+    hidden: { opacity: 0, y: 5 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  return (
+    <motion.div 
+      className={`w-[15rem] h-[15rem] overflow-hidden cursor-pointer relative rounded-sm shadow-sm hover:shadow-xl transition-shadow duration-300 ${className}`}
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      variants={cardVariants}
+      initial="initial"
+      whileHover="hover"
+      whileTap="tap"
+      transition={{ 
+        type: "spring", 
+        stiffness: 400, 
+        damping: 25,
+        mass: 0.8
+      }}
+    >
+      {/* Image with optimized loading */}
+      <div className="relative w-full h-full">
+        <Image
+          src={img}
+          priority={priority}
+          alt={`${artist.name} profile picture`}
+          width={width} 
+          height={height}
+          className={`w-full h-full object-cover transition-opacity duration-500 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          onLoad={handleImageLoad}
+          placeholder="blur"
+          blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI0MCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
+          sizes="240px"
+        />
+        
+        {/* Loading skeleton */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+        )}
+      </div>
+             
+      {/* Dark overlay with better performance */}
+      <motion.div 
+        className="absolute inset-0 bg-black pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isHovered ? 0.75 : 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      />
+      
+      {/* Text overlay with framer-motion */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center text-white text-xl font-bold pointer-events-none"
+        variants={overlayVariants}
+        initial="hidden"
+        animate={isHovered ? "visible" : "hidden"}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        <p
+          className="text-center w-full px-4 leading-tight drop-shadow-lg"
+          style={{
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
+            WebkitLineClamp: 2,
+            overflow: "hidden",
+            wordBreak: "break-word"
+          }}
         >
-            <Image
-                src={props.img}
-                priority={true}
-                alt="Artist Picture"
-                width={props.width} height={props.height}
-             />
-             {/* Dark Overlay (Becomes Visible on Hover) */}
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-85 transition-all duration-300" />
-            {/* Overlay Title (Hidden by Default, Shows on Hover) */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="absolute inset-0 flex items-center justify-center text-white text-xl font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            >
-                <p
-                    className="flex justify-center items-center text-center w-full 
-                            line-clamp-2 text-ellipsis overflow-hidden 
-                            max-w-[15rem] break-words px-2"
-                    style={{
-                        display: "-webkit-box",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: 2,
-                        whiteSpace: "normal",
-                    }}
-                >
-                    {props.artist.name.length > 30 ? props.artist.name.slice(0, 30) + "..." : props.artist.name}
-                </p>
-            </motion.div>
-        </div>
-    )
-}
+          {displayName}
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+});
+
+ArtistCard.displayName = 'ArtistCard';
+
+export { ArtistCard };

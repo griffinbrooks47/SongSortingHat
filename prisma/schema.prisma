@@ -1,9 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client"
-  output   = "./generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -11,52 +7,98 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model DBUser {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String? // Null if using OAuth
-  name      String?
-  avatarUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  accounts    DBAccount[]
-  sortings    DBSorting[]
-  communities DBCommunityUser[]
+/**
+ * Artist
+ */
+model DBArtist {
+  id              String             @id @default(uuid())
+  spotifyId       String             @unique
+  last_updated    DateTime           @default(now())
+  name            String
+  external_urls   Json?
+  followers       Int
+  albums          DBAlbum[]
+  tracks          DBTrack[]
+  genres          DBGenre[]
+  images          DBArtistImg[]
+  favoriteArtists DBFavoriteArtist[]
+  sortings        DBSorting[]
 }
 
-model DBCommunityUser {
-  userId      String
-  communityId String
-  role        DBRole   @default(USER)
-  joinedAt    DateTime @default(now())
-
-  user      DBUser      @relation(fields: [userId], references: [id])
-  community DBCommunity @relation(fields: [communityId], references: [id])
-
-  @@id([userId, communityId])
+/**
+ * Album
+ */
+model DBAlbum {
+  id            String       @id @default(uuid())
+  spotifyId     String       @unique
+  last_updated  DateTime     @default(now())
+  title         String
+  total_tracks  Int
+  release_date  String
+  external_urls Json?
+  artists       DBArtist[]
+  tracks        DBTrack[]
+  images        DBAlbumImg[]
 }
 
-model DBCommunity {
-  id          String            @id @default(uuid())
-  name        String
-  description String?
-  members     DBCommunityUser[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+/**
+ * Track
+ */
+model DBTrack {
+  id         String   @id @default(uuid())
+  spotifyId  String   @unique
+  title      String
+  updatedAt  DateTime @updatedAt
+  albumTitle String?
+
+  artists DBArtist[]
+
+  albumId String?
+  album   DBAlbum? @relation(fields: [albumId], references: [id])
+
+  images DBAlbumImg[]
+
+  sortings       DBSorting[]
+  sortingEntries DBSortingEntry[]
+
+  @@index([spotifyId])
+  @@index([albumId])
 }
 
-model DBAccount {
-  id                String   @id @default(uuid())
-  userId            String
-  provider          String // e.g., "google", "github", "email"
-  providerAccountId String   @unique // Unique identifier from provider
-  accessToken       String?
-  refreshToken      String?
-  expiresAt         Int?
-  createdAt         DateTime @default(now())
+/**
+ * Genres
+ */
+model DBGenre {
+  id      String     @id @default(uuid())
+  name    String     @unique
+  artists DBArtist[]
+}
 
-  user DBUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+/**
+ * Images
+ */
+model DBArtistImg {
+  id       String   @id @default(uuid())
+  width    Int
+  height   Int
+  url      String   @unique
+  artist   DBArtist @relation(fields: [artistId], references: [id])
+  artistId String
+
+  @@index([artistId])
+}
+
+model DBAlbumImg {
+  id      String    @id @default(uuid())
+  width   Int
+  height  Int
+  url     String    @unique
+  album   DBAlbum?  @relation(fields: [albumId], references: [id])
+  albumId String?
+  tracks  DBTrack[] // Implicit many-to-many relation
+
+  @@index([albumId])
+  @@index([url])
 }
 
 enum DBRole {
@@ -65,27 +107,63 @@ enum DBRole {
 }
 
 model DBSorting {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  config      Json // Stores the sorting configuration
-  isPublic    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  published   Boolean  @default(true)
+  id        String   @id @default(uuid())
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  published Boolean  @default(true)
 
-  // User relationship
-  userId String
-  user   DBUser @relation(fields: [userId], references: [id])
-
-  // Artist relationship
-  artistId String
+  /**
+   * Artist
+   */
   artist   DBArtist @relation(fields: [artistId], references: [id])
+  artistId String
 
-  // Many-to-many with Songs
+  /**
+   * Ranking
+   */
+  entries DBSortingEntry[]
+
+  /**
+   * Tracks
+   */
   tracks DBTrack[]
 
+  /**
+   * User
+   */
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
   @@index([userId])
+  @@index([artistId])
+}
+
+model DBSortingEntry {
+  id        String    @id @default(uuid())
+  position  Int
+  sortingId String
+  sorting   DBSorting @relation(fields: [sortingId], references: [id])
+
+  trackId String
+  track   DBTrack @relation(fields: [trackId], references: [id])
+
+  @@unique([sortingId, position]) // one position per list
+  @@unique([sortingId, trackId]) // track can appear only once per list
+  @@index([trackId])
+}
+
+model DBFavoriteArtist {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  artistId String
+  artist   DBArtist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  position Int
+
+  @@unique([userId, artistId])
   @@index([artistId])
 }
 
@@ -94,14 +172,36 @@ model User {
   name          String
   email         String
   emailVerified Boolean
-  image         String?
+  image         String
   createdAt     DateTime
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
 
+  /**
+    * Username
+   */
+  username String? @unique
+
+  /**
+   * User Followers and Following
+   */
+  following User[] @relation("UserFollows")
+  followers User[] @relation("UserFollows")
+
+  /**
+   * User Favorite Artists
+   */
+  favoriteArtists DBFavoriteArtist[]
+
+  /**
+   * User Sortings
+   */
+  sortings DBSorting[]
+
   @@unique([email])
   @@map("user")
+  @@index([username])
 }
 
 model Session {

@@ -57,12 +57,23 @@ export default class Ranker {
     /* Initialize all data structures. */
     constructor() {
         this.matchups = new MatchupQueue();
+        
         this.trackIDs = new Set();
         this.nodeMap = new Map();
+
         this.scoreMap = new Map();
         this.reverseScoreMap = new Map();
         this.choiceCache = new Map();
+        
         this.isComplete = false;
+    }
+
+    public initRanker(trackIds: string[]) {
+        trackIds.forEach(id => {
+            this.nodeMap.set(id, new TrackNode(id));
+        });
+        this.genChoice();
+        return this.currMatchup;
     }
 
     /* 
