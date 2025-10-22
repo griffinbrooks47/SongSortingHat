@@ -38,7 +38,7 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
                         <h2 className="text-[1rem]">
                             <Link href={`/user/${user.id}`} className="font-bold">{user.username}</Link>
                             {" sorted "}
-                            <Link href={`/user/${sorting.artist.spotifyId}`} className="font-bold">{sorting.artist.name}</Link>
+                            <Link href={`/artist/${sorting.artist.spotifyId}`} className="font-bold">{sorting.artist.name}</Link>
                         </h2>
                     </div>
                 </div>
