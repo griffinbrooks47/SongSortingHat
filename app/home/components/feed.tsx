@@ -1,6 +1,7 @@
 
 import { Track } from "@/types/artist"
 import { TSorting } from "@/types/sorting"
+import { TUser } from "@/types/user"
 import { IconUser } from "@tabler/icons-react"
 
 import Image from "next/image"
@@ -19,6 +20,9 @@ export default function Feed(
 }
 
 function FeedItem({ sorting }: { sorting: TSorting }) {
+
+    const user: TUser = sorting.user
+
     return (
         <div className="w-full rounded-md card-sm py-[0.5rem]">
             <div className="flex flex-col">
@@ -32,9 +36,9 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
                     </div>
                     <div className="h-full flex flex-row items-center px-[1rem]">
                         <h2 className="text-[1rem]">
-                            <Link href={`/user/${sorting.user.id}`} className="font-bold">{sorting.user.name}</Link>
+                            <Link href={`/user/${user.id}`} className="font-bold">{user.username}</Link>
                             {" sorted "}
-                            <span className="font-bold">{sorting.artist.name}</span>
+                            <Link href={`/user/${sorting.artist.spotifyId}`} className="font-bold">{sorting.artist.name}</Link>
                         </h2>
                     </div>
                 </div>

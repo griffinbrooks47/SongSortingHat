@@ -48,6 +48,11 @@ export default function Assemble(
     const [currentSlide, setCurrentSlide] = useState(0);
     const [totalSlides, setTotalSlides] = useState(0);
 
+    const [canContinue, setCanContinue] = useState(false);
+    useEffect(() => {
+        setCanContinue(selectedIds.size >= 5 && tracks.length >= 5);
+    }, [selectedIds, tracks.length]);
+
     // Optimized API setup - no forceUpdate, no refs for display values
     useEffect(() => {
         if (!api) return;
@@ -83,14 +88,27 @@ export default function Assemble(
                     <IconMusic />
                     <h1 className="text-xl">Choose Songs</h1>
                 </header>   
-                <button 
-                    className="btn btn-outline bg-secondary btn-md rounded-md"
-                    onClick={() => {
-                        onEnd(Array.from(selectedIds))
-                    }}
-                >
-                    Next
-                </button>
+                {canContinue 
+                    ? 
+                    <button 
+                        className={`btn btn-outline bg-secondary btn-md rounded-md`}
+                        onClick={() => {
+                            onEnd(Array.from(selectedIds))
+                        }}
+                    >
+                        Next
+                    </button>
+                    : 
+                    <button 
+                        className={`btn btn-outline bg-secondary btn-md rounded-md btn-disabled`}
+                        onClick={() => {
+                            onEnd(Array.from(selectedIds))
+                        }}
+                    >
+                        Next
+                    </button>
+                
+                }
             </nav>
             <hr className="border-black opacity-10 w-[50rem] mx-auto mt-1"></hr>
             <header className="mt-6 mb-6 flex justify-center items-center">

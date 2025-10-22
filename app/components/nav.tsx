@@ -98,7 +98,9 @@ export default function Navbar() {
               } as React.CSSProperties}
             >
               {/* View Profile */}
-              <section className="h-[3.5rem] mx-[0.75rem] flex flex-row items-center gap-4">
+              <Link 
+                href={`/user/${userId}`}
+                className="h-[3.5rem] mx-[0.75rem] flex flex-row items-center gap-4">
                 <button 
                   className='h-full opacity-90'
                   popoverTarget="profile-popover"
@@ -114,7 +116,7 @@ export default function Navbar() {
                   <h2 className="font-semibold">{session?.user?.name}</h2>
                   <h2 className="">{session?.user?.name}</h2>
                 </div>
-              </section>
+              </Link>
 
               <hr className="border-black opacity-10 w-[100%] mx-auto my-[0.5rem]"></hr>
 
@@ -133,7 +135,7 @@ export default function Navbar() {
           </div>
         ) : (
           <div className='flex justify-center items-center'>
-            <Link href='/register' className="btn btn-default mx-[0.5rem] rounded-lg">
+            <Link href='/login' className="btn btn-default mx-[0.5rem] rounded-lg">
               Sign up
             </Link>
             <Link href='/login' className="btn btn-outline rounded-lg mx-[0.5rem]">
