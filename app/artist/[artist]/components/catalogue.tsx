@@ -53,7 +53,7 @@ export default function Catalogue(
             {(page == 0) && 
                 <section>
                     {/* Albums Grid */}
-                    <div className="grid grid-cols-5 gap-3">
+                    <div className="grid grid-cols-4 gap-3">
                     {albums.map((album) => (
                         <AlbumCard
                         image={album.images[0]}

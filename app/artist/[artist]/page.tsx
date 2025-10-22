@@ -88,18 +88,24 @@ export default async function ArtistPage({
   }
 
   const artistId = (await params).artist;
-  
-  const { artist, albums } = await getCachedArtistData(artistId);
-  if (!artist) {
-    throw new Error("Artist not found.");
+  let artist: Artist | null = null;
+  let albums: Album[] | null = null;
+  let images: { url: string; width: number; height: number }[] | undefined = [];
+
+  try {
+    const result = await getCachedArtistData(artistId);
+    artist = result.artist;
+    albums = result.albums;
+    images = artist.images;
+
+    if (!artist || !albums || !images) {
+      return <div>Artist not found</div>;
+    }
+  } catch (error) {
+    console.error("Error fetching artist data:", error);
+    return <div>Error fetching artist data</div>;
   }
-  if (!albums) {
-    throw new Error("Albums not found.");
-  }   
-  if (!artist.images || artist.images.length === 0) {
-    throw new Error("No artist images found.");
-  }
-   
+
   return (
     <main className="page w-fit flex flex-col items-center mx-auto">
 
@@ -109,7 +115,7 @@ export default async function ArtistPage({
         <figure className="avatar">
           <div className="mask mask-squircle h-[11rem]">
             <Image
-              src={artist.images[0].url}
+              src={images?.[0]?.url ?? '/images/placeholder-280.png'}
               width={280} 
               height={280}
               alt={`${artist.name} profile picture`}

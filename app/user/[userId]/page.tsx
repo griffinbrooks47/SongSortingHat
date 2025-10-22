@@ -12,6 +12,8 @@ import { Artist, Track } from "@/types/artist";
 import prisma from "@/utils/prismaClient";
 import { IconUser } from "@tabler/icons-react";
 import { SortingCard } from "./components/sortingCard";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 
 export default async function UserProfile({
@@ -19,7 +21,14 @@ export default async function UserProfile({
 }: {
   params: Promise<{ userId: string }>
 }) {
+
+    /* Check if user is logged in. */
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
     const userId = (await params).userId;
+    const isCurrUser = session?.user?.id === userId;
 
     const user: TUser | null = await prisma.getUser(userId);
     if (!user) {
@@ -53,9 +62,16 @@ export default async function UserProfile({
                         </div>
                     </div>
                     <nav className="flex flex-row gap-4">
-                        <button className="btn btn-sm btn-outline bg-primary border-2 rounded-md">
-                            Follow
-                        </button>
+                        {isCurrUser ? (
+                            <button className="btn btn-sm btn-outline bg-primary btn-disabled border-2 rounded-md">
+                                Edit Profile
+                            </button>
+                        ) : (
+                            <button className="btn btn-sm btn-outline bg-primary btn-disabled border-2 rounded-md">
+                                Follow
+                            </button>
+                        )}
+                        
                     </nav>
                 </section>
             </section>
