@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack --experimental-https",
-    "build": "prisma generate && next build",
-    "postinstall": "prisma generate",
+    "build": "npx prisma generate && next build",
+    "postinstall": "npx prisma generate",
     "start": "next start",
     "lint": "next lint",
-    "db-reset": "export DATABASE_URL='file:./dev.db' && npx prisma generate && npx prisma db push"
+    "db-reset": "export DATABASE_URL='file:./prisma/dev.db' && npx prisma generate && npx prisma db push"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

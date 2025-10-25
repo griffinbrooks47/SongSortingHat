@@ -8,10 +8,15 @@ import { IconBrandGoogleFilled, IconBrandSpotifyFilled } from "@tabler/icons-rea
 
 export default function Login() {
 
-    /* Google Account Register */
+    /* 3rd Party Sign-In */
     const handleGoogleRegister = async () => {
         await signIn.social({
             provider: "google",
+        });
+    }
+    const handleSpotifyRegister = async () => {
+        await signIn.social({
+            provider: "spotify",
         });
     }
 
@@ -26,16 +31,21 @@ export default function Login() {
                         <IconBrandGoogleFilled className="mr-1" />
                         Login with Google
                     </button>
-                    <button className="btn bg-white text-black border-[#e5e5e5] rounded-md w-full my-2">
-                        <IconBrandSpotifyFilled className="mr-1" />
-                        Login with Spotify
-                    </button>
-                    
                 </div>
             </div>
         </main>
     )
 }
+
+/* 
+<button className="btn bg-white text-black border-[#e5e5e5] rounded-md w-full my-2"
+                        onClick={() => handleSpotifyRegister()}
+                    >
+                        <IconBrandSpotifyFilled className="mr-1" />
+                        Login with Spotify
+                    </button>
+
+*/
 
 /* 
 <div className="divider">or</div>
