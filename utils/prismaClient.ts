@@ -245,9 +245,6 @@ class PrismaWrapper {
         try {
             const sortings = await prisma.dBSorting.findMany({
                 where: {
-                    userId: {
-                        not: userId,
-                    },
                     published: true,
                 },
                 include: sortingInclude,
