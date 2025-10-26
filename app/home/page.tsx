@@ -10,6 +10,8 @@ import { TSorting } from "@/types/sorting";
 /* Prisma */
 import prisma from "@/utils/prismaClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default async function Home() {
 
   /* TO INCLUDE: */
