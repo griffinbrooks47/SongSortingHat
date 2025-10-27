@@ -185,7 +185,7 @@ export default function Navbar() {
           </div>
         ) : (
           <div className='flex justify-center items-center'>
-            <Link href='/login' className="btn btn-default mx-1 rounded-lg">
+            <Link href='/signup' className="btn btn-default mx-1 rounded-lg">
               Sign up
             </Link>
             <Link href='/login' className="btn btn-outline rounded-lg mx-1">
