@@ -1,10 +1,12 @@
 'use client'
 
 import { IconWorld, IconUsers, IconUsersGroup, IconCirclePlus } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
 
 import { useState } from "react";
 
 export default function Navbar() {
+    const router = useRouter();
 
     const iconStyle = "h-[1.15rem]";
 
@@ -37,10 +39,14 @@ export default function Navbar() {
                     </a>
                 </ul>
             </section>
-            <a className={`${buttonStyle} bg-accent border-neutral border-2 opacity-90 rounded-md shadow-sm`}>
-                <IconCirclePlus className="h-5 w-5" />
-                <div className="font-semibold mx-1">Create</div>
-            </a>
+            <a className={`${buttonStyle} bg-accent border-neutral border-2 opacity-90 rounded-md shadow-sm`}
+                    onClick={() => {
+                        router.push("/search");
+                    }}
+                >
+                    <IconCirclePlus className="h-5 w-5" />
+                    <div className="font-semibold mx-1">Create</div>
+                </a>
         </div>
     )
 }

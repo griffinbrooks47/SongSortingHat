@@ -33,8 +33,7 @@ export default async function Home() {
               <hr className="border-black opacity-10 w-full mx-auto mt-[5px]"></hr>
           </nav>
           <main className="relative pt-4">
-            <nav className="h-12 rounded-md mb-6">
-              <p className="font-bold text-[1.35rem]">{"Welcome back!"}</p>
+            <nav className="h-12 rounded-md mb-0">
               <p className="mb-2 opacity-80">{"Here's what people are sorting..."}</p>
             </nav>
             <Feed 
