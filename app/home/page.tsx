@@ -26,7 +26,7 @@ export default async function Home() {
 
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] page relative bg-base-200 flex justify-center items-start">
+    <main className="min-h-[calc(100vh-4rem)] pb-12 page relative bg-base-200 flex justify-center items-start">
       <section className="w-200 flex flex-col justify-center">
           <nav className="sticky top-16 w-full z-10 bg-base-200 pt-4">
               <Navbar />

@@ -11,7 +11,7 @@ export default function Feed(
     { sortings }: { sortings: TSorting[] }
 ) {
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-12">
             {sortings.map((sorting) => (
                 <FeedItem key={sorting.id} sorting={sorting} />
             ))}
@@ -28,10 +28,16 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
             <div className="flex flex-col">
                 {/* User Info */}
                 <div 
-                className="h-14 px-4 rounded-md shadow-sm bg-base-100 flex flex-row items-center">
+                className="h-14 px-4 rounded-md shadow-sm border-black border-2 bg-base-100 flex flex-row items-center">
                     <div className="avatar w-8">
                         <div className="ring-black ring-offset-base-100 bg-secondary w-full rounded-full ring-2 ring-offset-2">
-                            <IconUser className="h-full w-full"/>
+                            <Image
+                                src={user.profilePicture?.url || "/profile_icons/default_profile_icon.png"}
+                                alt={user.username}
+                                width={32}
+                                height={32}
+                                className={`object-cover w-full h-full bg-${user.profilePicture?.backgroundColor || "accent"}`}
+                            />
                         </div>
                     </div>
                     <div className="h-full flex flex-row items-center px-4">
@@ -44,7 +50,7 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
                 </div>
 
                 {/* Top 3 Tracks */}
-                <div className="flex flex-col gap-2 mt-4 px-2">
+                <div className="flex flex-col gap-2 mt-4 pl-2">
                     {sorting.tracks.slice(0, 3).map((track, index) => (
                         <div key={track.id || index} className="flex items-center gap-3">
                             <span className="text-lg font-bold text-black w-4 shrink-0">{index + 1}</span>
@@ -56,8 +62,8 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
                 </div>
 
                 {/* Read More Button */}
-                <div className="card-actions justify-start mt-4">
-                    <Link href={`/sorting/${sorting.id}`} className="btn btn-outline bg-base-300 border-2 rounded-sm btn-sm">
+                <div className="card-actions justify-end mt-2">
+                    <Link href={`/sorting/${sorting.id}`} className="btn btn-outline bg-secondary border-2 rounded-sm btn-sm">
                         View sorting...
                     </Link>
                 </div>

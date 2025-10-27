@@ -33,15 +33,32 @@ export const auth = betterAuth({
             if (newSession) {
                 const user = await prisma.user.findUnique({
                     where: { id: newSession.user.id },
-                    select: { username: true, createdAt: true }
+                    select: { username: true, createdAt: true, profilePicture: true },
                 });
-                
+
                 // If username is not set or user was just created
                 if (user && !user.username) {
                     await prisma.user.update({
                         where: { id: newSession.user.id },
                         data: {
                             username: `user_${newSession.user.id.substring(0, 8)}`
+                        }
+                    });
+                }
+                // If profile image is not set, assign a default profile image
+                if (user && !user.profilePicture) {
+
+                    const defaultColors = ["accent", "primary", "secondary", "success"];
+
+                    await prisma.user.update({
+                        where: { id: newSession.user.id },
+                        data: {
+                            profilePicture: {
+                                create: {
+                                    url: "/profile_icons/default_profile_icon.png",
+                                    backgroundColor: defaultColors[Math.floor(Math.random() * defaultColors.length)],
+                                }
+                            }
                         }
                     });
                 }

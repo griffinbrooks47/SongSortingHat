@@ -6,7 +6,10 @@ export type TUser = {
     name: string;
     username: string;
     image: string;
-
+    profilePicture: {
+        url: string | null;
+        backgroundColor: string;
+    };
     favoriteArtists?: Artist[];
     sortings?: TSorting[];
 }

@@ -37,6 +37,8 @@ export default async function UserProfile({
 
     const username = user.username;
     const image: string = user.image;
+
+
     const favoriteArtists: Artist[] | undefined = user.favoriteArtists;
     const sortings: TSorting[] | undefined = user.sortings;
 
@@ -45,9 +47,15 @@ export default async function UserProfile({
             {/* User Profile Header */}
             <section className="relative w-full mt-16 mb-8 flex flex-row justify-center items-center">
                 {/* User Avatar */}
-                <div className="avatar h-30 w-30">
-                    <div className="p-4 ring-black ring-offset-base-100 bg-secondary w-full rounded-full ring-2 ring-offset-2">
-                        <IconUser className="h-full w-full"/>
+                <div className="avatar h-36 w-36">
+                    <div className="mask mask-squircle w-full shadow-lg">
+                        <Image
+                            src={user.profilePicture?.url || "/profile_icons/default_profile_icon.png"}
+                            alt={username}
+                            width={144}
+                            height={144}
+                            className={`object-cover w-full h-full bg-${user.profilePicture?.backgroundColor || "accent"}`}
+                        />
                     </div>
                 </div>
                 
@@ -63,7 +71,7 @@ export default async function UserProfile({
                     </div>
                     <nav className="flex flex-row gap-4">
                         {isCurrUser ? (
-                            <button className="btn btn-sm btn-outline bg-primary btn-disabled border-2 rounded-md">
+                            <button className="btn btn-sm btn-outline bg-secondary border-2 rounded-md">
                                 Edit Profile
                             </button>
                         ) : (

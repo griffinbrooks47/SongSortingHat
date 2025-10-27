@@ -10,6 +10,7 @@ import { DBArtist, DBAlbum, DBTrack, DBArtistImg, DBAlbumImg, DBGenre } from "@p
 import { Album, Artist, Genre, Img, Track } from "@/types/artist";
 import { TSorting } from "@/types/sorting";
 import { TUser } from "@/types/user";
+import { profile } from "console";
 
 const trackInclude = {
     images: true, 
@@ -61,7 +62,11 @@ const sortingInclude = {
             position: 'asc' as const,
         },
     },
-    user: true,
+    user: {
+        include: {
+            profilePicture: true,
+        }
+    },
 };
 
 type DBSortingWithRelations = Prisma.DBSortingGetPayload<{
@@ -81,7 +86,8 @@ const userInclude = {
         orderBy: {
             createdAt: 'desc' as const,
         }
-    }
+    },
+    profilePicture: true,
 };
 type DBUserWithRelations = Prisma.UserGetPayload<{
     include: typeof userInclude;
@@ -742,6 +748,13 @@ class PrismaWrapper {
             name: dbSorting.user.name,
             username: dbSorting.user.username || "",
             image: dbSorting.user.image,
+            profilePicture: dbSorting.user.profilePicture ? {
+                url: dbSorting.user.profilePicture.url,
+                backgroundColor: dbSorting.user.profilePicture.backgroundColor,
+            } : {
+                url: "/profile_icons/default_profile_icon.png",
+                backgroundColor: "accent",
+            },
         };
 
         return {
@@ -772,6 +785,14 @@ class PrismaWrapper {
             },
         }));
 
+        const profilePicture = dBUserWithRelations.profilePicture ? {
+            url: dBUserWithRelations.profilePicture.url,
+            backgroundColor: dBUserWithRelations.profilePicture.backgroundColor,
+        } : {
+            url: "/profile_icons/default_profile_icon.png",
+            backgroundColor: "accent",
+        };
+
         const sortings: TSorting[] = dBUserWithRelations.sortings.map(sorting => this.parseSorting(sorting));
 
         return {
@@ -779,6 +800,7 @@ class PrismaWrapper {
             name: dBUserWithRelations.name,
             username: dBUserWithRelations.username || "",
             image: dBUserWithRelations.image,
+            profilePicture: profilePicture,
             favoriteArtists: favoriteArtists,
             sortings: sortings,
         };

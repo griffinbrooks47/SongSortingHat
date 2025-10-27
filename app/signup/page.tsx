@@ -1,12 +1,12 @@
 'use client'
 
-import Image from "next/image"
+import Image from 'next/image';
 
 /* Auth Imports */
 import { signIn } from '@/lib/auth-client'
 
 /* Icons */
-import { IconBrandGoogleFilled, IconBrandSpotifyFilled, IconMail, IconMailFilled, IconAt, IconKey, IconBrandRedhat } from "@tabler/icons-react"
+import { IconBrandGoogleFilled, IconBrandSpotifyFilled, IconUserScan, IconMail, IconMailFilled, IconAt, IconKey, IconBrandRedhat } from "@tabler/icons-react"
 
 export default function Login() {
 
@@ -31,10 +31,10 @@ export default function Login() {
     }
 
     return (
-        <main className="h-[calc(100vh-4rem)] pt-4 flex justify-center items-base">
+        <main className="h-[calc(100vh-4rem)] pt-10 flex justify-center items-base">
 
             {/* Log In Container */}
-            <div className="w-[27.5rem] h-fit px-10 mt-[2rem] py-10 bg-base-200 border-0 border-black shadow-0 rounded-lg flex justify-base items-center flex-col">
+            <div className="w-[27.5rem] h-fit px-10 mt-2 py-10 bg-base-200 border-0 border-black shadow-0 rounded-lg flex justify-base items-center flex-col">
                 <figure className='my-[0rem] h-30 w-30'>
                     <Image
                         src="/ssh_logo.png"
@@ -43,22 +43,31 @@ export default function Login() {
                         height={500}
                         className=""
                         priority
-                    >
-                    </Image>
+                    ></Image>
                 </figure>
-                <h1 className="text-[1.5rem] font-bold mr-auto">Login</h1>
-                <div className='text-[0.85rem] mr-auto'>
-                    New user? <a href="/signup" className="mx-1 text-blue-black font-bold hover:underline">Create an account</a>
-                </div>
+                <h1 className="mb-4 text-[1.5rem] font-bold mr-auto">Sign Up</h1>
 
-                {/* Username / Password */}
-                <section className='mt-4 mb-2 w-full flex flex-col justify-center items-center gap-3'>
+                {/* Social Sign Up */}
+                <section className='w-full'>
+                    <button className="btn bg-white text-black border-black border-2 rounded-sm w-full"
+                        onClick={() => handleGoogleRegister()}
+                    >
+                        <svg aria-label="Google logo" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g><path d="m0 0H512V512H0" fill="#fff"></path><path fill="#34a853" d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"></path><path fill="#4285f4" d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"></path><path fill="#fbbc02" d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"></path><path fill="#ea4335" d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"></path></g></svg>
+                        Continue with Google
+                    </button>
+                </section>
+                
+
+                <div className="divider my-6">or</div>
+
+                {/* Email / Username / Password */}
+                <section className='mb-2 w-full flex flex-col justify-center items-center gap-3'>
                     <label className="input validator input-ghost bg-base-300 w-full rounded-sm">
-                        <IconAt className="mr-1" />
+                        <IconUserScan className="mr-1" />
                         <input
                             type="text"
                             required
-                            placeholder="Username"
+                            placeholder="Name"
                             pattern="[A-Za-z][A-Za-z0-9\-]*"
                             minLength={3}
                             maxLength={30}
@@ -66,36 +75,50 @@ export default function Login() {
                         />
                     </label>
                     <label className="input validator input-ghost bg-base-300 w-full rounded-sm">
-                        <IconKey className="mr-1" />
+                        <IconMail className="mr-1" />
                         <input
-                            type="password"
+                            type="email"
                             required
-                            placeholder="Password"
-                            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                            title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
+                            placeholder="Email"
+                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                            title="Must be a valid email address"
                         />
                     </label>
+                    <section className='flex gap-3'>
+                        <label className="input validator input-ghost bg-base-300 w-full rounded-sm">
+                            <IconAt className="mr-1" />
+                            <input
+                                type="text"
+                                required
+                                placeholder="Username"
+                                pattern="[A-Za-z][A-Za-z0-9\-]*"
+                                minLength={3}
+                                maxLength={30}
+                                title="Only letters, numbers or dash"
+                            />
+                        </label>
+                        <label className="input validator input-ghost bg-base-300 w-full rounded-sm">
+                            <IconKey className="mr-1" />
+                            <input
+                                type="password"
+                                required
+                                placeholder="Password"
+                                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
+                            />
+                        </label>
+                    </section>
+                    
                    
                 </section>
-                <div className='text-[0.85rem] mr-auto'>
-                    <a href="/register" className="mx-1 text-blue-black font-bold hover:underline">Forgot password?</a>
-                </div>
 
-                {/* Social Sign On */}
+                {/* Create Account */}
                 <div className="flex flex-col justify-center items-center gap-2 w-full mt-4">
                     <button className="w-full btn bg-accent text-black border-black rounded-sm"
                         onClick={() => handleGoogleRegister()}
                     >
-                        Log In
+                        Create Account
                     </button>
-                    <div className="divider">or</div>
-                    <button className="btn bg-white text-black border-black border-2 rounded-sm w-full"
-                        onClick={() => handleGoogleRegister()}
-                    >
-                        <svg aria-label="Google logo" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g><path d="m0 0H512V512H0" fill="#fff"></path><path fill="#34a853" d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"></path><path fill="#4285f4" d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"></path><path fill="#fbbc02" d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"></path><path fill="#ea4335" d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"></path></g></svg>
-                        Continue with Google
-                    </button>
-                    
                 </div>
             </div>
 
