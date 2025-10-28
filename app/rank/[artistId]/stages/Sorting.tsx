@@ -10,9 +10,15 @@ export default function Sorting(
     { tracks, onEnd }: { tracks: Track[], onEnd: (selectedIds: string[]) => void }
 ) {
 
+    const [isSubmit, setIsSubmit] = useState(false);
+
     const [orderedTracks, setOrderedTracks] = useState(tracks);
 
     const handleSave = () => {
+
+        if(isSubmit) return;
+        setIsSubmit(true);
+
         const orderedIds = orderedTracks.map(track => track.spotifyId);
         onEnd(orderedIds);
     };
@@ -33,7 +39,7 @@ export default function Sorting(
                     <h1 className="text-xl">Your Sorting</h1>
                 </header>   
                 <button 
-                    className="btn btn-outline bg-secondary btn-md rounded-md"
+                    className={`btn btn-outline bg-secondary btn-md rounded-md ${isSubmit ? "btn-disabled" : ""}`}
                     onClick={handleSave}
                 >
                     Done
