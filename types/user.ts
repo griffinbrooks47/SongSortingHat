@@ -5,6 +5,10 @@ export type TUser = {
     id: string;
     name: string;
     username: string;
+    followers: TUser[];
+    following: TUser[];
+    followerCount: number;
+    followingCount: number;
     image: string;
     profilePicture: {
         url: string | null;

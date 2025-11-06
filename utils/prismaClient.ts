@@ -600,9 +600,83 @@ class PrismaWrapper {
         return sorting;
     }
 
-    /* PRIVATE HELPERS - PARSING DATA */
+    /* 
+        DATABASE UPDATE
+    */
+    public async followUser(currentUserId: string, targetUserId: string): Promise<void> {
+        if (currentUserId === targetUserId) {
+            throw new Error("Users cannot follow themselves");
+        }
 
-    
+        await prisma.$transaction(async (tx) => {
+            const alreadyFollowing = await tx.user.findFirst({
+            where: {
+                id: currentUserId,
+                following: { some: { id: targetUserId } },
+            },
+            select: { id: true },
+            });
+
+            if (alreadyFollowing) {
+                throw new Error("Already following this user");
+            }
+
+            await tx.user.update({
+            where: { id: currentUserId },
+            data: {
+                following: { connect: { id: targetUserId } },
+                followingCount: { increment: 1 },
+            },
+            });
+
+            await tx.user.update({
+            where: { id: targetUserId },
+            data: {
+                followers: { connect: { id: currentUserId } },
+                followerCount: { increment: 1 },
+            },
+            });
+        });
+    }
+    async unfollowUser(currentUserId: string, targetUserId: string): Promise<void> {
+        if (currentUserId === targetUserId) {
+            throw new Error("Users cannot unfollow themselves");
+        }
+
+        await prisma.$transaction(async (tx) => {
+            const isFollowing = await tx.user.findFirst({
+            where: {
+                id: currentUserId,
+                following: { some: { id: targetUserId } },
+            },
+            select: { id: true },
+            });
+
+            if (!isFollowing) {
+                throw new Error("You are not following this user");
+            }
+
+            await tx.user.update({
+            where: { id: currentUserId },
+            data: {
+                following: { disconnect: { id: targetUserId } },
+                followingCount: { decrement: 1 },
+            },
+            });
+
+            await tx.user.update({
+            where: { id: targetUserId },
+            data: {
+                followers: { disconnect: { id: currentUserId } },
+                followerCount: { decrement: 1 },
+            },
+            });
+        });
+    }
+
+    /* 
+        PRIVATE HELPERS - PARSING DATA 
+    */
     private parseArtist(dbArtist: DBArtistWithRelations): Artist {
 
         /* Package Artist Albums */
@@ -747,7 +821,11 @@ class PrismaWrapper {
             emailVerified: dbSorting.user.emailVerified,
             name: dbSorting.user.name,
             username: dbSorting.user.username || "",
+            followerCount: dbSorting.user.followerCount,
+            followingCount: dbSorting.user.followingCount,
             image: dbSorting.user.image,
+            followers: [],   // satisfy TUser shape
+            following: [],   // satisfy TUser shape
             profilePicture: dbSorting.user.profilePicture ? {
                 url: dbSorting.user.profilePicture.url,
                 backgroundColor: dbSorting.user.profilePicture.backgroundColor,
@@ -785,6 +863,35 @@ class PrismaWrapper {
             },
         }));
 
+        const followers: TUser[] = dBUserWithRelations.followers.map(follower => ({
+            id: follower.id,
+            name: follower.name,
+            username: follower.username || "",
+            image: follower.image,
+            profilePicture: {
+                url: "/profile_icons/default_profile_icon.png",
+                backgroundColor: "accent",
+            },
+            followerCount: follower.followerCount,
+            followingCount: follower.followingCount,
+            followers: [],   // satisfy TUser shape
+            following: [],   // satisfy TUser shape
+        }));
+        const following: TUser[] = dBUserWithRelations.following.map(following => ({
+            id: following.id,
+            name: following.name,
+            username: following.username || "",
+            image: following.image,
+            profilePicture: {
+                url: "/profile_icons/default_profile_icon.png",
+                backgroundColor: "accent",
+            },
+            followerCount: following.followerCount,
+            followingCount: following.followingCount,
+            followers: [],   // satisfy TUser shape
+            following: [],   // satisfy TUser shape
+        }));
+
         const profilePicture = dBUserWithRelations.profilePicture ? {
             url: dBUserWithRelations.profilePicture.url,
             backgroundColor: dBUserWithRelations.profilePicture.backgroundColor,
@@ -799,6 +906,10 @@ class PrismaWrapper {
             id: dBUserWithRelations.id,
             name: dBUserWithRelations.name,
             username: dBUserWithRelations.username || "",
+            followerCount: dBUserWithRelations.followers.length,
+            followingCount: dBUserWithRelations.following.length,
+            followers: followers,
+            following: following,
             image: dBUserWithRelations.image,
             profilePicture: profilePicture,
             favoriteArtists: favoriteArtists,

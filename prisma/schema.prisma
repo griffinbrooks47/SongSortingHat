@@ -192,6 +192,8 @@ model User {
    */
   following User[] @relation("UserFollows")
   followers User[] @relation("UserFollows")
+  followerCount   Int      @default(0)
+  followingCount  Int      @default(0)
 
   /**
    * User Favorite Artists

@@ -6,7 +6,7 @@ import Image from "next/image"
 import { signIn } from '@/lib/auth-client'
 
 /* Icons */
-import { IconBrandGoogleFilled, IconBrandSpotifyFilled, IconMail, IconMailFilled, IconAt, IconKey, IconBrandRedhat } from "@tabler/icons-react"
+import { IconAt, IconKey } from "@tabler/icons-react"
 
 export default function Login() {
 
@@ -22,11 +22,6 @@ export default function Login() {
     const handleGoogleRegister = async () => {
         await signIn.social({
             provider: "google",
-        });
-    }
-    const handleSpotifyRegister = async () => {
-        await signIn.social({
-            provider: "spotify",
         });
     }
 
