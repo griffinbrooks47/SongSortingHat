@@ -5,6 +5,7 @@ import Link from "next/link";
 
 /* Components */
 import UserProfile from "./components/userProfile";
+import { SortingPreviewCard } from "./components/sortingPreviewCard";
 
 /* Types */
 import { TSorting } from "@/types/sorting";
@@ -14,7 +15,6 @@ import { Artist, Track } from "@/types/artist";
 /* Prisma */
 import prisma from "@/utils/prismaClient";
 import { IconUser } from "@tabler/icons-react";
-import { SortingCard } from "./components/sortingCard";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { User } from "lucide-react";
@@ -48,20 +48,27 @@ export default async function UserProfilePage({
                 user={user}
                 currUserId={session?.user?.id || ""}
             />
+
+            {/* Favorite Artists */}
+
         
             {/* Sortings Section */}
-            <section className="mt-16 flex flex-col items-start">
-                <h1 className="text-xl font-bold">Sortings</h1>
+            <section className="mb-auto flex flex-col items-start">
+                <h1 className="text-md font-bold">Sortings</h1>
                 <hr className="border-black opacity-10 w-200 mt-1"></hr>
-                <div className="my-4 grid grid-cols-4 gap-4">
+                <div className="mt-4 grid grid-cols-3 gap-2">
                     {sortings && sortings.map((sorting) => (
-                        <SortingCard 
-                            key={sorting.artistId}
-                            sorting={sorting}
-                        />
+                        <SortingPreviewCard key={sorting.id} sorting={sorting} />
                     ))}
                 </div>
             </section>
         </main>
     )
 }
+
+/* 
+
+
+
+
+*/

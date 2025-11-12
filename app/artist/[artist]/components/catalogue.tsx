@@ -14,7 +14,7 @@ import { IconAlbum, IconDisc } from "@tabler/icons-react";
 
 /* Conditional CSS */
 const iconStyle = "h-[1.15rem]";
-const buttonStyle = "h-10 px-3 mx-1 flex flex-row cursor-pointer justify-center items-center"
+const buttonStyle = "h-10 px-2 mx-1 text-[0.85rem] flex flex-row cursor-pointer justify-center items-center"
 
 export default function Catalogue(
     { albums, tracks } : { albums: Album[], tracks: Track[] }

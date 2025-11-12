@@ -9,6 +9,7 @@ import { TUser } from "@/types/user";
 /* React / Next */
 import Image from "next/image";
 import { useState } from "react";
+import { IconAt } from "@tabler/icons-react";
 
 export default function UserProfile(
     {
@@ -29,7 +30,7 @@ export default function UserProfile(
     const isCurrUser = currUserId === user.id;
 
     const [isFollowing, setIsFollowing] = useState(
-        user.following.some((u) => u.id === currUserId)
+        user.followers.map((follower) => follower.id).includes(currUserId)
     );
 
     const handleFollowClick = () => {
@@ -77,28 +78,28 @@ export default function UserProfile(
                     </figure>
                     
                     {/* User Info */}
-                    <section className="px-12 flex flex-col justify-start items-center">
+                    <section className="px-12 mb-2 flex flex-col justify-start items-center gap-1">
                     
                         <div>
                             {/* Name */}
-                            <div className="text-[1.80rem] m-0 font-bold leading-8 line-clamp-2">
+                            <div className="text-[1.80rem] m-0 font-bold leading-9 line-clamp-2">
                                 {user.name}
                             </div>
                             {/* Username */}
-                            <div className="text-[1rem] text-gray-700 leading-7 line-clamp-2">
-                                @{user.username}
+                            <div className="text-[1rem] mt-[-2px] text-gray-700 leading-6 line-clamp-2 flex flex-row items-center">
+                                <IconAt className="h-[1.15rem] pt-[0.5px] my-auto w-[1rem]"/>{user.username}
                             </div>
                         </div>
                         
                         {/* Followers / Following */}
                         <div className="flex flex-row justify-start w-full gap-4">
                             <div className="flex flex-row items-center gap-1">
-                                <span className="font-bold text-[0.9rem]">{followers}</span>
-                                <span className="text-gray-600 text-xs">Followers</span>
+                                <span className="font-bold text-sm">{followers}</span>
+                                <span className="text-gray-600 text-sm">Followers</span>
                             </div>
                             <div className="flex flex-row items-center gap-1">
-                                <span className="font-bold text-[0.9rem]">{followingCount}</span>
-                                <span className="text-gray-600 text-xs">Following</span>
+                                <span className="font-bold text-sm">{followingCount}</span>
+                                <span className="text-gray-600 text-sm">Following</span>
                             </div>
                         </div>
                 
