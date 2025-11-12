@@ -168,7 +168,7 @@ export default async function ArtistPage({
       </section>
 
       {/* Navigation */}
-      <ul className="w-full my-8 flex justify-center items-center">
+      <ul className="w-full my-2 flex justify-center items-center">
         <li>
           <Link 
             href={`/rank/${artist.spotifyId}`} 
