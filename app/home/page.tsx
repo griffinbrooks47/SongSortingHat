@@ -1,8 +1,7 @@
 
 /* Components */
 import Navbar from "./components/nav";
-import SampleFeed from "./components/sampleFeed";
-import Feed from "./components/feed";
+import { Feed } from "./components/feed";
 
 /* Types */
 import { TSorting } from "@/types/sorting";
@@ -14,13 +13,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export default async function Home() {
 
-  
-
-
-
   const feedSortings: TSorting[] = await prisma.getGlobalSortings();
-
-
 
   return (
     <main className="min-h-[calc(100vh-4rem)] pb-12 page relative bg-base-200 flex justify-center items-start">

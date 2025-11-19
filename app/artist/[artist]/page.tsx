@@ -23,7 +23,7 @@ import prisma from "@/utils/prismaClient";
 import { AlbumCard } from "./components/albumCard";
 
 /* UI Components. */
-import { IconHeart, IconSwitch, IconDirectionSign, IconCategoryPlus, IconHeartFilled } from "@tabler/icons-react";
+import { IconHeart, IconSwitch, IconDirectionSign, IconCategoryPlus, IconHeartFilled, IconArrowsTransferUpDown } from "@tabler/icons-react";
 import Catalogue from "./components/catalogue";
 
 
@@ -132,10 +132,10 @@ export default async function ArtistPage({
           
           {/* Artist Metadata */}
           <div className="">
-            <div className="mb-1 text-[2.75rem] font-bold leading-13 line-clamp-2">
+            <div className="mb-1 text-[2.7rem] font-bold leading-13 line-clamp-2">
               {artist.name.length > 40 ? artist.name.slice(0, 40) + "..." : artist.name}
             </div>
-            <p className="text-[1.15rem] font-semibold uppercase opacity-80 truncate max-w-[40ch] leading-[1.15rem]">
+            <p className="text-[1.1rem] font-semibold uppercase opacity-80 truncate max-w-[40ch] leading-[1.15rem]">
               <span className={`drop-shadow-[0_0_0.5px_rgba(0,0,0,1)] ${
                 artist.followers >= 30000000 
                   ? 'text-amber-400' 
@@ -155,30 +155,33 @@ export default async function ArtistPage({
               </span>
               {' followers'}
             </p>
-            <p className="text-[0.95rem] my-1 font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1.15rem]">
+            <p className="text-[0.9rem] my-1 font-semibold uppercase opacity-60 truncate max-w-[40ch] leading-[1.15rem]">
               {albums.length} projects
             </p>
-            <button className="my-1 btn btn-outline btn-circle">
-              <IconHeart />
-            </button>
           </div>
+
+          {/* Navigation */}
+          <ul className="w-full my-2 gap-2 flex justify-start items-center">
+            <li>
+              <Link 
+                href={`/rank/${artist.spotifyId}`} 
+                className="px-4 btn btn-md btn-outline bg-secondary border-2 rounded-sm"
+              >
+                <p className="font-semibold text-[1rem] color-accent mr-0">Sort</p>
+                <IconArrowsTransferUpDown className="px-0 w-6 h-6 group-hover:rotate-180 transition-transform duration-300" />
+              </Link>
+            </li>
+            <li>
+              <button className="my-1 btn btn-outline btn-circle border-black">
+                <IconHeart />
+              </button>
+            </li>
+          </ul>
 
         </section>
 
       </section>
 
-      {/* Navigation */}
-      <ul className="w-full my-2 flex justify-center items-center">
-        <li>
-          <Link 
-            href={`/rank/${artist.spotifyId}`} 
-            className="btn btn-lg btn-outline bg-secondary border-2 rounded-lg"
-          >
-            <IconCategoryPlus className="w-8 h-8 group-hover:rotate-180 transition-transform duration-300" />
-            <p className="font-semibold text-[1rem] color-accent mr-2">Start Sorting</p>
-          </Link>
-        </li>
-      </ul>
 
       
       {/* Artist Catalogue */}
