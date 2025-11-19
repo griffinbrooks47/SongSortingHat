@@ -23,31 +23,11 @@ export default function Catalogue(
     const [page, setPage] = useState<number>(0);
 
     return (
-        <main className="flex justify-center items-start flex-col mt-4">
+        <main className="flex justify-center items-start flex-col mt-8">
             
             {/* Music Navigation */}
-            <ul className="py-1 bg-base-100 shadow-sm rounded-md flex flex-row">
-                <a className={`rounded-md ${page == 0 ? "bg-base-200" : ""} ${buttonStyle}`}
-                    onClick={() => {
-                        setPage(0);
-                    }}
-                >
-                    <IconAlbum className={`${iconStyle}`} />
-                    <div className="font-semibold mx-1">Albums</div>
-                </a>
-        
-
-                <a className={`rounded-md ${page == 1 ? "bg-base-200" : ""} ${buttonStyle}`}
-                    onClick={() => {
-                        setPage(1);
-                    }}
-                >
-                    <IconDisc className={`${iconStyle}`} />
-                    <div className="font-semibold mx-1">Tracks</div>
-                </a>
-            </ul>
-
-            <hr className="border-black opacity-10 w-full mx-auto mt-2 mb-4"></hr>
+            <h1 className="text-md font-bold">Albums</h1>
+            <hr className="border-black opacity-10 w-200 mt-1 mb-4"></hr>
 
             {/* Catalogue Grid */}
             {(page == 0) && 

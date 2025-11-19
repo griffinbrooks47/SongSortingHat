@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 /* Components */
-import UserProfile from "./components/userProfile";
+import { UserProfile } from "./components/userProfile";
 import { SortingPreviewCard } from "./components/sortingPreviewCard";
 
 /* Types */

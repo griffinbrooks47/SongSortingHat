@@ -7,7 +7,7 @@ import { IconUser } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
 
-export default function Feed(
+export function Feed(
     { sortings }: { sortings: TSorting[] }
 ) {
     return (
@@ -102,4 +102,65 @@ function SongCard({ track }: { track: Track }) {
             </div>
         </div>
     );
+}
+
+
+export function SkeletonFeed({ count = 3 }: { count?: number }) {
+    return (
+        <div className="flex flex-col gap-12">
+            {Array.from({ length: count }).map((_, i) => (
+                <SkeletonFeedItem key={i} />
+            ))}
+        </div>
+    )
+}
+
+function SkeletonFeedItem() {
+    return (
+        <div className="w-full rounded-md card-sm py-2 animate-pulse">
+            <div className="flex flex-col">
+                {/* User Info Skeleton */}
+                <div className="h-14 px-4 rounded-md shadow-sm border-black border-2 bg-base-100 flex flex-row items-center">
+                    <div className="avatar w-8">
+                        <div className="ring-black ring-offset-base-100 bg-gray-300 w-full rounded-full ring-2 ring-offset-2"></div>
+                    </div>
+                    <div className="h-full flex flex-row items-center px-4 flex-1">
+                        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    </div>
+                </div>
+
+                {/* Top 3 Tracks Skeleton */}
+                <div className="flex flex-col gap-2 mt-4 pl-2">
+                    {[1, 2, 3].map((index) => (
+                        <div key={index} className="flex items-center gap-3">
+                            <span className="text-lg font-bold text-gray-300 w-4 shrink-0">{index}</span>
+                            <div className="flex-1">
+                                <SkeletonSongCard />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Button Skeleton */}
+                <div className="card-actions justify-end mt-2">
+                    <div className="h-8 w-32 bg-gray-300 rounded-sm"></div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function SkeletonSongCard() {
+    return (
+        <div className="relative h-18 pr-auto shrink-0 rounded-sm border-2 border-black bg-base-100 overflow-hidden flex flex-row items-center gap-2 p-1">
+            {/* Album Cover Skeleton */}
+            <div className="h-full aspect-square rounded-sm shrink-0 overflow-hidden bg-gray-300"></div>
+
+            {/* Track Info Skeleton */}
+            <div className="flex flex-col justify-center flex-1 min-w-0 gap-2">
+                <div className="h-3 bg-gray-300 rounded w-3/4"></div>
+                <div className="h-2 bg-gray-300 rounded w-1/2"></div>
+            </div>
+        </div>
+    )
 }

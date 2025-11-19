@@ -121,4 +121,24 @@ const ArtistCard = memo(({ artist, img, width, height, priority = false, classNa
 
 ArtistCard.displayName = 'ArtistCard';
 
-export { ArtistCard };
+function SkeletonArtistCard({ className = "" }: { className?: string }) {
+  return (
+    <div 
+      className={`w-60 h-60 overflow-hidden relative rounded-sm shadow-sm ${className}`}
+    >
+      {/* Animated gradient skeleton */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-300 to-gray-200 animate-pulse" />
+      
+      {/* Optional shimmer effect */}
+      <div 
+        className="absolute inset-0 -translate-x-full animate-shimmer"
+        style={{
+          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+          animation: 'shimmer 2s infinite'
+        }}
+      />
+    </div>
+  );
+}
+
+export { ArtistCard, SkeletonArtistCard };

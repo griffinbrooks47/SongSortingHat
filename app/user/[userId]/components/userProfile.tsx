@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { IconAt } from "@tabler/icons-react";
 
-export default function UserProfile(
+export function UserProfile(
     {
         user,
         currUserId
@@ -133,6 +133,55 @@ export default function UserProfile(
                             }
                         </>
                     }
+                </nav>
+            </section>
+        </>
+    )
+}
+
+export function SkeletonUserProfile() {
+    return (
+        <>
+            {/* User Section Skeleton */}
+            <section className="relative mt-16 mb-8 animate-pulse">
+                
+                {/* Profile */}
+                <main className="flex flex-row items-center">
+                    {/* User Avatar Skeleton */}
+                    <figure className="flex flex-col justify-center items-center">
+                        <div className="avatar h-36 w-36">
+                            <div className="mask mask-squircle w-full shadow-lg bg-gray-300"></div>
+                        </div>
+                    </figure>
+                    
+                    {/* User Info Skeleton */}
+                    <section className="px-12 mb-2 flex flex-col justify-start items-center gap-1">
+                    
+                        <div className="w-full">
+                            {/* Name Skeleton */}
+                            <div className="h-9 w-48 bg-gray-300 rounded mb-1"></div>
+                            {/* Username Skeleton */}
+                            <div className="h-6 w-32 bg-gray-300 rounded flex flex-row items-center"></div>
+                        </div>
+                        
+                        {/* Followers / Following Skeleton */}
+                        <div className="flex flex-row justify-start w-full gap-4 mt-2">
+                            <div className="flex flex-row items-center gap-1">
+                                <div className="h-4 w-8 bg-gray-300 rounded"></div>
+                                <div className="h-4 w-16 bg-gray-300 rounded"></div>
+                            </div>
+                            <div className="flex flex-row items-center gap-1">
+                                <div className="h-4 w-8 bg-gray-300 rounded"></div>
+                                <div className="h-4 w-16 bg-gray-300 rounded"></div>
+                            </div>
+                        </div>
+                
+                    </section>
+                </main>
+
+                {/* Profile Navigation Skeleton */}
+                <nav className="flex flex-row justify-center my-2">
+                    <div className="h-8 w-32 bg-gray-300 rounded-md"></div>
                 </nav>
             </section>
         </>
