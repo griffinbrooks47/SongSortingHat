@@ -7,6 +7,7 @@ import { Artist } from "@/types/artist";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 interface SpotifySearchResponse {
     artists: {
@@ -131,7 +132,9 @@ export default async function Search(props: {
                     </p>
                 }
                 <hr className="border-black opacity-10"></hr>
-                <SearchBar placeholder="Search for an artist..."/>
+                <Suspense fallback={<div>Loading search...</div>}>
+                    <SearchBar placeholder="Search for an artist..." />
+                </Suspense>
             </section>
             <section className="grid grid-cols-3 grid-rows-3 gap-4 rounded-none">
                 {artists.map((artist: Artist) => {
