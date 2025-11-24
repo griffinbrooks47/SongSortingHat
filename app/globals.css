@@ -2,9 +2,16 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
 @plugin "daisyui" {
-   themes: light --default, dark --prefersdark, cupcake, silk, emerald, pastel;
- }
+    themes: light --default, dark --prefersdark, cupcake, silk, emerald, pastel;
+}
+
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    --color-base-100: #f9f4ed;  /* Your custom background color */
+}
 
 @plugin "tailwindcss-animate";
 

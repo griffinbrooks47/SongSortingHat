@@ -8,10 +8,20 @@ import { TSorting } from "@/types/sorting";
 
 /* Prisma */
 import prisma from "@/utils/prismaClient";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export default async function Home() {
+
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
+  if (!session) {
+    redirect('/');
+  }
 
   const feedSortings: TSorting[] = await prisma.getGlobalSortings();
 

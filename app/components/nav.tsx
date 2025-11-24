@@ -30,7 +30,6 @@ export default function Navbar() {
   
   const [searchToggled, setSearchToggled] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(true);
-  const pathname = usePathname()
 
   const signOut = async () => {
     await authClient.signOut({
@@ -42,21 +41,10 @@ export default function Navbar() {
     });
   }
 
-  /* 
-  useEffect(() => {
-    if (pathname === '/login' || pathname === '/register') {
-      setVisible(false)
-    } else {
-      setVisible(true)
-    }
-  }, [pathname])
-  */
-  
   const authenticated = !!session;
   const userId = session?.user?.id;
 
   const [user, setUser] = useState<TUser | null>(null);
-
   useEffect(() => {
     if (authenticated) {
       const user = getUser(userId as string);
@@ -76,13 +64,14 @@ export default function Navbar() {
 
   if(!visible) return null;
 
-  return (
-      <nav className="fixed top-0 px-6 h-16 w-full py-2 bg-base-100 flex justify-between items-center z-10 shadow-sm">
-        <div className='flex justify-center items-center ml-0'>
+  if (authenticated) {
+    return (
+      <nav className="bg-base-200 fixed top-0 pl-16 pr-16 h-16 w-full py-2 flex justify-between items-center z-10">
+        <div className='flex justify-center items-center'>
           <Link href="/home" className="mr-4 pb-px cursor-pointer font-semibold flex items-center">
-            <figure className="mx-4 h-10 w-10">
+            <figure className="mx-6 h-8 w-8">
               <Image
-                src="/ssh_logo.png"
+                src="/ssh_logo_mini.png"
                 alt="Song Sorting Hat Logo"
                 width={100}
                 height={100}
@@ -92,18 +81,11 @@ export default function Navbar() {
             </figure>
             Song Sorting Hat
           </Link>
-          <button 
-            className="opacity-100 mx-3 cursor-pointer"
-            onClick={() => setSearchToggled(true)}
-            aria-label="Search"
-          >
-            <IconSearch className="h-6 w-6 pt-[2px]"/>
-          </button>
         </div>
 
         {isPending ? (
           <div className="w-[200px]" /> // Placeholder to prevent layout shift
-        ) : authenticated ? (
+        ) : (
           <div className='flex justify-center items-center'>
             
             <Link href={`/user/${userId}`} className='mx-5 cursor-pointer font-semibold flex items-center'>
@@ -137,7 +119,7 @@ export default function Navbar() {
               id="profile-popover"
               style={{ 
                 positionAnchor: "--profile-anchor",
-                positionArea: "bottom left", // 👈 aligns right edge of dropdown with button
+                positionArea: "bottom left",
               } as React.CSSProperties}
             >
               {/* View Profile */}
@@ -180,17 +162,6 @@ export default function Navbar() {
               </li>
             </ul>
 
-
-
-          </div>
-        ) : (
-          <div className='flex justify-center items-center'>
-            <Link href='/signup' className="btn btn-default mx-1 rounded-lg">
-              Sign up
-            </Link>
-            <Link href='/login' className="btn btn-outline rounded-lg mx-1">
-              Log in
-            </Link>
           </div>
         )}
 
@@ -210,5 +181,50 @@ export default function Navbar() {
           </nav>
         )}
       </nav>
+    )
+  }
+  return (
+    <nav className="bg-base-200 fixed top-0 pl-16 pr-16 h-16 w-full py-2 flex justify-between items-center z-10">
+      <div className='flex justify-center items-center'>
+        <Link href="/home" className="mr-4 pb-px cursor-pointer font-semibold flex items-center">
+          <figure className="mx-6 h-8 w-8">
+            <Image
+              src="/ssh_logo_mini.png"
+              alt="Song Sorting Hat Logo"
+              width={100}
+              height={100}
+              className=""
+              priority
+            ></Image>
+          </figure>
+          Song Sorting Hat
+        </Link>
+      </div>
+
+      <div className='flex justify-center items-center'>
+        <Link href='/signup' className="btn btn-neutral mx-1 rounded-lg">
+          Sign up
+        </Link>
+        <Link href='/login' className="btn btn-outline rounded-lg mx-1">
+          Log in
+        </Link>
+      </div>
+
+      {searchToggled && (
+        <nav className="absolute w-full h-full left-0 top-0 shadow-md bg-base-100">
+          <SearchBar 
+            placeholder="Search for an artist..." 
+            submit={() => setSearchToggled(false)} 
+          />
+          <button 
+            className="absolute right-4 h-full top-0 flex items-center cursor-pointer"
+            onClick={() => setSearchToggled(false)}
+            aria-label="Close search"
+          >
+            <IconX className="h-8 w-8 opacity-70" />
+          </button>
+        </nav>
+      )}
+    </nav>
   )
 }

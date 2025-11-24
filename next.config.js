@@ -2,9 +2,7 @@
 const nextConfig = {
   /* Core configuration */
   reactStrictMode: true,
-  swcMinify: true,
   
-  /* Image optimization */
   /* Image optimization */
   images: {
     remotePatterns: [
@@ -60,33 +58,6 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-  },
-
-  /* Experimental features for 14.2 */
-  experimental: {
-    // Disable if you're having issues
-    serverComponentsExternalPackages: ['@prisma/client'],
-    
-    // Optimize for better performance
-    optimizePackageImports: [
-      '@tabler/icons-react',
-      'react-icons'
-    ],
-
-    // Memory optimization
-    memoryBasedWorkersCount: true,
-  },
-
-  /* Webpack configuration */
-  webpack: (config, options) => {
-    const { buildId, dev, isServer, defaultLoaders, webpack } = options;
-    
-    // Handle Prisma in edge runtime if needed
-    if (isServer) {
-      config.externals = [...config.externals, '@prisma/client']
-    }
-    
-    return config
   },
 
   /* TypeScript configuration */
@@ -150,4 +121,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+export default nextConfig

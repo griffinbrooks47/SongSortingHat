@@ -18,6 +18,9 @@ package-lock.json
 /.next/
 /out/
 
+# vs code
+.vscode/*
+
 # production
 /build
 
@@ -45,3 +48,5 @@ next-env.d.ts
 .env.local
 
 certificates
+
+/prisma/generated/
