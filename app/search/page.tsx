@@ -132,9 +132,7 @@ export default async function Search(props: {
                     </p>
                 }
                 <hr className="border-black opacity-10"></hr>
-                <Suspense fallback={<div>Loading search...</div>}>
-                    <SearchBar placeholder="Search for an artist..." />
-                </Suspense>
+                <SearchBar placeholder="Search for an artist..." />
             </section>
             <section className="grid grid-cols-3 grid-rows-3 gap-4 rounded-none">
                 {artists.map((artist: Artist) => {
