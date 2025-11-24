@@ -4,6 +4,7 @@ import { useSession } from "@/lib/auth-client"
 
 /* Next */
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 
 import { Caveat } from 'next/font/google';
@@ -43,10 +44,10 @@ export default async function Landing() {
       </section>
       {/* Get Started Section */}
       <section className="mt-7 mb-24">
-        <button className="px-6 btn btn-neutral btn-lg rounded-full font-bold">
+        <Link href="/signup" className="px-6 btn btn-neutral btn-lg rounded-full font-bold">
           Get Started
           <IconArrowNarrowRight className="h-6" />
-        </button>
+        </Link>
       </section>
       {/* Sorting Carousel */}
       <section>
