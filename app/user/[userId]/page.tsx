@@ -5,7 +5,7 @@ import Link from "next/link";
 
 /* Components */
 import { UserProfile } from "./components/userProfile";
-import { SortingPreviewCard } from "./components/sortingPreviewCard";
+import { UserSortings } from "./components/sortingPreviewCard";
 
 /* Types */
 import { TSorting } from "@/types/sorting";
@@ -53,15 +53,10 @@ export default async function UserProfilePage({
 
         
             {/* Sortings Section */}
-            <section className="mb-auto flex flex-col items-start">
-                <h1 className="text-md font-bold">Sortings</h1>
-                <hr className="border-black opacity-10 w-200 mt-1"></hr>
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                    {sortings && sortings.map((sorting) => (
-                        <SortingPreviewCard key={sorting.id} sorting={sorting} />
-                    ))}
-                </div>
-            </section>
+            <UserSortings 
+                sortings={sortings || []}
+            />
+            
         </main>
     )
 }

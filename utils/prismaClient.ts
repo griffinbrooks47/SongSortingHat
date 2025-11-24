@@ -3,14 +3,13 @@
 import { prisma } from "@/lib/db";
 
 /* Database types */
-import { Prisma } from "@prisma/client";
-import { DBArtist, DBAlbum, DBTrack, DBArtistImg, DBAlbumImg, DBGenre } from "@prisma/client";
+import { Prisma } from "@/generated/prisma/client";
+import { DBArtist, DBAlbum, DBTrack, DBGenre, DBArtistImg, DBAlbumImg } from "@/generated/prisma/client";
 
 /* Universal artist types. */
 import { Album, Artist, Genre, Img, Track } from "@/types/artist";
 import { TSorting } from "@/types/sorting";
 import { TUser } from "@/types/user";
-import { profile } from "console";
 
 const trackInclude = {
     images: true, 
