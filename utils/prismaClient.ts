@@ -3,8 +3,8 @@
 import { prisma } from "@/lib/db";
 
 /* Database types */
-import { Prisma } from "@/generated/prisma/client";
-import { DBArtist, DBAlbum, DBTrack, DBGenre, DBArtistImg, DBAlbumImg } from "@/generated/prisma/client";
+import { Prisma } from "@/prisma/generated/prisma/client";
+import { DBArtist, DBAlbum, DBTrack, DBGenre, DBArtistImg, DBAlbumImg } from "@/prisma/generated/prisma/client";
 
 /* Universal artist types. */
 import { Album, Artist, Genre, Img, Track } from "@/types/artist";
