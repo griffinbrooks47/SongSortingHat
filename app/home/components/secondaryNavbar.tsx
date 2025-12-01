@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { useState } from "react";
 
-export default function Navbar() {
+export default function SecondaryNavbar() {
     const router = useRouter();
 
     const iconStyle = "h-[1.15rem]";
@@ -13,11 +13,12 @@ export default function Navbar() {
     /* Default page is global. */
     const [page, setPage] = useState<number>(0);
 
-    const buttonStyle = "h-10 px-3 mx-1 flex flex-row cursor-pointer justify-center items-center"
+    const buttonStyle = "h-full px-3 mx-1 flex flex-row cursor-pointer justify-center items-center"
 
     return (
-        <div className="flex flex-row justify-between">
-            <section className="flex">
+        <nav className="h-10 flex flex-row justify-between">
+            {/* Left Section */}
+            <section className="h-full flex">
                 <ul className="bg-base-100 rounded-md flex flex-row py-1 shadow-sm">
                     <a className={`rounded-md ${page == 0 ? "bg-base-200" : ""} ${buttonStyle}`}
                         onClick={() => {
@@ -39,15 +40,15 @@ export default function Navbar() {
                     </a>
                 </ul>
             </section>
-            <a className={`${buttonStyle} bg-accent border-neutral border-2 opacity-90 rounded-md shadow-sm`}
-                    onClick={() => {
-                        router.push("/search");
-                    }}
-                >
-                    <IconCirclePlus className="h-5 w-5" />
-                    <div className="font-semibold mx-1">Create</div>
-                </a>
-        </div>
+            <button className={`${buttonStyle} bg-accent border-neutral border-2 opacity-90 rounded-md shadow-sm`}
+                onClick={() => {
+                    router.push("/search");
+                }}
+            >
+                <IconCirclePlus className="h-5 w-5" />
+                <div className="font-semibold mx-1">Create</div>
+            </button>
+        </nav>
     )
 }
 

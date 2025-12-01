@@ -24,11 +24,10 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
     const user: TUser = sorting.user
 
     return (
-        <div className="w-full rounded-md card-sm py-2">
+        <main className="w-full rounded-md card-sm py-2">
             <div className="flex flex-col">
                 {/* User Info */}
-                <div 
-                className="h-14 px-4 rounded-md shadow-sm border-black border-2 bg-base-100 flex flex-row items-center">
+                <section className="h-14 px-4 rounded-md shadow-sm border-black border-2 bg-base-100 flex flex-row items-center">
                     <div className="avatar w-8">
                         <div className="ring-black ring-offset-base-100 bg-secondary w-full rounded-full ring-2 ring-offset-2">
                             <Image
@@ -47,7 +46,7 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
                             <Link href={`/artist/${sorting.artist.spotifyId}`} className="font-bold">{sorting.artist.name}</Link>
                         </h2>
                     </div>
-                </div>
+                </section>
 
                 {/* Top 3 Tracks */}
                 <div className="flex flex-col gap-2 mt-4 pl-2">
@@ -68,7 +67,7 @@ function FeedItem({ sorting }: { sorting: TSorting }) {
                     </Link>
                 </div>
             </div>
-        </div>
+        </main>
     )
 }
 
