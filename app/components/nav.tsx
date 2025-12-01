@@ -66,7 +66,7 @@ export default function Navbar() {
 
   if (authenticated) {
     return (
-      <nav className="bg-base-200 fixed top-0 pl-16 pr-16 h-16 w-full py-2 flex justify-between items-center z-10">
+      <nav className="bg-base-200 fixed top-0 pl-2 pr-4 h-15 w-full py-2 flex justify-between items-center z-10">
         <div className='flex justify-center items-center'>
           <Link href="/home" className="mr-4 pb-px cursor-pointer font-semibold flex items-center">
             <figure className="mx-6 h-8 w-8">
@@ -184,7 +184,7 @@ export default function Navbar() {
     )
   }
   return (
-    <nav className="bg-base-200 fixed top-0 pl-16 pr-16 h-16 w-full py-2 flex justify-between items-center z-10">
+    <nav className="bg-base-200 fixed top-0 pl-2 pr-4 h-15 w-full py-2 flex justify-between items-center z-10">
       <div className='flex justify-center items-center'>
         <Link href="/home" className="mr-4 pb-px cursor-pointer font-semibold flex items-center">
           <figure className="mx-6 h-8 w-8">

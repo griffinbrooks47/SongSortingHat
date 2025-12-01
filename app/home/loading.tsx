@@ -1,22 +1,22 @@
-import Navbar from "./components/nav";
+import Navbar from "./components/secondaryNavbar";
 
-import { SkeletonFeed } from "./components/feed";
+import Feed from "./components/feed2";
+import SecondaryNavbar from "./components/secondaryNavbar";
 
 export default function Loading() {
   return (
-    <main className="min-h-[calc(100vh-4rem)] pb-12 page relative bg-base-200 flex justify-center items-start">
-        <section className="w-200 flex flex-col justify-center">
-            <nav className="sticky top-16 w-full z-10 bg-base-200 pt-4">
-                <Navbar />
-                <hr className="border-black opacity-10 w-full mx-auto mt-[5px]"></hr>
-            </nav>
-            <main className="relative pt-4">
-            <nav className="h-12 rounded-md mb-0">
-                <p className="mb-2 opacity-80">{"Here's what people are sorting..."}</p>
-            </nav>
-            <SkeletonFeed />
-            </main>
-        </section>
+    <main className="page pb-12 relative bg-base-200 flex justify-center items-start">
+      <section className="w-170 flex flex-col justify-center">
+          <nav className="sticky top-[3.75rem] w-full z-10 bg-base-200">
+              <SecondaryNavbar />
+              <hr className="border-black opacity-10 w-full mx-auto mt-[7px]"></hr>
+          </nav>
+          <main className="relative pt-2 px-2">
+            <Feed 
+              sortings={[]}
+            />
+          </main>
+      </section>
     </main>
   )
 }
