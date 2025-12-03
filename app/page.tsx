@@ -1,4 +1,3 @@
-
 /* Auth */
 import { useSession } from "@/lib/auth-client"
 
@@ -25,34 +24,43 @@ export default async function Landing() {
   }
 
   return (
-    <main className={`h-[calc(100vh-5rem)] pt-[5rem] flex flex-col justify-center items-center`}>
-      {/* Header */}
-      <figure>
+    <main className="min-h-[calc(100vh-5rem)] pt-[5rem] flex flex-col justify-center items-center text-center px-4">
+      
+      {/* Logo */}
+      <figure className="mb-2">
         <Image
           src="/ssh_logo.png"
           alt="Logo"
           height={150}
           width={150}
-          className="mb-0 ml-1"
-        >
-
-        </Image>
+          className="mb-[-10px] ml-1 h-40 w-40 sm:h-40 sm:w-40 md:h-40 md:w-40 lg:h-48 lg:w-48 object-contain"
+        />
       </figure>
-      <section className="flex flex-col justify-center items-center">
-        <h1 className="text-7xl font-thin">your music taste</h1>
-        <h1 className={`text-7xl font-bold pr-2 ${caveat.className}`}>Centralized.</h1>
+
+      {/* Headline */}
+      <section className="flex flex-col justify-center items-center leading-tight">
+        <h1 className="font-thin text-5xl sm:text-6xl md:text-7xl lg:text-7xl">
+          your music taste
+        </h1>
+
+        <h1 className={`${caveat.className} font-bold pr-1 text-5xl sm:text-6xl md:text-7xl lg:text-7xl`}>
+          Centralized.
+        </h1>
       </section>
-      {/* Get Started Section */}
-      <section className="mt-7 mb-24">
-        <Link href="/signup" className="px-6 btn btn-neutral btn-lg rounded-full font-bold">
+
+      {/* Get Started */}
+      <section className="mt-6 mb-24">
+        <Link 
+          href="/signup" 
+          className="btn btn-neutral rounded-full font-bold flex items-center gap-2 px-6 py-2 btn-md sm:btn-md sm:px-8 sm:py-2 text-md sm:text-xl lg:btn-lg"
+        >
           Get Started
-          <IconArrowNarrowRight className="h-6" />
+          <IconArrowNarrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
         </Link>
       </section>
-      {/* Sorting Carousel */}
-      <section>
 
-      </section>
+      {/* Future Sorting Carousel Placeholder */}
+      <section></section>
 
     </main>
   );
