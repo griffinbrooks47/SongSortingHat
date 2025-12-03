@@ -131,7 +131,10 @@ function NavbarHeader() {
   Large Screens: (Sign In/Sign Up buttons or Profile Icon with dropdown)
   Small Screens: Hamburger Menu that toggles a side drawer with the same options
 */
-function MenuControls({ user, session, userId, signOut }: any) {
+function MenuControls(
+  { user, session, userId, signOut }: 
+  { user: TUser | null; session: any; userId: string | undefined; signOut: () => Promise<void>; }
+) {
   return (
     <div className="drawer drawer-end flex justify-end">
       <input id="menu-drawer" type="checkbox" className="drawer-toggle" />
