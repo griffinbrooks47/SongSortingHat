@@ -64,151 +64,16 @@ export default function Navbar() {
 
   if(!visible) return null;
 
-  if (authenticated) {
-    return (
-      <nav className="bg-base-200 fixed top-0 pl-2 pr-4 h-15 w-full py-2 flex justify-between items-center z-10">
-        <div className='flex justify-center items-center'>
-          <Link href="/home" className="mr-4 pb-px cursor-pointer font-semibold flex items-center">
-            <figure className="mx-6 h-8 w-8">
-              <Image
-                src="/ssh_logo_mini.png"
-                alt="Song Sorting Hat Logo"
-                width={100}
-                height={100}
-                className=""
-                priority
-              ></Image>
-            </figure>
-            Song Sorting Hat
-          </Link>
-        </div>
-
-        {isPending ? (
-          <div className="w-[200px]" /> // Placeholder to prevent layout shift
-        ) : (
-          <div className='flex justify-center items-center'>
-            
-            <Link href={`/user/${userId}`} className='mx-5 cursor-pointer font-semibold flex items-center'>
-              <IconSitemap />
-              <p className='mx-2'>My Sortings</p>
-            </Link>
-            
-            
-            {/* Profile Dropdown */}
-            <button 
-              className='ml-2 mr-2 h-9 w-9 opacity-90'
-              popoverTarget="profile-popover"
-              style={{ anchorName: "--profile-anchor" } as React.CSSProperties}
-            >
-              <div className="avatar h-full w-full">
-                <div className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-2 ring-offset-2 ${user?.profilePicture.backgroundColor ? `bg-${user.profilePicture.backgroundColor}` : 'bg-none'}`}>
-                  <Image
-                    src={"/profile_icons/default_profile_icon.png"}
-                    alt={`${session?.user?.name}'s profile picture`}
-                    width={40}
-                    height={40}
-                    className={`object-cover w-full h-full rounded-full`}
-                    priority={false}
-                  ></Image>
-                </div>
-              </div>
-            </button>
-            <ul 
-              className="dropdown menu w-[18rem] mt-4 -mr-9 pt-4 bg-base-100 rounded-md shadow-sm border-black border-2 [&_li>*]:rounded-sm [&_li>*]:mx-0"
-              popover="auto"
-              id="profile-popover"
-              style={{ 
-                positionAnchor: "--profile-anchor",
-                positionArea: "bottom left",
-              } as React.CSSProperties}
-            >
-              {/* View Profile */}
-              <Link 
-                href={`/user/${userId}`}
-                className="h-14 mx-3 flex flex-row items-center gap-4">
-                <button 
-                  className='h-full opacity-90'
-                  popoverTarget="profile-popover"
-                  style={{ anchorName: "--profile-anchor" } as React.CSSProperties}
-                >
-                  <div className="avatar h-10 w-10">
-                    <div className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-2 ring-offset-2 ${user?.profilePicture.backgroundColor ? `bg-${user.profilePicture.backgroundColor}` : 'bg-none'}`}>
-                      <Image
-                        src={"/profile_icons/default_profile_icon.png"}
-                        alt={`${session?.user?.name}'s profile picture`}
-                        width={40}
-                        height={40}
-                        className={`object-cover w-full h-full rounded-full`}
-                        priority={false}
-                      ></Image>
-                    </div>
-                  </div>
-                </button>
-                <div>
-                  <h2 className="font-semibold">{session?.user?.name}</h2>
-                  <h2 className="">{session?.user?.name}</h2>
-                </div>
-              </Link>
-
-              <hr className="border-black opacity-10 w-full mx-auto my-2"></hr>
-
-              <li className="h-10 w-ful">
-                <a className="h-full w-full flex items-center"
-                  onClick={signOut}
-                >
-                  <IconLogout2 className="h-[90%] mx-1" />
-                  Sign out
-                </a>
-              </li>
-            </ul>
-
-          </div>
-        )}
-
-        {searchToggled && (
-          <nav className="absolute w-full h-full left-0 top-0 shadow-md bg-base-100">
-            <SearchBar 
-              placeholder="Search for an artist..." 
-              submit={() => setSearchToggled(false)} 
-            />
-            <button 
-              className="absolute right-4 h-full top-0 flex items-center cursor-pointer"
-              onClick={() => setSearchToggled(false)}
-              aria-label="Close search"
-            >
-              <IconX className="h-8 w-8 opacity-70" />
-            </button>
-          </nav>
-        )}
-      </nav>
-    )
-  }
   return (
     <nav className="bg-base-200 fixed top-0 pl-2 pr-4 h-15 w-full py-2 flex justify-between items-center z-10">
-      <div className='flex justify-center items-center'>
-        <Link href="/home" className="mr-4 pb-px cursor-pointer font-semibold flex items-center">
-          <figure className="mx-6 h-8 w-8">
-            <Image
-              src="/ssh_logo_mini.png"
-              alt="Song Sorting Hat Logo"
-              width={100}
-              height={100}
-              className=""
-              priority
-            ></Image>
-          </figure>
-          Song Sorting Hat
-        </Link>
-      </div>
 
-      <div className='flex justify-center items-center'>
-        <Link href='/signup' className="btn btn-neutral mx-1 rounded-lg">
-          Sign up
-        </Link>
-        <Link href='/login' className="btn btn-outline rounded-lg mx-1">
-          Log in
-        </Link>
-      </div>
+      <NavbarHeader />
+      <MenuControls 
+        user={user} 
+        session={session} 
+        userId={userId} 
+        signOut={signOut}
+      />
 
       {searchToggled && (
         <nav className="absolute w-full h-full left-0 top-0 shadow-md bg-base-100">
@@ -228,3 +93,188 @@ export default function Navbar() {
     </nav>
   )
 }
+
+/* 
+  Responsive Navbar Header
+*/
+function NavbarHeader() {
+  return (
+    <div className="flex items-center lg:ml-2 ml-1">
+      <Link
+        href="/home"
+        className="flex items-center cursor-pointer font-semibold"
+      >
+        {/* Logo */}
+        <figure className="h-9 w-9 sm:h-9 sm:w-9 mr-4 sm:mr-3">
+          <Image
+            src="/ssh_logo_mini.png"
+            alt="Song Sorting Hat Logo"
+            width={40}
+            height={40}
+            className="object-contain"
+            priority
+          />
+        </figure>
+
+        {/* Title */}
+        <div className="whitespace-nowrap text-base text-lg sm:text-lg">
+          Song Sorting Hat
+        </div>
+      </Link>
+    </div>
+  );
+}
+
+
+/* 
+  Responsive Navbar Menu Component
+  Large Screens: (Sign In/Sign Up buttons or Profile Icon with dropdown)
+  Small Screens: Hamburger Menu that toggles a side drawer with the same options
+*/
+function MenuControls({ user, session, userId, signOut }: any) {
+  return (
+    <div className="drawer drawer-end flex justify-end">
+      <input id="menu-drawer" type="checkbox" className="drawer-toggle" />
+
+      {/* --- Desktop Buttons (shown on lg+) --- */}
+      <div className="hidden lg:flex items-center gap-4">
+        {session?.user ? (
+          <>
+            {/* Profile Button (opens popover) */}
+            <button
+              className="ml-2 mr-2 h-9 w-9 opacity-90"
+              popoverTarget="profile-popover"
+              style={{ anchorName: "--profile-anchor" } as React.CSSProperties}
+            >
+              <div className="avatar h-full w-full">
+                <div
+                  className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-2 ring-offset-2 ${
+                    user?.profilePicture.backgroundColor
+                      ? `bg-${user.profilePicture.backgroundColor}`
+                      : "bg-none"
+                  }`}
+                >
+                  <Image
+                    src={"/profile_icons/default_profile_icon.png"}
+                    alt={`${session?.user?.name}'s profile picture`}
+                    width={40}
+                    height={40}
+                    className="object-cover w-full h-full rounded-full"
+                  />
+                </div>
+              </div>
+            </button>
+
+            {/* Profile Dropdown Popover */}
+            <ul
+              id="profile-popover"
+              popover="auto"
+              className="dropdown menu w-[18rem] mt-4 -mr-9 pt-4 bg-base-100 rounded-md shadow-sm border-black border-2
+                        [&_li>*]:rounded-sm [&_li>*]:mx-0"
+              style={{
+                positionAnchor: "--profile-anchor",
+                positionArea: "bottom left",
+              } as React.CSSProperties}
+            >
+              {/* View Profile */}
+              <Link
+                href={`/user/${userId}`}
+                className="h-14 mx-3 flex flex-row items-center gap-4"
+              >
+                <div className="avatar h-10 w-10">
+                  <div
+                    className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-2 ring-offset-2 ${
+                      user?.profilePicture.backgroundColor
+                        ? `bg-${user.profilePicture.backgroundColor}`
+                        : "bg-none"
+                    }`}
+                  >
+                    <Image
+                      src={"/profile_icons/default_profile_icon.png"}
+                      alt={`${session?.user?.name}'s profile picture`}
+                      width={40}
+                      height={40}
+                      className="object-cover w-full h-full rounded-full"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="font-semibold">{session?.user?.name}</h2>
+                  <h2>{session?.user?.email}</h2>
+                </div>
+              </Link>
+
+              <hr className="border-black opacity-10 w-full mx-auto my-2" />
+
+              <li>
+                <a onClick={signOut} className="flex items-center gap-2">
+                  <IconLogout2 className="h-[90%]" />
+                  Sign out
+                </a>
+              </li>
+            </ul>
+          </>
+        ) : (
+          /* Sign Up / Log In */
+          <div className="flex items-center">
+            <Link href="/signup" className="btn btn-neutral mx-1 rounded-lg">
+              Sign up
+            </Link>
+            <Link href="/login" className="btn btn-outline mx-1 rounded-lg">
+              Log in
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* --- Mobile: Hamburger --- */}
+      <div className="flex lg:hidden">
+        <label
+          htmlFor="menu-drawer"
+          aria-label="open menu"
+          className="btn btn-square btn-ghost"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            className="inline-block h-6 w-6 stroke-current"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+          </svg>
+        </label>
+      </div>
+
+      {/* --- Drawer Sidebar (Mobile Menu) --- */}
+      <div className="drawer-side">
+        <label htmlFor="menu-drawer" className="drawer-overlay"></label>
+        <ul className="menu bg-base-200 min-h-full w-80 p-4">
+          {session?.user ? (
+            <>
+              <li><Link href={`/user/${userId}`}>View Profile</Link></li>
+              <li><a onClick={signOut}>Sign out</a></li>
+            </>
+          ) : (
+            <>
+              <h1 className="text-lg font-bold ml-auto mr-2">Log in / Sign up</h1>
+              <hr className="border-black opacity-10 w-full mx-auto my-[5px]"></hr>
+              <Link href="/login" className="btn btn-outline my-1 rounded-md">
+                Log in
+              </Link>
+              <Link href="/signup" className="btn btn-neutral my-1 rounded-md">
+                Sign up
+              </Link>
+            </>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
