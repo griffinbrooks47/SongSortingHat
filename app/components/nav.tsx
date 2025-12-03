@@ -9,6 +9,7 @@ import { IconSearch, IconSitemap, IconX, IconLogout2, IconUser } from "@tabler/i
 /* Auth */
 import { authClient } from "@/lib/auth-client"
 import { useSession } from "@/lib/auth-client"
+import { TSession } from "@/lib/auth-client"
 
 /* Next */
 import Image from "next/image"
@@ -133,7 +134,7 @@ function NavbarHeader() {
 */
 function MenuControls(
   { user, session, userId, signOut }: 
-  { user: TUser | null; session: any; userId: string | undefined; signOut: () => Promise<void>; }
+  { user: TUser | null; session: TSession | null; userId: string | undefined; signOut: () => Promise<void>; }
 ) {
   return (
     <div className="drawer drawer-end flex justify-end">
