@@ -66,7 +66,7 @@ export default function Navbar() {
   if(!visible) return null;
 
   return (
-    <nav className="bg-base-200 fixed top-0 pl-4 pr-2 h-15 w-full py-2 flex justify-between items-center z-10">
+    <nav className="bg-base-200 fixed top-0 pl-4 pr-2 h-15 w-full pt-2 pb-2 flex justify-between items-center z-10">
 
       <NavbarHeader />
       <MenuControls 
@@ -118,7 +118,7 @@ function NavbarHeader() {
         </figure>
 
         {/* Title */}
-        <div className="whitespace-nowrap text-base text-[0.9rem] mx-0 sm:text-md lg:text-md font-semibold">
+        <div className="whitespace-nowrap text-base text-[0.9rem] mx-0 sm:text-md lg:mx-2 lg:text-md font-semibold">
           Song Sorting Hat
         </div>
       </Link>

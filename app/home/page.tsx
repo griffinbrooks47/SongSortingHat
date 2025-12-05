@@ -38,10 +38,10 @@ export default async function Home() {
 
   return (
     <main className="page pb-12 relative bg-base-200 flex justify-center items-start">
-      <section className="w-170 flex flex-col justify-center">
+      <section className="w-full lg:w-170 flex flex-col justify-center">
           <nav className="sticky top-[3.75rem] w-full z-10 bg-base-200">
               <SecondaryNavbar />
-              <hr className="border-black opacity-10 w-full mx-auto mt-[7px]"></hr>
+              <hr className="border-black opacity-10 w-full mx-auto mt-[0px] lg:mt-[7px]"></hr>
           </nav>
           <main className="relative pt-4 px-2">
             <Feed 
