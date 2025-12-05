@@ -24,7 +24,7 @@ export default async function Landing() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] pt-[5rem] flex flex-col justify-center items-center text-center px-4">
+    <main className="page pt-[5rem] flex flex-col justify-center items-center text-center px-4">
       
       {/* Logo */}
       <figure className="mb-2">
@@ -33,13 +33,13 @@ export default async function Landing() {
           alt="Logo"
           height={150}
           width={150}
-          className="mb-[-10px] ml-1 h-40 w-40 sm:h-40 sm:w-40 md:h-40 md:w-40 lg:h-48 lg:w-48 object-contain"
+          className="mb-[-10px] ml-1 h-38 w-38 sm:h-38 sm:w-38 md:h-40 md:w-40 lg:h-48 lg:w-48 object-contain"
         />
       </figure>
 
       {/* Headline */}
       <section className="flex flex-col justify-center items-center leading-tight">
-        <h1 className="font-thin text-5xl sm:text-6xl md:text-7xl lg:text-7xl">
+        <h1 className="font-thin text-4xl sm:text-4xl md:text-7xl lg:text-7xl">
           your music taste
         </h1>
 

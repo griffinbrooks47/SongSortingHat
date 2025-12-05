@@ -1,6 +1,6 @@
 'use client'
 
-import { IconWorld, IconUsers, IconUsersGroup, IconCirclePlus } from "@tabler/icons-react";
+import { IconWorld, IconUsers, IconUsersGroup, IconCirclePlus, IconBoltFilled } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 
 import { useState } from "react";
@@ -40,13 +40,13 @@ export default function SecondaryNavbar() {
                     </a>
                 </ul>
             </section>
-            <button className={`${buttonStyle} bg-accent border-neutral border-2 opacity-90 rounded-md shadow-sm`}
+            <button className={`mt-1 btn btn-sm bg-accent border-neutral border-2 opacity-90 rounded-md shadow-sm`}
                 onClick={() => {
                     router.push("/search");
                 }}
             >
-                <IconCirclePlus className="h-5 w-5" />
-                <div className="font-semibold mx-1">Create</div>
+                <div className="font-semibold text-[0.9rem]">Create</div>
+                <IconBoltFilled className="h-4 w-4 ml-0" />
             </button>
         </nav>
     )

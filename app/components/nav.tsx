@@ -4,7 +4,7 @@
 import { SearchBar } from "./search"
 
 /* Icons */
-import { IconSearch, IconSitemap, IconX, IconLogout2, IconUser } from "@tabler/icons-react"
+import { IconSearch, IconSitemap, IconX, IconLogout2, IconUser, IconCaretDownFilled, IconSettingsFilled, IconSettings, IconUserCircle } from "@tabler/icons-react"
 
 /* Auth */
 import { authClient } from "@/lib/auth-client"
@@ -66,7 +66,7 @@ export default function Navbar() {
   if(!visible) return null;
 
   return (
-    <nav className="bg-base-200 fixed top-0 pl-2 pr-4 h-15 w-full py-2 flex justify-between items-center z-10">
+    <nav className="bg-base-200 fixed top-0 pl-4 pr-2 h-15 w-full py-2 flex justify-between items-center z-10">
 
       <NavbarHeader />
       <MenuControls 
@@ -106,7 +106,7 @@ function NavbarHeader() {
         className="flex items-center cursor-pointer font-semibold"
       >
         {/* Logo */}
-        <figure className="h-9 w-9 sm:h-9 sm:w-9 mr-4 sm:mr-3">
+        <figure className="h-8 w-8 sm:h-8 sm:w-8 mr-4 sm:mr-3">
           <Image
             src="/ssh_logo_mini.png"
             alt="Song Sorting Hat Logo"
@@ -118,7 +118,7 @@ function NavbarHeader() {
         </figure>
 
         {/* Title */}
-        <div className="whitespace-nowrap text-base text-lg sm:text-lg">
+        <div className="whitespace-nowrap text-base text-[0.9rem] mx-0 sm:text-md lg:text-md font-semibold">
           Song Sorting Hat
         </div>
       </Link>
@@ -142,17 +142,18 @@ function MenuControls(
 
       {/* --- Desktop Buttons (shown on lg+) --- */}
       <div className="hidden lg:flex items-center gap-4">
+        
         {session?.user ? (
           <>
             {/* Profile Button (opens popover) */}
             <button
-              className="ml-2 mr-2 h-9 w-9 opacity-90"
+              className="ml-2 mr-2 p-1 opacity-90 rounded-full flex items-center gap-3"
               popoverTarget="profile-popover"
               style={{ anchorName: "--profile-anchor" } as React.CSSProperties}
             >
-              <div className="avatar h-full w-full">
+              <div className="avatar h-10 w-10">
                 <div
-                  className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-2 ring-offset-2 ${
+                  className={`ring-offset-base-100 w-24 p-1 rounded-full ring-offset-0 ${
                     user?.profilePicture.backgroundColor
                       ? `bg-${user.profilePicture.backgroundColor}`
                       : "bg-none"
@@ -167,13 +168,17 @@ function MenuControls(
                   />
                 </div>
               </div>
+              <div className="text-center flex items-center gap-1">
+                {session?.user?.name?.split(" ")[0]}
+                <IconCaretDownFilled className="h-4 w-4 mx-1" />
+              </div>
             </button>
 
             {/* Profile Dropdown Popover */}
             <ul
               id="profile-popover"
               popover="auto"
-              className="dropdown menu w-[18rem] mt-4 -mr-9 pt-4 bg-base-100 rounded-md shadow-sm border-black border-2
+              className="dropdown menu w-[16rem] mt-2 -mr-32 pt-3 px-3 bg-base-100 rounded-md shadow-md border-black
                         [&_li>*]:rounded-sm [&_li>*]:mx-0"
               style={{
                 positionAnchor: "--profile-anchor",
@@ -183,11 +188,12 @@ function MenuControls(
               {/* View Profile */}
               <Link
                 href={`/user/${userId}`}
-                className="h-14 mx-3 flex flex-row items-center gap-4"
+                className="py-2 bg-base-200 rounded-sm
+                  flex flex-row justify-start items-center gap-3 px-2"
               >
-                <div className="avatar h-10 w-10">
+                <div className="avatar h-11 w-11">
                   <div
-                    className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-2 ring-offset-2 ${
+                    className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-0 ring-offset-0 ${
                       user?.profilePicture.backgroundColor
                         ? `bg-${user.profilePicture.backgroundColor}`
                         : "bg-none"
@@ -202,17 +208,33 @@ function MenuControls(
                     />
                   </div>
                 </div>
-
-                <div>
-                  <h2 className="font-semibold">{session?.user?.name}</h2>
-                  <h2>{session?.user?.email}</h2>
+                <div className="pt-1">
+                  <p className="font-semibold text-[0.9rem]">{session?.user?.name}</p>
                 </div>
               </Link>
 
               <hr className="border-black opacity-10 w-full mx-auto my-2" />
 
+              {/* View Profile */}
               <li>
-                <a onClick={signOut} className="flex items-center gap-2">
+                <a className="flex items-center gap-2">
+                  <IconUserCircle className="h-[90%]" />
+                  Account
+                </a>
+              </li>
+              {/* View Profile */}
+              <li>
+                <a className="flex items-center gap-2">
+                  <IconSettings className="h-[90%]" />
+                  Settings
+                </a>
+              </li>
+
+              <hr className="border-black opacity-10 w-full mx-auto my-2" />
+
+              {/* Sign Out */}
+              <li>
+                <a onClick={signOut} className="btn btn-outline bg-secondary flex items-center gap-2">
                   <IconLogout2 className="h-[90%]" />
                   Sign out
                 </a>
@@ -222,7 +244,7 @@ function MenuControls(
         ) : (
           /* Sign Up / Log In */
           <div className="flex items-center">
-            <Link href="/signup" className="btn btn-neutral mx-1 rounded-lg">
+            <Link href="/signup" className="btn btn-neutral shadow-none mx-1 rounded-lg">
               Sign up
             </Link>
             <Link href="/login" className="btn btn-outline mx-1 rounded-lg">
@@ -237,13 +259,13 @@ function MenuControls(
         <label
           htmlFor="menu-drawer"
           aria-label="open menu"
-          className="btn btn-square btn-ghost"
+          className="btn btn-square btn-link"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            className="inline-block h-6 w-6 stroke-current"
+            className="inline-block h-6 w-6 stroke-current text-black"
           >
             <path
               strokeLinecap="round"
@@ -258,11 +280,62 @@ function MenuControls(
       {/* --- Drawer Sidebar (Mobile Menu) --- */}
       <div className="drawer-side">
         <label htmlFor="menu-drawer" className="drawer-overlay"></label>
-        <ul className="menu bg-base-200 min-h-full w-80 p-4">
+        <ul className="menu bg-base-200 min-h-full w-80 px-3 pt-3">
           {session?.user ? (
             <>
-              <li><Link href={`/user/${userId}`}>View Profile</Link></li>
-              <li><a onClick={signOut}>Sign out</a></li>
+              {/* View Profile */}
+              <Link
+                href={`/user/${userId}`}
+                className="bg-base-200 rounded-sm
+                  flex flex-row justify-start items-center gap-3 px-2"
+              >
+                <div className="avatar h-11 w-11">
+                  <div
+                    className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-0 ring-offset-0 ${
+                      user?.profilePicture.backgroundColor
+                        ? `bg-${user.profilePicture.backgroundColor}`
+                        : "bg-none"
+                    }`}
+                  >
+                    <Image
+                      src={"/profile_icons/default_profile_icon.png"}
+                      alt={`${session?.user?.name}'s profile picture`}
+                      width={40}
+                      height={40}
+                      className="object-cover w-full h-full rounded-full"
+                    />
+                  </div>
+                </div>
+                <div className="pt-1">
+                  <p className="font-semibold text-[0.9rem]">{session?.user?.name}</p>
+                </div>
+              </Link>
+
+              <hr className="border-black opacity-10 w-full mx-auto my-2" />
+              {/* View Profile */}
+              <li>
+                <Link href={`/user/${userId}`} className="flex items-center gap-2 rounded-sm">
+                  <IconUserCircle className="h-[90%]" />
+                  Account
+                </Link>
+              </li>
+              {/* View Profile */}
+              <li>
+                <a className="flex items-center gap-2 rounded-sm">
+                  <IconSettings className="h-[90%]" />
+                  Settings
+                </a>
+              </li>
+
+              <hr className="border-black opacity-10 w-full mx-auto my-2" />
+
+              {/* Sign Out */}
+              <li>
+                <a onClick={signOut} className="btn btn-outline bg-secondary rounded-md flex items-center gap-2">
+                  <IconLogout2 className="h-[90%]" />
+                  Sign out
+                </a>
+              </li>
             </>
           ) : (
             <>
