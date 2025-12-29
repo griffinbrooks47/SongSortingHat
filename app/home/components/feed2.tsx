@@ -73,7 +73,7 @@ function FeedSorting(
 
     const user = sorting.user;
 
-    const tracks = sorting.entries.map(entry => entry.track);
+    const tracks = sorting.entries.sort((a, b) => a.position - b.position).map(entry => entry.track);
 
     return (
         <main className="pt-2 pb-2 px-2 sm:px-4 sm:pt-3 bg-base-100 rounded-md shadow-sm">

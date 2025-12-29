@@ -69,7 +69,7 @@ export default async function SortingPage({
     }
 
     const artist: ArtistWithImages = sorting.artist;
-    const tracks: TrackWithArtistsAndImages[] = sorting.entries.map(entry => entry.track);
+    const tracks: TrackWithArtistsAndImages[] = sorting.entries.sort((a, b) => a.position - b.position).map(entry => entry.track);
 
     return (
         <main className="min-h-[calc(100vh-4rem)] w-full pt-16 mb-8 flex flex-col items-center">
