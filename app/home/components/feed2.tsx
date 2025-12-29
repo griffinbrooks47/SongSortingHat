@@ -1,23 +1,28 @@
 'use client'
 
-import { Track } from "@/types/artist"
-import { TSorting } from "@/types/sorting"
-import { TUser } from "@/types/user"
-import { IconUser, IconThumbUp, IconShare3, IconMessage2 } from "@tabler/icons-react"
-
+/* Next / React */
 import Image from "next/image"
 import Link from "next/link"
+
+/* Types */
+import { SortingWithUserArtistAndEntries, TrackWithArtistsAndImages } from "../page"
+
+/* Framer Motion */
 import { motion, Variants } from "framer-motion";
 
+/* Icons */
+import { IconUser, IconThumbUp, IconShare3, IconMessage2 } from "@tabler/icons-react"
+
+
 export default function Feed(
-    { sortings }: { sortings: TSorting[] }
+    { sortings }: { sortings: SortingWithUserArtistAndEntries[] }
 ) {
     const container: Variants = {
         hidden: { opacity: 1 },
         show: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.2
+                staggerChildren: 0.25
             }
         }
     };
@@ -25,13 +30,12 @@ export default function Feed(
     const item: Variants = {
         hidden: { 
             opacity: 0,
-            scale: 0.975
         },
         show: { 
             opacity: 1,
             scale: 1,
             transition: {
-                duration: 1,
+                duration: 0.5,
                 ease: "easeOut"
             }
         }
@@ -39,7 +43,7 @@ export default function Feed(
 
     return (
         <motion.main 
-            className="flex flex-col gap-8 w-full"
+            className="flex flex-col gap-4 w-full"
             variants={container}
             initial="hidden"
             animate="show"
@@ -64,29 +68,36 @@ export default function Feed(
     - Like/Comment actions
 */
 function FeedSorting(
-    { sorting }: { sorting: TSorting }
+    { sorting }: { sorting: SortingWithUserArtistAndEntries }
 ) {
 
-    const user: TUser = sorting.user;
+    const user = sorting.user;
 
-    const tracks: Track[] = sorting.tracks;
+    const tracks = sorting.entries.map(entry => entry.track);
 
     return (
-        <main className="py-2 px-2 sm:px-4 bg-base-100 rounded-md shadow-sm">
+        <main className="pt-2 pb-2 px-2 sm:px-4 sm:pt-3 bg-base-100 rounded-md shadow-sm">
             {/* User Info */}
-            <section className="pl-1 sm:pl-2 h-12 w-full flex flex-row">
-                <div className="avatar w-8 h-8 sm:w-9 sm:h-9 mx-1 my-auto">
-                    <div className={`ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 bg-${user.profilePicture?.backgroundColor || "secondary"}`}>
-                        <Image
-                            src={user.profilePicture?.url || "/profile_icons/default_profile_icon.png"}
-                            alt={user.username}
-                            width={32}
-                            height={32}
-                            className={`object-cover w-full h-full bg-${user.profilePicture?.backgroundColor || "accent"}`}
-                        />
-                    </div>
+            <section className="pl-1 sm:pl-1 h-12 w-full flex flex-row">
+                <div className="avatar w-8 h-8 sm:w-8 sm:h-8 mx-1 my-auto">
+                    {user.profilePicture &&
+                        <div className={`relative ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 w-8 h-8 sm:w-8 sm:h-8 overflow-hidden`}>
+                            {user.profilePicture.includes("/default_profile/") && user.name &&
+                                <div className="absolute inset-0 flex items-center justify-center font-bold">
+                                    {user.name.charAt(0).toUpperCase()}
+                                </div>
+                            }
+                            <Image
+                                src={user.profilePicture}
+                                alt={user.name}
+                                width={32}
+                                height={32}
+                                className={`object-cover w-full h-full`}
+                            />
+                        </div>
+                    }
                 </div>
-                <div className="h-full flex flex-row items-center px-2 sm:px-4">
+                <div className="h-full flex flex-row items-center px-2 sm:px-3">
                     <h2 className="text-[0.85rem] sm:text-[1rem]">
                         <Link href={`/user/${user.id}`} className="font-bold">{user.username}</Link>
                         {" sorted "}
@@ -94,7 +105,7 @@ function FeedSorting(
                     </h2>
                 </div>
             </section>
-            <hr className="border-black opacity-10 w-full mx-auto mt-[5px]"></hr>
+            <hr className="border-black opacity-10 w-full mx-auto mt-[5px] sm:mt-[7.5px]"></hr>
             {/* Top 5 tracks */}
             <Link className="cursor-pointer" href={"/sorting/" + sorting.id}>
                 <ul>
@@ -131,13 +142,13 @@ function FeedSorting(
     )
 }
 
-function SongCard({ track }: { track: Track }) {
+function SongCard({ track }: { track: TrackWithArtistsAndImages }) {
     return (
         <div className="flex flex-row items-center gap-2 sm:gap-4 pr-2">
             <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0">
                 <Image
                     src={track.images?.[0]?.url || "/album_art_placeholder.png"}
-                    alt={track.album_title || "Album Art"}
+                    alt={track.albumTitle || "Album Art"}
                     width={48}
                     height={48}
                     className="object-cover w-full h-full rounded-sm"

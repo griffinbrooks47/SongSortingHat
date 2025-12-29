@@ -25,6 +25,16 @@ export const auth = betterAuth({
             clientSecret: process.env.SPOTIFY_CLIENT_SECRET as string, 
         }, 
     }, 
+    user: {
+        additionalFields: {
+            profilePicture: {
+                type: "string",
+                required: false,
+                defaultValue: null,
+                input: true,
+            },
+        },
+    },
     hooks: {
         after: createAuthMiddleware(async (ctx) => {
             const newSession = ctx.context.newSession;
@@ -42,23 +52,6 @@ export const auth = betterAuth({
                         where: { id: newSession.user.id },
                         data: {
                             username: `user_${newSession.user.id.substring(0, 8)}`
-                        }
-                    });
-                }
-                // If profile image is not set, assign a default profile image
-                if (user && !user.profilePicture) {
-
-                    const defaultColors = ["accent", "primary", "secondary", "success"];
-
-                    await prisma.user.update({
-                        where: { id: newSession.user.id },
-                        data: {
-                            profilePicture: {
-                                create: {
-                                    url: "/profile_icons/default_profile_icon.png",
-                                    backgroundColor: defaultColors[Math.floor(Math.random() * defaultColors.length)],
-                                }
-                            }
                         }
                     });
                 }

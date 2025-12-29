@@ -13,21 +13,22 @@ import Rank from "./Rank";
 import Sorting from "./Sorting";
 
 /* Types */
+import { TrackWithImages, AlbumWithImages } from "../page";
 import { Album, Track } from "@/types/artist"
 import { useRouter } from "next/navigation";
 
 export default function RankerInterface(
-    { artistSpotifyId, albums, singles }: { artistSpotifyId: string, albums: Album[], singles: Track[] }
+    { artistSpotifyId, albums, singles }: { artistSpotifyId: string, albums: AlbumWithImages[], singles: TrackWithImages[] }
 ) {
 
     /* Current Ranking Stage */
     const [stage, setStage] = useState(0);
 
-    const [albumMap, setAlbumMap] = useState<Map<string, Album>>(new Map());
+    const [albumMap, setAlbumMap] = useState<Map<string, AlbumWithImages>>(new Map());
 
     /* Maps SpotifyID to Track for quick indexing. */
-    const [songMap, setSongMap] = useState<Map<string, Track>>(new Map());
-    const [songList, setSongList] = useState<Track[]>([]);
+    const [songMap, setSongMap] = useState<Map<string, TrackWithImages>>(new Map());
+    const [songList, setSongList] = useState<TrackWithImages[]>([]);
 
     const router = useRouter();
 
@@ -37,10 +38,10 @@ export default function RankerInterface(
     */  
     const chooseAlbums = (selectedAlbumIds: string[]) : void => {
 
-        const newSongList: Track[] = [];
-        const newSongMap: Map<string, Track> = songMap;
+        const newSongList: TrackWithImages[] = [];
+        const newSongMap: Map<string, TrackWithImages> = songMap;
         
-        const newAlbumMap: Map<string, Album> = new Map();
+        const newAlbumMap: Map<string, AlbumWithImages> = new Map();
         for(const albumId of selectedAlbumIds) {
             const album = albumMap.get(albumId);
             if(!album) {
@@ -73,7 +74,7 @@ export default function RankerInterface(
     */
     const assemble = (selectedIds: string[]) : void => {
 
-        const newSongList: Track[] = [];
+        const newSongList: TrackWithImages[] = [];
         for(const newId of selectedIds) {
             const track = songMap.get(newId);
             if (track === undefined)
@@ -94,7 +95,7 @@ export default function RankerInterface(
     */
     const rank = (finalList: string[]) : void => {
 
-        const newSongList: Track[] = [];
+        const newSongList: TrackWithImages[] = [];
 
         for(const newId of finalList) {
             const track = songMap.get(newId);
@@ -128,13 +129,13 @@ export default function RankerInterface(
         
         setSongList(singles)
         
-        const tempSingleMap: Map<string, Track> = new Map(); 
+        const tempSingleMap: Map<string, TrackWithImages> = new Map(); 
         for(const track of singles) {
             tempSingleMap.set(track.spotifyId, track);
         }
         setSongMap(tempSingleMap);
 
-        const tempAlbumMap: Map<string, Album> = new Map(); 
+        const tempAlbumMap: Map<string, AlbumWithImages> = new Map(); 
         for(const album of albums) {
             tempAlbumMap.set(album.spotifyId, album);
         }

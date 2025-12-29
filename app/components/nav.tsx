@@ -1,27 +1,24 @@
 'use client'
 
-/* Components */
-import { SearchBar } from "./search"
-
-/* Icons */
-import { IconSearch, IconSitemap, IconX, IconLogout2, IconUser, IconCaretDownFilled, IconSettingsFilled, IconSettings, IconUserCircle } from "@tabler/icons-react"
+/* Next / React */
+import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from "react"
 
 /* Auth */
 import { authClient } from "@/lib/auth-client"
 import { useSession } from "@/lib/auth-client"
-import { TSession } from "@/lib/auth-client"
 
-/* Next */
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter, usePathname } from 'next/navigation'
-
-/* React */
-import { useEffect, useState } from "react"
-import { TUser } from "@/types/user"
-
-/* Server Functions */
+/* Server Actions */
 import { getUser } from "@/utils/serverFunctions/getUser"
+
+/* Components */
+import { SearchBar } from "./search"
+
+/* Icons */
+import { IconX, IconLogout2, IconSettings, IconUserCircle } from "@tabler/icons-react"
+import { profile } from "console"
 
 
 export default function Navbar() {
@@ -43,36 +40,32 @@ export default function Navbar() {
   }
 
   const authenticated = !!session;
+
+  const name = session?.user?.name;
   const userId = session?.user?.id;
 
-  const [user, setUser] = useState<TUser | null>(null);
-  useEffect(() => {
-    if (authenticated) {
-      const user = getUser(userId as string);
-      user.then((data) => {
-        if (data) {
-          setUser(data);
-        } else {
-          console.error("Failed to fetch user data");
-        }
-      }).catch((error) => {
-        console.error("Error fetching user:", error);
-      });
-    } else {
-      setUser(null);
-    }
-  }, [session, authenticated, userId]);
+  const [profilePicture, setProfilePicture] = useState<string | null>('');
 
   if(!visible) return null;
 
+  useEffect(() => {
+    if (!userId) return;
+    const fetchUserData = async () => {
+      const user = await getUser(userId);
+      setProfilePicture(user?.profilePicture || null);
+    };
+    fetchUserData();
+  }, [userId])
+
   return (
-    <nav className="bg-base-200 fixed top-0 pl-4 pr-2 h-15 w-full pt-2 pb-2 flex justify-between items-center z-10">
+    <nav className="h-16 w-full pl-5 pr-3 pt-2 pb-0 bg-base-200 fixed top-0 flex justify-between items-center z-10">
 
       <NavbarHeader />
       <MenuControls 
-        user={user} 
-        session={session} 
+        name={name}  
         userId={userId} 
+        profilePicture={profilePicture}
+        authenticated={authenticated}
         signOut={signOut}
       />
 
@@ -118,7 +111,7 @@ function NavbarHeader() {
         </figure>
 
         {/* Title */}
-        <div className="whitespace-nowrap text-base text-[0.9rem] mx-0 sm:text-md lg:mx-2 lg:text-md font-semibold">
+        <div className="whitespace-nowrap text-base text-[0.9rem] mx-0 sm:text-md lg:mx-2 lg:text-[0.95rem] font-semibold">
           Song Sorting Hat
         </div>
       </Link>
@@ -133,9 +126,18 @@ function NavbarHeader() {
   Small Screens: Hamburger Menu that toggles a side drawer with the same options
 */
 function MenuControls(
-  { user, session, userId, signOut }: 
-  { user: TUser | null; session: TSession | null; userId: string | undefined; signOut: () => Promise<void>; }
+  { name, profilePicture, authenticated, userId, signOut }: 
+  { 
+    name?: string;
+    userId?: string; 
+    profilePicture?: string | null;
+
+    authenticated: boolean;
+
+    signOut: () => Promise<void>; 
+  }
 ) {
+
   return (
     <div className="drawer drawer-end flex justify-end">
       <input id="menu-drawer" type="checkbox" className="drawer-toggle" />
@@ -143,34 +145,38 @@ function MenuControls(
       {/* --- Desktop Buttons (shown on lg+) --- */}
       <div className="hidden lg:flex items-center gap-4">
         
-        {session?.user ? (
+        {authenticated ? (
           <>
             {/* Profile Button (opens popover) */}
             <button
-              className="ml-2 mr-2 p-1 opacity-90 rounded-full flex items-center gap-3"
+              className="ml-2 mr-2 p-1 opacity-90 rounded-full flex items-center gap-4"
               popoverTarget="profile-popover"
               style={{ anchorName: "--profile-anchor" } as React.CSSProperties}
             >
+              <div className="text-center flex items-center gap-1">
+                {name?.split(" ")[0]}
+              </div>
               <div className="avatar h-10 w-10">
                 <div
-                  className={`ring-offset-base-100 w-24 p-1 rounded-full ring-offset-0 ${
-                    user?.profilePicture.backgroundColor
-                      ? `bg-${user.profilePicture.backgroundColor}`
-                      : "bg-none"
-                  }`}
+                  className={`ring-offset-base-100 w-24 p-1 rounded-full ring-offset-0`}
                 >
-                  <Image
-                    src={"/profile_icons/default_profile_icon.png"}
-                    alt={`${session?.user?.name}'s profile picture`}
-                    width={40}
-                    height={40}
-                    className="object-cover w-full h-full rounded-full"
-                  />
+                  {profilePicture &&
+                    <div className={`relative ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 w-8 h-8 sm:w-8 sm:h-8 overflow-hidden`}>
+                        {profilePicture.includes("/default_profile/") && name &&
+                            <div className="absolute inset-0 flex items-center justify-center font-bold">
+                                {name.charAt(0).toUpperCase()}
+                            </div>
+                        }
+                        <Image
+                            src={profilePicture}
+                            alt={name || 'Profile Picture'}
+                            width={32}
+                            height={32}
+                            className={`object-cover w-full h-full`}
+                        />
+                    </div>
+                  }
                 </div>
-              </div>
-              <div className="text-center flex items-center gap-1">
-                {session?.user?.name?.split(" ")[0]}
-                <IconCaretDownFilled className="h-4 w-4 mx-1" />
               </div>
             </button>
 
@@ -178,7 +184,7 @@ function MenuControls(
             <ul
               id="profile-popover"
               popover="auto"
-              className="dropdown menu w-[16rem] mt-2 -mr-32 pt-3 px-3 bg-base-100 rounded-md shadow-md border-black
+              className="dropdown menu w-[16rem] mt-2 -mr-26 pt-3 px-3 bg-base-100 rounded-md shadow-md border-black
                         [&_li>*]:rounded-sm [&_li>*]:mx-0"
               style={{
                 positionAnchor: "--profile-anchor",
@@ -191,25 +197,26 @@ function MenuControls(
                 className="py-2 bg-base-200 rounded-sm
                   flex flex-row justify-start items-center gap-3 px-2"
               >
-                <div className="avatar h-11 w-11">
-                  <div
-                    className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-0 ring-offset-0 ${
-                      user?.profilePicture.backgroundColor
-                        ? `bg-${user.profilePicture.backgroundColor}`
-                        : "bg-none"
-                    }`}
-                  >
-                    <Image
-                      src={"/profile_icons/default_profile_icon.png"}
-                      alt={`${session?.user?.name}'s profile picture`}
-                      width={40}
-                      height={40}
-                      className="object-cover w-full h-full rounded-full"
-                    />
-                  </div>
+                <div className="avatar h-11 w-11 flex justify-center items-center">
+                  {profilePicture &&
+                    <div className={`relative ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 w-8 h-8 sm:w-8 sm:h-8 overflow-hidden`}>
+                        {profilePicture.includes("/default_profile/") && name &&
+                            <div className="absolute inset-0 flex items-center justify-center font-bold">
+                                {name.charAt(0).toUpperCase()}
+                            </div>
+                        }
+                        <Image
+                            src={profilePicture}
+                            alt={name || 'Profile Picture'}
+                            width={32}
+                            height={32}
+                            className={`object-cover w-full h-full`}
+                        />
+                    </div>
+                  }
                 </div>
                 <div className="pt-1">
-                  <p className="font-semibold text-[0.9rem]">{session?.user?.name}</p>
+                  <p className="font-semibold text-[0.9rem]">{name}</p>
                 </div>
               </Link>
 
@@ -281,7 +288,7 @@ function MenuControls(
       <div className="drawer-side">
         <label htmlFor="menu-drawer" className="drawer-overlay"></label>
         <ul className="menu bg-base-200 min-h-full w-80 px-3 pt-3">
-          {session?.user ? (
+          {authenticated ? (
             <>
               {/* View Profile */}
               <Link
@@ -290,24 +297,26 @@ function MenuControls(
                   flex flex-row justify-start items-center gap-3 px-2"
               >
                 <div className="avatar h-11 w-11">
-                  <div
-                    className={`ring-black ring-offset-base-100 w-24 p-1 rounded-full ring-0 ring-offset-0 ${
-                      user?.profilePicture.backgroundColor
-                        ? `bg-${user.profilePicture.backgroundColor}`
-                        : "bg-none"
-                    }`}
-                  >
-                    <Image
-                      src={"/profile_icons/default_profile_icon.png"}
-                      alt={`${session?.user?.name}'s profile picture`}
-                      width={40}
-                      height={40}
-                      className="object-cover w-full h-full rounded-full"
-                    />
-                  </div>
+                  {profilePicture &&
+                    <div className={`relative ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 w-8 h-8 sm:w-8 sm:h-8 overflow-hidden`}>
+                        {profilePicture.includes("/default_profile/") && name &&
+                            <div className="absolute inset-0 flex items-center justify-center font-bold">
+                                {name.charAt(0).toUpperCase()}
+                            </div>
+                        }
+                        <Image
+                            src={profilePicture}
+                            alt={name || 'Profile Picture'}
+                            width={32}
+                            height={32}
+                            className={`object-cover w-full h-full`}
+                        />
+                    </div>
+                  }
                 </div>
+    
                 <div className="pt-1">
-                  <p className="font-semibold text-[0.9rem]">{session?.user?.name}</p>
+                  <p className="font-semibold text-[0.9rem]">{name}</p>
                 </div>
               </Link>
 

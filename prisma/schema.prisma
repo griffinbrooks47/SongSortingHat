@@ -184,10 +184,11 @@ model User {
     * Username
    */
   username String? @unique
+  
   /**
    * User Profile Picture
    */
-  profilePicture DBProfilePicture?
+  profilePicture String?
 
   /**
    * User Followers and Following
@@ -210,16 +211,6 @@ model User {
   @@unique([email])
   @@map("user")
   @@index([username])
-}
-
-model DBProfilePicture {
-  id       String   @id @default(uuid())
-  url      String?
-  backgroundColor String
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   String   @unique
-
-  @@index([userId])
 }
 
 model Session {

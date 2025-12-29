@@ -1,12 +1,16 @@
 'use server'
 
-import { auth } from "@/lib/auth";
+/* Next / React */
 import { headers } from "next/headers";
-import prisma from "@/utils/prismaClient";
 
-// Simple per-session in-memory rate limiter
-const RATE_LIMIT_WINDOW = 20_000; // 20 seconds
-const MAX_ACTIONS = 3;            // max 3 follow/unfollow per window
+/* Auth */
+import { auth } from "@/lib/auth";
+
+/* Prisma */
+import { prisma } from "@/lib/db";
+
+const RATE_LIMIT_WINDOW = 20_000;
+const MAX_ACTIONS = 3;
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
 
 function isRateLimited(userId: string): boolean {
@@ -40,7 +44,38 @@ export async function followUser(targetUserId: string) {
   }
 
   try {
-    await prisma.followUser(currentUserId, targetUserId);
+    if (currentUserId === targetUserId) {
+        throw new Error("Users cannot follow themselves");
+    }
+    await prisma.$transaction(async (tx) => {
+      const alreadyFollowing = await tx.user.findFirst({
+      where: {
+          id: currentUserId,
+          following: { some: { id: targetUserId } },
+      },
+      select: { id: true },
+      });
+
+      if (alreadyFollowing) {
+          throw new Error("Already following this user");
+      }
+
+      await tx.user.update({
+      where: { id: currentUserId },
+      data: {
+          following: { connect: { id: targetUserId } },
+          followingCount: { increment: 1 },
+      },
+      });
+
+      await tx.user.update({
+      where: { id: targetUserId },
+      data: {
+          followers: { connect: { id: currentUserId } },
+          followerCount: { increment: 1 },
+      },
+      });
+    });
   } catch (err) {
     console.error("Error in followUser server action:", err);
     throw new Error("Failed to follow/unfollow user");
@@ -59,7 +94,39 @@ export async function unfollowUser(targetUserId: string) {
   }
 
   try {
-    await prisma.unfollowUser(currentUserId, targetUserId);
+    if (currentUserId === targetUserId) {
+        throw new Error("Users cannot unfollow themselves");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const isFollowing = await tx.user.findFirst({
+      where: {
+          id: currentUserId,
+          following: { some: { id: targetUserId } },
+      },
+      select: { id: true },
+      });
+
+      if (!isFollowing) {
+          throw new Error("You are not following this user");
+      }
+
+      await tx.user.update({
+      where: { id: currentUserId },
+      data: {
+          following: { disconnect: { id: targetUserId } },
+          followingCount: { decrement: 1 },
+      },
+      });
+
+      await tx.user.update({
+      where: { id: targetUserId },
+      data: {
+          followers: { disconnect: { id: currentUserId } },
+          followerCount: { decrement: 1 },
+      },
+      });
+    });
   } catch (err) {
     console.error("Error in unfollowUser server action:", err);
     throw new Error("Failed to unfollow user");

@@ -1,24 +1,33 @@
 'use client'
 
-import { Track } from "@/types/artist"
-
-import { useRanker } from "../hooks/useRanker"
+/* React / Next */
 import { useEffect, useState } from "react";
+import Image from "next/image";
+
+/* Framer Motion */
 import { motion } from "motion/react";
 
-import Image from "next/image";
+/* Types */
+import { TrackWithImages } from "../page";
+
+/* Custom Hooks */
+import { useRanker } from "../hooks/useRanker"
+
+
+
+
 import { IconAB, IconPointerFilled } from "@tabler/icons-react";
 
 export default function Rank(
-    { tracks, onEnd }: { tracks: Track[] , onEnd: (finalList: string[]) => void }) {
+    { tracks, onEnd }: { tracks: TrackWithImages[] , onEnd: (finalList: string[]) => void }) {
 
-    const [trackMap, setTrackMap] = useState<Map<string, Track>>(new Map());
+    const [trackMap, setTrackMap] = useState<Map<string, TrackWithImages>>(new Map());
     const { currentMatchup, initilize, makeChoice, isComplete, finalSorting, reverseScoreMap } = useRanker();
 
     /* Intialize ranker instance*/
     useEffect(() => {
         if(tracks.length > 0) {
-            const newMap: Map<string, Track> = new Map();
+            const newMap: Map<string, TrackWithImages> = new Map();
             for(const track of tracks) {
                 newMap.set(track.spotifyId, track);
             }
@@ -42,8 +51,8 @@ export default function Rank(
         )
     }
 
-    const track1: Track | undefined = trackMap.get(currentMatchup[0]);
-    const track2: Track | undefined = trackMap.get(currentMatchup[1]);
+    const track1: TrackWithImages | undefined = trackMap.get(currentMatchup[0]);
+    const track2: TrackWithImages | undefined = trackMap.get(currentMatchup[1]);
     if(!track1 || !track2) {
         return <div>No track names</div>
     }
@@ -198,7 +207,7 @@ export default function Rank(
                                         const track = trackMap.get(trackId);
                                         return track ? { trackId, track } : null;
                                     })
-                                    .filter((item): item is { trackId: string; track: Track } => item !== null)
+                                    .filter((item): item is { trackId: string; track: TrackWithImages } => item !== null)
                                     .slice(0, maxTracks - trackCount);
                                 
                                 trackCount += tracks.length;
@@ -242,7 +251,7 @@ export default function Rank(
 )}
 
 function SongCard(
-    { trackId, track } : { trackId: string, track: Track}
+    { trackId, track } : { trackId: string, track: TrackWithImages }
 ) {
     return (
         <div 

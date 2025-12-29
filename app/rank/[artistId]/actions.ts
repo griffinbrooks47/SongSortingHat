@@ -1,8 +1,11 @@
 'use server'
 
+/* Auth */
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import prisma from "@/utils/prismaClient";
+
+/* Prisma */
+import { prisma } from "@/lib/db";
 
 export async function saveSorting(artistSpotifyId: string, sortingSpotifyIds: string[]) {
     
@@ -16,6 +19,24 @@ export async function saveSorting(artistSpotifyId: string, sortingSpotifyIds: st
 
     const userId = session.user.id;
 
-    const result = await prisma.createSorting(userId, artistSpotifyId, sortingSpotifyIds);
+    const result = await prisma.dBSorting.create({
+        data: {
+            userId: userId,
+            artistId: artistSpotifyId,
+            entries: {
+                createMany: {
+                    data: sortingSpotifyIds.map((spotifyId, index) => ({
+                        position: index + 1,
+                        trackId: spotifyId,
+                    })),
+                },
+            },
+            tracks: {
+                connect: sortingSpotifyIds.map((spotifyId) => ({
+                    spotifyId: spotifyId,
+                })),
+            }
+        }
+    });
     return result;
 }

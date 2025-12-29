@@ -4,7 +4,7 @@
 import { followUser, unfollowUser } from "@/utils/serverFunctions/followUser";
 
 /* Types */
-import { TUser } from "@/types/user";
+import { UserWithFollowersAndFollowing } from "../page";
 
 /* React / Next */
 import Image from "next/image";
@@ -14,10 +14,12 @@ import { IconAt } from "@tabler/icons-react";
 export function UserProfile(
     {
         user,
-        currUserId
+        isFollowingInitial,
+        isCurrUser
     } : {
-        user: TUser,
-        currUserId: string
+        user: UserWithFollowersAndFollowing,
+        isFollowingInitial: boolean,
+        isCurrUser: boolean,
     }
 ) {
 
@@ -25,19 +27,12 @@ export function UserProfile(
     const followerCount = user.followerCount;
     const followingCount = user.followingCount;
 
+    const [isFollowing, setIsFollowing] = useState(isFollowingInitial);
     const [followers, setFollowers] = useState(followerCount);
 
-    const isCurrUser = currUserId === user.id;
-
-    const [isFollowing, setIsFollowing] = useState(
-        user.followers.map((follower) => follower.id).includes(currUserId)
-    );
-
     const handleFollowClick = () => {
-
         if(isCurrUser) 
             return;
-
         try {
             if(isFollowing) {
                 unfollowUser(user.id);
@@ -50,7 +45,6 @@ export function UserProfile(
             console.error("Please wait a few moments before clicking the button");
             return;
         }
-
         setFollowers(isFollowing ? followers - 1 : followers + 1);
         setIsFollowing(!isFollowing);
     }
@@ -65,15 +59,22 @@ export function UserProfile(
                     {/* User Avatar */}
                     <figure className="flex flex-col justify-center items-center">
                         <div className="avatar h-36 w-36">
-                            <div className="mask mask-squircle w-full shadow-lg">
-                                <Image
-                                    src={user.profilePicture?.url || "/profile_icons/default_profile_icon.png"}
-                                    alt={username}
-                                    width={144}
-                                    height={144}
-                                    className={`object-cover w-full h-full bg-${user.profilePicture?.backgroundColor || "accent"}`}
-                                />
-                            </div>
+                            {user.profilePicture &&
+                                <div className={`relative ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 sm:w-full sm:h-full overflow-hidden`}>
+                                    {user.profilePicture.includes("/default_profile/") && user.name &&
+                                        <div className="absolute inset-0 flex items-center justify-center text-6xl">
+                                            {user.name.charAt(0).toUpperCase()}
+                                        </div>
+                                    }
+                                    <Image
+                                        src={user.profilePicture}
+                                        alt={user.name}
+                                        width={32}
+                                        height={32}
+                                        className={`object-cover w-full h-full`}
+                                    />
+                                </div>
+                            }
                         </div>
                     </figure>
                     

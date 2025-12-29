@@ -1,13 +1,19 @@
-import { Track } from "@/types/artist";
-import { IconArrowsTransferUpDown, IconPointerFilled } from "@tabler/icons-react";
+
+/* React / Next */
+import { useState } from "react";
+import Image from "next/image";
+
+/* Framer Motion */
 import { motion, Reorder } from "motion/react";
 
-import Image from "next/image";
-import { useState } from "react";
+/* Icons */
+import { IconArrowsTransferUpDown, IconPointerFilled } from "@tabler/icons-react";
 
+/* Types */
+import { TrackWithImages } from "../page";
 
 export default function Sorting(
-    { tracks, onEnd }: { tracks: Track[], onEnd: (selectedIds: string[]) => void }
+    { tracks, onEnd }: { tracks: TrackWithImages[], onEnd: (selectedIds: string[]) => void }
 ) {
 
     const [isSubmit, setIsSubmit] = useState(false);
@@ -60,7 +66,7 @@ export default function Sorting(
                     onReorder={setOrderedTracks}
                     className="flex flex-col gap-3"
                 >
-                    {orderedTracks.map((track: Track, index: number) => (
+                    {orderedTracks.map((track: TrackWithImages, index: number) => (
                         <Reorder.Item
                             key={track.spotifyId}
                             value={track}
@@ -79,7 +85,7 @@ export default function Sorting(
 }
 
 function SongCard(
-    { trackId, track } : { trackId: string, track: Track}
+    { trackId, track } : { trackId: string, track: TrackWithImages }
 ) {
     return (
         <div 

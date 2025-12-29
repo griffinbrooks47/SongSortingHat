@@ -1,12 +1,48 @@
+
+/* Next / React */
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Image from "next/image";
-import prisma from "@/utils/prismaClient";
-import { IconArrowsTransferUpDown } from "@tabler/icons-react";
-import { Track } from "@/types/artist";
 
-import { TSorting } from "@/types/sorting";
+/* Types */
+import { Prisma, DBTrack, DBArtist, DBArtistImg } from "@/prisma/generated/prisma/client";
+
+/* Prisma */
+import { prisma } from "@/lib/db";
+
+/* Icons */
+import { IconArrowsTransferUpDown } from "@tabler/icons-react";
+
+const artistInclude = {
+    images: true,
+} satisfies Prisma.DBArtistInclude;
+
+type ArtistWithImages = Prisma.DBArtistGetPayload<{ include: typeof artistInclude }>;
+
+const trackInclude = {
+    artists: true,
+    images: true,
+} satisfies Prisma.DBTrackInclude;
+
+type TrackWithArtistsAndImages = Prisma.DBTrackGetPayload<{ include: typeof trackInclude }>;
+
+const sortingInclude = {
+    user: true,
+    artist: {
+        include: artistInclude,
+    },
+    entries: {
+        include: {
+            track: {
+                include: trackInclude,
+            },
+        },
+    },
+} satisfies Prisma.DBSortingInclude;
+
+type SortingWithUserArtistAndEntries = Prisma.DBSortingGetPayload<{ include: typeof sortingInclude }>;
+
 
 export default async function SortingPage({
     params,
@@ -22,15 +58,18 @@ export default async function SortingPage({
     }
 
     const sortingId = (await params).sortingId;
-
-    // Fetch sorting from database
-    const sorting: TSorting | null = await prisma.getSorting(sortingId)
-
+    const sorting: SortingWithUserArtistAndEntries | null = await prisma.dBSorting.findUnique({
+        where: {
+            id: sortingId,
+        },
+        include: sortingInclude,
+    });
     if (!sorting) {
         throw new Error("Sorting not found.");
     }
 
-    const tracks: Track[] = sorting.tracks
+    const artist: ArtistWithImages = sorting.artist;
+    const tracks: TrackWithArtistsAndImages[] = sorting.entries.map(entry => entry.track);
 
     return (
         <main className="min-h-[calc(100vh-4rem)] w-full pt-16 mb-8 flex flex-col items-center">
@@ -93,7 +132,7 @@ export default async function SortingPage({
     );
 }
 
-function SongCard({ track }: { track: Track }) {
+function SongCard({ track }: { track: TrackWithArtistsAndImages }) {
     return (
         <div className="relative h-18 w-140 shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1">
             {/* Album Cover */}

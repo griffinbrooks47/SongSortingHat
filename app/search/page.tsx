@@ -119,22 +119,22 @@ export default async function Search(props: {
     };
     
     return (
-        <main className="bg-base-200 min-h-[calc(100vh)] pt-20 flex justify-center items-center flex-col">
-            <section className={`w-180 mt-0 mb-4 ${!artistName ? "min-h-80" : ""}`}>
+        <main className="bg-base-200 min-h-[calc(100vh)] pt-20 px-4 sm:px-6 lg:px-8 flex justify-center items-center flex-col">
+            <section className={`w-full max-w-[720px] mt-0 mb-4 ${!artistName ? "min-h-80" : ""}`}>
                 {!artistName && 
-                    <p className="text-[1.25rem] mt-0 mb-2">
+                    <p className="text-lg sm:text-xl mt-0 mb-2">
                         Search for an artist to start ranking.
                     </p>
                 }
                 {artistName && 
-                    <p className="text-[1.25rem] mt-8 mb-2">
+                    <p className="text-lg sm:text-xl mt-4 sm:mt-8 mb-2">
                         Showing results for: <strong>{artistName}</strong>
                     </p>
                 }
                 <hr className="border-black opacity-10"></hr>
                 <SearchBar placeholder="Search for an artist..." />
             </section>
-            <section className="grid grid-cols-3 grid-rows-3 gap-4 rounded-none">
+            <section className="w-full max-w-[800px] grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 rounded-none pb-8">
                 {artists.map((artist: Artist) => {
                     const image = artist.images?.[0];
                     if (!image) return null;

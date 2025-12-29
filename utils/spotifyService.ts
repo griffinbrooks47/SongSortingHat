@@ -1,60 +1,72 @@
 
-/* Universal Types. */
-import { Img, Genre, Artist, Album, Track } from "@/types/artist";
+/* Spotify Types */
 
-/* 
-    Spotify Types
-*/
-interface SimpleAlbumResponse {
-    total: number;
-    items: SimpleAlbum[];
-}
-interface SimpleArtist {
+export type SpotifyArtist = {
     id: string;
     name: string;
-    images: Img[];
-    external_urls: {spotify: string};
-    followers: {total: number};
+    images: SpotifyImage[];
+    external_urls: {
+        spotify: string
+    };
+    followers: {
+        total: number
+    };
     genres: string[];
     popularity: number;
     uri: string;
 }
-interface SimpleAlbum {
+
+type SimpleSpotifyAlbumResponse = {
+    total: number;
+    items: SimpleSpotifyAlbum[];
+}
+type SimpleSpotifyAlbum = {
     album_type: string;
     total_tracks: number;
     id: string;
-    images: Img[];
+    images: SpotifyImage[];
     name: string;
     release_date: string;
     type: string;
-    artists: SimpleArtist[];
+    artists: SpotifyArtist[];
 }
-interface SimpleTrack {
-    artists: Artist[];
-    id: string;
-    name: string;
-    track_number: number;
-    duration: number;
-    // images
-    // album title
+type SpotifyAlbumResponse = {
+    albums: SpotifyAlbum[];
 }
-interface DetailedAlbumResponse {
-    albums: DetailedAlbum[];
-}
-interface DetailedAlbum {
+type SpotifyAlbum = {
     total_tracks: number;
     external_urls: {
-        spotify: "string"
+        spotify: string;
     },
     id: string;
-    images: Img[];
+    images: SpotifyImage[];
     name: string;
     release_date: string;
-    artists: SimpleArtist[];
+    artists: SpotifyArtist[];
     tracks: {
         total: number;
-        items: SimpleTrack[];
+        items: SpotifyTrack[];
     }
+}
+
+/* Wrapper type for albums: splits full albums and singles*/
+export type SpotifyAlbums = {
+    albums: SpotifyAlbum[];
+    singles: SpotifyAlbum[];
+}
+
+type SpotifyTrack = {
+    id: string;
+    name: string;
+    artists: SpotifyArtist[];
+    track_number: number;
+    duration: number;
+}
+
+export interface SpotifyImage {
+    width: number;
+    height: number;
+    url: string;
 }
 
 /* 
@@ -73,17 +85,11 @@ class SpotifyWrapper {
     constructor(id: string, secret: string) {
         this.id = id;
         this.secret = secret;
-        this.tokenCreatedAt = new Date();  // Sets to current time when instantiated
+        this.tokenCreatedAt = new Date();
     }
-
-    /* 
-        Prisma client instance. 
-        This is a singleton, so only one instance of the client will be created.
-    */
     public static getInstance(): SpotifyWrapper {
+        
         if (!SpotifyWrapper.instance) {
-
-            /* Grab credentials from env variables. */
             const id: string | undefined = process.env.SPOTIFY_CLIENT_ID;
             const secret: string | undefined = process.env.SPOTIFY_CLIENT_SECRET;
 
@@ -97,137 +103,140 @@ class SpotifyWrapper {
     }
 
     /* 
-        Given a Spotify artist id, query spotify API & return DB-safe artist object.
+        Given a Spotify artist id, query for artist information.
     */
-    public async getArtist(artistId: string): Promise<Artist | null> {
-        
+    public async getArtist(artistId: string): Promise<SpotifyArtist | null> {
         const token: string | null = await this.getToken();
     
         if(!token) return null;
-    
-        /* Get artist profile */
-        const spotifyArtist: SimpleArtist = await this.queryArtist(token, artistId);
-    
-        /* Convert to universal artist. */
-        const artist: Artist = this.parseArtist(spotifyArtist);
+        const spotifyArtist: SpotifyArtist = await this.queryArtist(token, artistId);
 
-        /* Get artist albums & tracks. */
-        const albums: Album[] | null = await this.getAlbums(artistId);
-        const album_tracks: Track[] = [];
-        const singles: Track[] = [];
+        return this.parseArtist(spotifyArtist);
+    }
+    private parseArtist(spotifyArtist: SpotifyArtist): SpotifyArtist {
 
-        /* Artist albums with singles filtered out. */
-        const filteredAlbums: Album[] = [];
-
-        /* Separate singles from albums (spotify mixes them) */
-        for(const album of albums || []) {
-
-            /* Get album artists. */
-            const album_artists: Artist[] = album.artists;
-            
-            /* If album has one track, append as single. */
-            if(album.album_type === "single") {
-                for(const single of album.tracks) {
-                    const track: Track = {
-                        artists: album_artists,
-                        spotifyId: single.spotifyId,
-                        title: single.title,
-                        album_title: "",
-                        images: single.images,
-
-                    }
-                    singles.push(track);
-                }
-            }
-
-            /* If album has more than one track, append as album. */
-            else {
-                /* Add all album tracks. */
-                album_tracks.push(...album.tracks);
-
-                /* Add album to filtered albums. */
-                filteredAlbums.push(album);
-            }
-
+        /* Package Imgs */
+        let artistImages: SpotifyImage[] = [];
+        if (spotifyArtist.images && spotifyArtist.images.length > 0) {
+            const largestImg = spotifyArtist.images.reduce((max, img) => 
+                img.width > max.width ? img : max
+            );
+            artistImages = [{
+                width: largestImg.width,
+                height: largestImg.height,
+                url: largestImg.url,
+            }];
         }
+        spotifyArtist.images = artistImages;
 
-        /* Append artist discography. */
-        artist.albums = filteredAlbums;
-        artist.tracks = album_tracks.concat(singles);
+        /* Package Followers */
+        const followers: number = spotifyArtist.followers ? spotifyArtist.followers.total : 0;
+        spotifyArtist.followers = {
+            total: followers
+        };
 
-        return artist;
-
+        return spotifyArtist;
     }
 
     /* 
         Given a Spotify artist id, query for albums by that artist. 
     */
-    public async getAlbums(artistId: string): Promise<Album[] | null> {
-    
+    public async getAlbums(artistId: string): Promise<SpotifyAlbums | null> {
+
         const token: string | null = await this.getToken();
-    
         if(!token) return null;
     
-        /* Query for simple albums by artist. */
-        const simpleAlbums: SimpleAlbumResponse = await this.querySimpleAlbums(token, artistId);
-
-        /* Parse for album IDs. */
         const albumIds: string[] = [];
+
+        /* QUERY ALBUMS */
+        
+        const simpleAlbums: SimpleSpotifyAlbumResponse = await this.querySimpleAlbums(token, artistId);
         for(const simpleAlbum of simpleAlbums.items) {
             albumIds.push(simpleAlbum.id);
         }
 
-        /* Query for detailed albums. */
-        const detailedAlbums: DetailedAlbumResponse = await this.queryDetailedAlbums(token, albumIds);
+        const detailedAlbums: SpotifyAlbumResponse = await this.queryDetailedAlbums(token, albumIds);
 
         /* Convert simple tracks to database tracks. */
-        const albums: Album[] = [];
+        const albums: SpotifyAlbum[] = [];
         for(const detailedAlbum of detailedAlbums.albums) {
 
-            /* Check album types. */
-            const album_type: "album" | "single" | "compilation" = this.categorizeAlbum(detailedAlbum);
-
-            /* Convert artist objects. */
-            const artists: Artist[] = []
+            /* Artists */
+            const artists: SpotifyArtist[] = []
             for(const simpleArtist of detailedAlbum.artists) {
                 artists.push(this.parseArtist(simpleArtist));
             }
-            let imgs: Img[] = [];
+
+            /* Images */
+            let albumImages: SpotifyImage[] = [];
             if (detailedAlbum.images?.length) {
                 const largestImg = detailedAlbum.images.reduce((max, img) =>
                     img.width > max.width ? img : max
                 );
-                imgs = [{
+                albumImages = [{
                     width: largestImg.width,
                     height: largestImg.height,
                     url: largestImg.url,
                 }];
             }
-            const album_title = detailedAlbum.name;
-            const tracks: Track[] = [];
-            for(const simpleTrack of detailedAlbum.tracks.items) {
-                tracks.push(this.parseTrack(simpleTrack, album_title, imgs))
-            }   
-            /* Convert album. */
-            const album: Album = {
-                total_tracks: detailedAlbum.total_tracks,
-                external_urls: detailedAlbum.external_urls,
-                spotifyId: detailedAlbum.id,
-                images: imgs,
-                title: detailedAlbum.name,
-                album_type: album_type,
-                release_date: detailedAlbum.release_date,
-                artists: artists,
-                tracks: tracks,
-            }
 
-            albums.push(album);
-            
+            /* Tracks */
+            const tracks: SpotifyTrack[] = [];
+            for(const simpleTrack of detailedAlbum.tracks.items) {
+                const spotifyTrack: SpotifyTrack = {
+                    id: simpleTrack.id,
+                    name: simpleTrack.name,
+                    artists: simpleTrack.artists.map(artist => this.parseArtist(artist)),
+                    track_number: simpleTrack.track_number,
+                    duration: simpleTrack.duration,
+                } satisfies SpotifyTrack;
+                tracks.push(spotifyTrack);
+            }   
+
+            const spotifyAlbum: SpotifyAlbum = {
+                id: detailedAlbum.id,
+                name: detailedAlbum.name,
+                total_tracks: detailedAlbum.total_tracks,
+                release_date: detailedAlbum.release_date,
+                external_urls: {
+                    spotify: detailedAlbum.external_urls.spotify
+                },
+                artists: detailedAlbum.artists,
+                images: detailedAlbum.images,
+                tracks: detailedAlbum.tracks,
+            } satisfies SpotifyAlbum;
+
+            albums.push(spotifyAlbum);
         }
 
-        return albums;
+        /* PROCESS ALBUMS & TRACKS */
+
+        const fullAlbums: SpotifyAlbum[] = [];
+        const singles: SpotifyAlbum[] = [];
+
+        for(const album of albums || []) {
+            
+            /* If album has one track, append as single. */
+            if(this.categorizeAlbum(album) === "single") {
+                singles.push(album);
+            }
+
+            /* If album has more than one track, append as album. */
+            else {
+                fullAlbums.push(album);
+            }
+
+        }
+
+        /* Append artist discography. */
+        return {
+            albums: fullAlbums,
+            singles: singles
+        };
+
     }
-    private categorizeAlbum(detailedAlbum: DetailedAlbum): "album" | "single" | "compilation" {
+
+    private categorizeAlbum(detailedAlbum: SpotifyAlbum): "album" | "single" | "compilation" {
         const track_count = detailedAlbum.total_tracks;
         const tracks = detailedAlbum.tracks.items;
 
@@ -401,7 +410,7 @@ class SpotifyWrapper {
         Input: Spotify API token (string), artist ID (string)
         Returns: Artist (Artist object)
     */
-    private async queryArtist(token: string, artistId: string): Promise<SimpleArtist> {
+    private async queryArtist(token: string, artistId: string): Promise<SpotifyArtist> {
 
         const url = "https://api.spotify.com/v1/artists/" + artistId;
         const headers = this.getAuthHeaders(token);
@@ -411,12 +420,12 @@ class SpotifyWrapper {
             throw new Error(`Error fetching artist: ${response.statusText}`);
         }
 
-        const jsonResult: SimpleArtist = await response.json();
+        const jsonResult: SpotifyArtist = await response.json();
 
         return jsonResult;
     }
 
-    private async querySimpleAlbums(token: string, artistId: string): Promise<SimpleAlbumResponse>{
+    private async querySimpleAlbums(token: string, artistId: string): Promise<SimpleSpotifyAlbumResponse>{
 
         const url = "https://api.spotify.com/v1/artists/" + artistId + "/albums?include_groups=album,single";
         const headers = this.getAuthHeaders(token);
@@ -426,13 +435,13 @@ class SpotifyWrapper {
             throw new Error(`Error fetching artist: ${response.statusText}`);
         }
     
-        const jsonResult: SimpleAlbumResponse = await response.json();
+        const jsonResult: SimpleSpotifyAlbumResponse = await response.json();
     
         return jsonResult;
     }
 
     /* Includes tracks. */
-    private async queryDetailedAlbums(token: string, albumIds: string[]): Promise<DetailedAlbumResponse> {
+    private async queryDetailedAlbums(token: string, albumIds: string[]): Promise<SpotifyAlbumResponse> {
     
         let albumQuery = "";
         for (const albumId of albumIds.slice(0, 20)) {
@@ -448,67 +457,9 @@ class SpotifyWrapper {
         if (!response.ok) {
             throw new Error(`Error fetching artist: ${response.statusText}`);
         }
-        const jsonResult: DetailedAlbumResponse = await response.json();
+        const jsonResult: SpotifyAlbumResponse = await response.json();
     
         return jsonResult;
-    }
-
-    private parseArtist(simpleArtist: SimpleArtist): Artist {
-
-        /* Package Imgs */
-        let artistImgs: Img[] = [];
-        if (simpleArtist.images && simpleArtist.images.length > 0) {
-            const largestImg = simpleArtist.images.reduce((max, img) => 
-                img.width > max.width ? img : max
-            );
-            artistImgs = [{
-                width: largestImg.width,
-                height: largestImg.height,
-                url: largestImg.url,
-            }];
-        }
-
-
-        /* Package genres. */
-        const artistGenres: Genre[] = [];
-        if(simpleArtist.genres) {
-            for(const genre of simpleArtist.genres) {
-                const artistGenre: Genre = {
-                    name: genre
-                }
-                artistGenres.push(artistGenre)
-            }
-        }
-
-        /* Package Followers */
-        const followers: number = simpleArtist.followers ? simpleArtist.followers.total : 0;
-
-        /* Create DB artist. */
-        const artist: Artist = {
-            spotifyId: simpleArtist.id,
-            name: simpleArtist.name,
-            images: artistImgs,
-            genres: artistGenres,
-            external_urls: simpleArtist.external_urls,
-            followers: followers, 
-            albums: [],
-            tracks: [],   
-        }
-
-        return artist;
-    }
-
-    private parseTrack(simpleTrack: SimpleTrack, album_title: string, imgs: Img[]): Track {
-
-        const track: Track = {
-            artists: simpleTrack.artists,
-            spotifyId: simpleTrack.id,
-            title: simpleTrack.name,
-            album_title: album_title,
-            images: imgs,
-        }
-
-        return track;
     }
 
 }
