@@ -94,16 +94,6 @@ async function exportDatabase() {
       console.error('✗ Error exporting verification:', error);
     }
 
-    // Export dbProfilePicture
-    try {
-      const data = await prisma.dBProfilePicture.findMany();
-      exportData.dbProfilePicture = data;
-      console.log(`✓ Exported dbProfilePicture: ${data.length} records`);
-      fs.writeFileSync(path.join(exportDir, 'dbProfilePicture.json'), JSON.stringify(data, null, 2));
-    } catch (error) {
-      console.error('✗ Error exporting dbProfilePicture:', error);
-    }
-
     // Export dbArtist
     try {
       const data = await prisma.dBArtist.findMany();

@@ -47,9 +47,6 @@ async function importDatabase(exportPath: string) {
     await prisma.dBSorting.deleteMany({});
     console.log('✓ Cleared dbSorting');
     
-    await prisma.dBProfilePicture.deleteMany({});
-    console.log('✓ Cleared dbProfilePicture');
-    
     await prisma.session.deleteMany({});
     console.log('✓ Cleared session');
     
@@ -125,18 +122,6 @@ async function importDatabase(exportPath: string) {
         console.log(`✓ Imported verification: ${data.verification.length} records`);
       } catch (error) {
         console.error('✗ Error importing verification:', error);
-      }
-    }
-
-    // Import dbProfilePicture
-    if (data.dbProfilePicture && data.dbProfilePicture.length > 0) {
-      try {
-        for (const record of data.dbProfilePicture) {
-          await prisma.dBProfilePicture.create({ data: record });
-        }
-        console.log(`✓ Imported dbProfilePicture: ${data.dbProfilePicture.length} records`);
-      } catch (error) {
-        console.error('✗ Error importing dbProfilePicture:', error);
       }
     }
 

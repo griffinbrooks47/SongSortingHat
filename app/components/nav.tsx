@@ -46,8 +46,6 @@ export default function Navbar() {
 
   const [profilePicture, setProfilePicture] = useState<string | null>('');
 
-  if(!visible) return null;
-
   useEffect(() => {
     if (!userId) return;
     const fetchUserData = async () => {
@@ -56,6 +54,8 @@ export default function Navbar() {
     };
     fetchUserData();
   }, [userId])
+
+  if(!visible) return null;
 
   return (
     <nav className="h-16 w-full pl-5 pr-3 pt-2 pb-0 bg-base-200 fixed top-0 flex justify-between items-center z-10">
