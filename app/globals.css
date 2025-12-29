@@ -16,8 +16,8 @@
 @plugin "tailwindcss-animate";
 
 .page {
-    min-height: calc(100vh - 3.75rem);
-    padding-top: 3.75rem;
+    min-height: calc(100vh - 4rem);
+    padding-top: 4rem;
     z-index: 0;
 }
 

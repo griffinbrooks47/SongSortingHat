@@ -1,17 +1,21 @@
 'use client'
 
-import { Album, Track } from "@/types/artist"
-
+/* React / Next */
 import { memo, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
+
+/* Types */
+import { AlbumWithImages, TrackWithImages } from "../page";
+
+/* Framer Motion */
 import { motion, transformValue } from "framer-motion";
 
+/* Icons */
 import { IconDisc } from "@tabler/icons-react";
 
 export default function ChooseAlbums(
-    { albums, singles, onEnd }: { albums: Album[], singles: Track[], onEnd: (selectedIds: string[]) => void }  
+    { albums, singles, onEnd }: { albums: AlbumWithImages[], singles: TrackWithImages[], onEnd: (selectedIds: string[]) => void }  
 ) {
-
     const [albumSet, setAlbumSet] = useState<Set<string>>(new Set())
     const toggleAlbum = useCallback((id: string) => {
         setAlbumSet(prev => {
@@ -62,8 +66,8 @@ export default function ChooseAlbums(
             <section className="grid grid-cols-4 gap-4 rounded-none">
                 {
                     [...albums]
-                    .filter((album: Album) => album.tracks && album.tracks.length > 2)
-                    .map((album: Album) => (
+                    .filter((album: AlbumWithImages) => album.tracks && album.tracks.length > 2)
+                    .map((album: AlbumWithImages) => (
                         <AlbumCard 
                             key={album.spotifyId}
                             album={album} 
@@ -79,7 +83,7 @@ export const AlbumCard = memo(function AlbumCard({
     album,
     onClick,
 }: {
-    album: Album;
+    album: AlbumWithImages;
     onClick: (id: string) => void;
 }) {
     const [isSelected, setIsSelected] = useState(true);

@@ -10,10 +10,7 @@ export type TUser = {
     followerCount: number;
     followingCount: number;
     image: string;
-    profilePicture: {
-        url: string | null;
-        backgroundColor: string;
-    };
+    profilePicture: string;
     favoriteArtists?: Artist[];
     sortings?: TSorting[];
 }

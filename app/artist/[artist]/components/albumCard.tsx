@@ -45,7 +45,7 @@ const AlbumCard = memo(({ image, name, priority = false, onClick, className = ""
 
     return (
         <motion.div 
-            className={`w-48 h-48 overflow-hidden relative cursor-pointer rounded-sm shadow-md hover:shadow-xl transition-shadow duration-300 group ${className}`}
+            className={`w-full aspect-square overflow-hidden relative cursor-pointer rounded-sm shadow-md hover:shadow-xl transition-shadow duration-300 group ${className}`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={onClick}
@@ -64,15 +64,14 @@ const AlbumCard = memo(({ image, name, priority = false, onClick, className = ""
             <div className="relative w-full h-full">
                 <Image
                     src={image.url}
-                    width={240} // Fixed optimal size for 15rem container
-                    height={240}
+                    fill
                     alt={`${name} album cover`}
-                    className={`w-full h-full object-cover transition-all duration-500 group-hover:brightness-75 ${
+                    className={`object-cover transition-all duration-500 group-hover:brightness-75 ${
                         imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                     }`}
                     priority={priority}
                     onLoad={handleImageLoad}
-                    sizes="240px"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                 />
                 
                 {/* Loading skeleton */}
@@ -91,7 +90,7 @@ const AlbumCard = memo(({ image, name, priority = false, onClick, className = ""
             
             {/* Text overlay with framer-motion */}
             <motion.div
-                className="absolute inset-0 flex items-center justify-center text-white text-xl font-bold pointer-events-none px-4"
+                className="absolute inset-0 flex items-center justify-center text-white text-sm sm:text-base lg:text-lg xl:text-xl font-bold pointer-events-none px-3 sm:px-4"
                 variants={overlayVariants}
                 initial="hidden"
                 animate={isHovered ? "visible" : "hidden"}

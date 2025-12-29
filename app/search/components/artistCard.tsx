@@ -48,7 +48,7 @@ const ArtistCard = memo(({ artist, img, width, height, priority = false, classNa
 
   return (
     <motion.div 
-      className={`w-60 h-60 overflow-hidden cursor-pointer relative rounded-sm shadow-sm hover:shadow-xl transition-shadow duration-300 ${className}`}
+      className={`w-full aspect-square overflow-hidden cursor-pointer relative rounded-sm shadow-sm hover:shadow-xl transition-shadow duration-300 ${className}`}
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -69,15 +69,14 @@ const ArtistCard = memo(({ artist, img, width, height, priority = false, classNa
           src={img}
           priority={priority}
           alt={`${artist.name} profile picture`}
-          width={width} 
-          height={height}
-          className={`w-full h-full object-cover transition-opacity duration-500 ${
+          fill
+          className={`object-cover transition-opacity duration-500 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           onLoad={handleImageLoad}
           placeholder="blur"
           blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI0MCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
-          sizes="240px"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         
         {/* Loading skeleton */}
@@ -96,14 +95,14 @@ const ArtistCard = memo(({ artist, img, width, height, priority = false, classNa
       
       {/* Text overlay with framer-motion */}
       <motion.div
-        className="absolute inset-0 flex items-center justify-center text-white text-xl font-bold pointer-events-none"
+        className="absolute inset-0 flex items-center justify-center text-white text-base sm:text-lg lg:text-xl font-bold pointer-events-none"
         variants={overlayVariants}
         initial="hidden"
         animate={isHovered ? "visible" : "hidden"}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <p
-          className="text-center w-full px-4 leading-tight drop-shadow-lg"
+          className="text-center w-full px-3 sm:px-4 leading-tight drop-shadow-lg"
           style={{
             display: "-webkit-box",
             WebkitBoxOrient: "vertical",
@@ -124,7 +123,7 @@ ArtistCard.displayName = 'ArtistCard';
 function SkeletonArtistCard({ className = "" }: { className?: string }) {
   return (
     <div 
-      className={`w-60 h-60 overflow-hidden relative rounded-sm shadow-sm ${className}`}
+      className={`w-full aspect-square overflow-hidden relative rounded-sm shadow-sm ${className}`}
     >
       {/* Animated gradient skeleton */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-300 to-gray-200 animate-pulse" />

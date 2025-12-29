@@ -1,19 +1,12 @@
 
-import "./globals.css";
-
-/* Auth */
-import { auth } from "@/lib/auth";
-
-/* Next */
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
-
 /* Components */
 import Navbar from "./components/nav";
 
-import { Roboto_Flex } from "next/font/google";
+import { Roboto_Flex, TikTok_Sans } from "next/font/google";
 
-const roboto = Roboto_Flex({ subsets: ["latin"], weight: ["100", "400"] });
+const roboto = TikTok_Sans({ subsets: ["latin"], weight: ["300", "400"] });
+
+import './globals.css';
 
 export default async function RootLayout({
   children,

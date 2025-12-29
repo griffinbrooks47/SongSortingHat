@@ -1,12 +1,15 @@
 'use server';
 
-import prisma from '@/utils/prismaClient';
+import { prisma } from '@/lib/db';
+import { User } from '@/prisma/generated/prisma/client';
 
 export async function getUser(userId: string) {
   if (!userId) return null;
 
   try {
-    const user = await prisma.getUser(userId);
+    const user: User | null = await prisma.user.findUnique({
+      where: { id: userId }
+    });
     return user;
   } catch (error) {
     console.error("Error fetching user:", error);

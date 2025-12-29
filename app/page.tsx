@@ -24,7 +24,7 @@ export default async function Landing() {
   }
 
   return (
-    <main className="page pt-[5rem] flex flex-col justify-center items-center text-center px-4">
+    <main className="page pt-5 flex flex-col justify-center items-center text-center px-4">
       
       {/* Logo */}
       <figure className="mb-2">
