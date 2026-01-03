@@ -21,7 +21,7 @@ import { AlbumWithImages, TrackWithImages } from '../page';
 import { IconMusic, IconPointerFilled, IconArrowBadgeLeft, IconArrowBadgeRight } from "@tabler/icons-react";
 
 export default function Assemble(
-    { tracks, onEnd }: { tracks: TrackWithImages[] ,onEnd: (selectedIds: string[]) => void }
+    { tracks, onEnd }: { tracks: TrackWithImages[], onEnd: (selectedIds: string[]) => void }
 ) {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     
@@ -233,9 +233,11 @@ const SongCard = memo(function SongCard({ track, onClick }: {
                     <strong className="text-xs sm:text-sm font-bold truncate">
                         {track.title}
                     </strong>
-                    <p className="text-[10px] sm:text-xs truncate text-muted-foreground">
-                        {track.artists[0].name}
-                    </p>
+                    {track.artists.length > 1 && (
+                        <p className="text-[9px] sm:text-xs truncate text-muted-foreground">
+                            {track.artists.map(artist => artist.name).join(", ")}
+                        </p>
+                    )}
                 </div>
             </div>
             

@@ -13,9 +13,7 @@ import { TrackWithImages } from "../page";
 /* Custom Hooks */
 import { useRanker } from "../hooks/useRanker"
 
-
-
-
+/* Icons */
 import { IconAB, IconPointerFilled } from "@tabler/icons-react";
 
 export default function Rank(

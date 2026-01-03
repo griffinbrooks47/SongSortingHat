@@ -56,7 +56,7 @@ export default async function Rank({
     /* Artist ID */
     const artistId = (await params).artistId;
 
-    /* Get the tracks by the request artist. */
+    /* Get the tracks by the requested artist. */
     const artist: ArtistWithImagesAlbumsAndTracks | null = await prisma.dBArtist.findUnique({
         where: {
             spotifyId: artistId,
@@ -81,12 +81,22 @@ export default async function Rank({
         include: trackInclude,
     });
 
+    if(!albums && !singles) {
+        return (
+            <main className="flex justify-center items-center h-screen pt-16">
+                <p className="text-center text-muted-foreground">
+                    No albums or singles found for this artist.
+                </p>
+            </main>
+        )
+    }
+
     return (
         <main className="flex justify-center items-center h-screen pt-16">
             <RankerInterface 
                 artistSpotifyId={artistId}
-                albums={albums || []}
-                singles={singles || []}
+                albums={albums}
+                singles={singles}
             />
         </main>
     );

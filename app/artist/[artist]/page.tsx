@@ -302,7 +302,7 @@ export default async function ArtistPage({
   }
 
   return (
-    <main className="page w-full max-w-[900px] flex flex-col items-center mx-auto px-4 sm:px-6 lg:px-8">
+    <main className="page w-full max-w-[900px] flex flex-col items-center mx-auto pb-16 px-4 sm:px-6 lg:px-8">
 
       {/* Artist Data */}
       <section className="relative w-full mt-12 sm:mt-16 mb-6 sm:mb-8 flex flex-col sm:flex-row justify-center items-center sm:items-start gap-4 sm:gap-0">
