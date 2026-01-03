@@ -56,10 +56,10 @@ export default function Rank(
     }
 
     return (
-    <main className="h-[calc(100vh-4rem)] w-full pt-8 mb-0 flex flex-col items-center">
-        <nav className="w-200 flex flex-row justify-between items-center">
+    <main className="min-h-[calc(100vh-4rem)] w-full max-w-[900px] px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 mb-0 flex flex-col items-center">
+        <nav className="w-full flex flex-row justify-between items-center gap-2">
             <button
-                className="btn btn-md btn-outline btn-disabled bg-base-100 rounded-md"
+                className="btn btn-sm sm:btn-md btn-outline btn-disabled bg-base-100 rounded-md"
                 onClick={() => {
                     // Back to Artist functionality
                 }}
@@ -71,7 +71,7 @@ export default function Rank(
                 <h1 className="text-xl">Song Showdown</h1>
             </header>   
             <button 
-                className="btn btn-outline btn-disabled bg-secondary btn-md rounded-md"
+                className={`btn btn-sm sm:btn-md btn-outline bg-secondary rounded-md`}
             >
                 Next
             </button>
@@ -87,12 +87,12 @@ export default function Rank(
             <div>Complete!</div>
         }
         {!isComplete &&
-            <section className="flex flex-col justify-center items-center gap-4">
+            <section className="flex flex-col justify-center items-center gap-4 w-full">
 
                 {/* Rank Choices */}
-                <menu className="flex gap-4">
+                <menu className="flex gap-4 w-full">
                     <motion.button
-                        className="relative h-80 w-[16rem] cursor-pointer rounded-md shadow-md border-black bg-base-100 border-2 p-2"
+                        className="relative sm:h-80 w-[50%] sm:w-[16rem] cursor-pointer rounded-md shadow-md border-black bg-base-100 border-2 p-2"
                         onClick={() => {
                             makeChoice(currentMatchup[0], currentMatchup[1])
                         }}
@@ -112,11 +112,11 @@ export default function Rank(
                                     loading="lazy"
                                 />
                             </figure>
-                            <div className="flex flex-col items-center py-1">
+                            <div className="flex flex-col items-center py-1 -mt-1">
                                 <strong className="text-sm font-bold truncate max-w-[14ch]">
                                     {track1.title}
                                 </strong>
-                                <p className="text-xs -mt-1 truncate max-w-[40ch]">
+                                <p className="text-xs mt-0 truncate max-w-[40ch]">
                                     {track2.artists.map(artist => artist.name).join(', ')}
                                 </p>
                             </div>
@@ -136,7 +136,7 @@ export default function Rank(
                     </motion.button>
 
                     <motion.button
-                        className="relative h-80 w-[16rem] cursor-pointer rounded-md shadow-md border-black bg-base-100 border-2 p-2"
+                        className="relative sm:h-80 w-[50%] sm:w-[16rem] cursor-pointer rounded-md shadow-md border-black bg-base-100 border-2 p-2"
                         onClick={() => {
                             makeChoice(currentMatchup[1], currentMatchup[0])
                         }}
@@ -156,11 +156,11 @@ export default function Rank(
                                     loading="lazy"
                                 />
                             </figure>
-                            <div className="flex flex-col items-center py-1">
+                            <div className="flex flex-col items-center py-1 -mt-1">
                                 <strong className="text-sm font-bold truncate max-w-[14ch]">
                                     {track2.title}
                                 </strong>
-                                <p className="text-xs -mt-1 truncate max-w-[14ch]">
+                                <p className="text-xs mt-0 truncate max-w-[14ch]">
                                     {track2.artists[0].name}
                                 </p>
                             </div>
@@ -181,10 +181,10 @@ export default function Rank(
                 </menu>
 
                 {/* Current Sorting */}
-                <footer className="w-200 mt-8 flex flex-col gap-2 p-4 bg-base-200 rounded-md">
-                    <h3 className="text-center font-bold text-lg">Current Rankings</h3>
+                <footer className="w-full max-w-7xl mx-auto mt-8 flex flex-col gap-2 p-4 bg-base-200 rounded-md">
+                    <h3 className="text-center font-bold text-lg sm:text-xl">Current Rankings</h3>
                     <hr className="w-full border-black opacity-10 mx-auto mt-1"></hr>
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 sm:gap-4">
                         {(() => {
                             const sortedScores = Array.from(reverseScoreMap.keys()).sort((a, b) => b - a);
                             let currentRank = 1;
@@ -216,18 +216,18 @@ export default function Rank(
                                     <div key={score} className="flex flex-col gap-2">
                                         {/* Rank Header */}
                                         <div className="flex items-center gap-2">
-                                            <span className="font-bold text-lg text-black py-1">
+                                            <span className="font-bold text-base sm:text-lg text-black py-1">
                                                 #{rank}
                                             </span>
                                             {tracks.length > 1 && (
-                                                <span className="text-xs text-gray-500">
+                                                <span className="text-xs sm:text-sm text-gray-500">
                                                     ({tracks.length} tied)
                                                 </span>
                                             )}
                                         </div>
                                         
-                                        {/* Songs in this rank */}
-                                        <div className="grid grid-cols-5 gap-2">
+                                        {/* Songs in this rank - Responsive grid */}
+                                        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 sm:gap-3">
                                             {tracks.map(({ trackId, track }) => (
                                                 <SongCard 
                                                     key={trackId}
@@ -242,6 +242,8 @@ export default function Rank(
                         })()}
                     </div>
                 </footer>
+
+                
 
             </section>
         }

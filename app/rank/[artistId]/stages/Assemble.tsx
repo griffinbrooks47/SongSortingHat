@@ -38,7 +38,7 @@ export default function Assemble(
         });
     }, []);
 
-    const numTracksPerPage: number = 15;
+    const numTracksPerPage: number = 12;
     const slides = useMemo(() => {
         const chunks: TrackWithImages[][] = [];
         for (let i = 0; i < tracks.length; i += numTracksPerPage) {
@@ -81,8 +81,8 @@ export default function Assemble(
     }, [api]);
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] w-full px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 mb-0 flex flex-col items-center">
-            <nav className="w-full max-w-[800px] flex flex-row justify-between items-center gap-2">
+        <div className="min-h-[calc(100vh-4rem)] w-full max-w-[900px] px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 mb-0 flex flex-col items-center">
+            <nav className="w-full flex flex-row justify-between items-center gap-2">
                 <button
                     className="btn btn-sm sm:btn-md btn-outline btn-disabled bg-base-100 rounded-md"
                     onClick={() => {
@@ -120,12 +120,8 @@ export default function Assemble(
                 
                 }
             </nav>
-            <hr className="border-black opacity-10 w-full max-w-[800px] mx-auto mt-1"></hr>
-            <header className="mt-4 sm:mt-6 mb-4 sm:mb-6 flex justify-center items-center px-2">
-                <div className="badge badge-outline badge-black bg-secondary text-xs sm:text-sm">
-                    <IconPointerFilled className="size-3 sm:size-4" />
-                    <p className="text-center opacity-80 text-black pr-1">{`Select the songs you want to include!`}</p>
-                </div>
+            <hr className="border-black opacity-10 w-full max-w-[800px] mx-auto my-2"></hr>
+            <header className="mt-0 mb-2 flex justify-center items-center">
             </header>
             <Carousel setApi={setApi} className="w-full max-w-7xl">
                 <CarouselContent>
@@ -174,8 +170,8 @@ const MemoCarouselPage = memo(function CarouselPage({
     toggleId: (id: string) => void 
 }) {
     return (
-        <div className="h-full flex items-center justify-center py-2 px-2 sm:px-4">
-            <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 place-items-center w-full max-w-7xl">
+        <div className="h-full w-full flex items-center justify-center py-2 px-2 sm:px-4">
+            <main className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2 lg:gap-2 place-items-center w-full max-w-7xl">
                 {tracks.map((track) => (
                     <SongCard 
                         key={track.spotifyId} 
