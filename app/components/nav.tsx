@@ -17,8 +17,9 @@ import { getUser } from "@/utils/serverFunctions/getUser"
 import { SearchBar } from "./search"
 
 /* Icons */
-import { IconX, IconLogout2, IconSettings, IconUserCircle } from "@tabler/icons-react"
+import { IconX, IconLogout2, IconSettings, IconUserCircle, IconSearch } from "@tabler/icons-react"
 import { profile } from "console"
+import { Icon } from "lucide-react"
 
 
 export default function Navbar() {
@@ -111,9 +112,12 @@ function NavbarHeader() {
         </figure>
 
         {/* Title */}
-        <div className="whitespace-nowrap text-base text-[0.9rem] mx-0 sm:text-md lg:mx-2 lg:text-[0.95rem] font-semibold">
+        <div className="hidden lg:block whitespace-nowrap text-base text-[0.9rem] mx-0 sm:text-md lg:mx-2 lg:text-[0.95rem] font-semibold">
           Song Sorting Hat
         </div>
+      </Link>
+      <Link href="/search">
+        <IconSearch className="w-5 h-5 sm:w-5 sm:h-5 mx-2 sm:mx-4" />
       </Link>
     </div>
   );
