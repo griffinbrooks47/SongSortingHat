@@ -7,7 +7,7 @@ import Link from "next/link";
 
 /* Types */
 import { SortingWithArtistAndTracks } from "../page";
-import { DBArtist, DBArtistImg } from "@/prisma/generated/prisma/client";
+import { Artist, ArtistImage } from "@/prisma/generated/prisma/client";
 
 export const UserSortings = memo(function UserSortings({
   sortings,
@@ -32,13 +32,12 @@ const SortingPreviewCard = memo(function SortingPreviewCard({
 }: {
   sorting: SortingWithArtistAndTracks;
 }) {
-  
-    const artist: DBArtist & { images: DBArtistImg[] } = sorting.artist;
+
     const id = sorting.id;
-
     const numTracks = sorting.tracks.length;
-
   
+    const artist: Artist & { images: ArtistImage[] } = sorting.artist;
+    const artistImage: ArtistImage | null = artist.images && artist.images.length > 0 ? artist.images[0] : null;
 
     return (
         <Link
@@ -52,11 +51,11 @@ const SortingPreviewCard = memo(function SortingPreviewCard({
             >
                 {/* Artist Image */}
                 <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
-                    {artist.images &&
+                    {artistImage &&
                         <Image 
-                            src={artist.images[0].url}
-                            width={artist.images[0].width}
-                            height={artist.images[0].height}
+                            src={artistImage.url}
+                            width={artistImage.width || 100}
+                            height={artistImage.height || 100}
                             alt={artist.name}
                             className="object-cover w-full h-full"
                             priority={false}
@@ -71,7 +70,7 @@ const SortingPreviewCard = memo(function SortingPreviewCard({
                         {artist.name}
                     </strong>
                     <p className="text-[0.75rem] truncate leading-tight text-gray-600">
-                        {sorting.tracks.length} {sorting.tracks.length === 1 ? "track" : "tracks"}
+                        {numTracks} {numTracks === 1 ? "track" : "tracks"}
                     </p>
                 </div>
 

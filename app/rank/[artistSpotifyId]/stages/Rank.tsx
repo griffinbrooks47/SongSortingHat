@@ -8,26 +8,27 @@ import Image from "next/image";
 import { motion } from "motion/react";
 
 /* Types */
-import { TrackWithImages } from "../page";
+import { TrackWithRelations } from "../page";
 
 /* Custom Hooks */
 import { useRanker } from "../hooks/useRanker"
 
 /* Icons */
 import { IconAB, IconPointerFilled } from "@tabler/icons-react";
+import { AlbumImage } from "@/prisma/generated/prisma/client";
 
 export default function Rank(
-    { tracks, onEnd }: { tracks: TrackWithImages[] , onEnd: (finalList: string[]) => void }) {
+    { tracks, trackToImage, onEnd }: { tracks: TrackWithRelations[], trackToImage: Map<string, AlbumImage>, onEnd: (finalList: string[]) => void }) {
 
-    const [trackMap, setTrackMap] = useState<Map<string, TrackWithImages>>(new Map());
+    const [trackMap, setTrackMap] = useState<Map<string, TrackWithRelations>>(new Map());
     const { currentMatchup, initilize, makeChoice, isComplete, finalSorting, reverseScoreMap } = useRanker();
 
     /* Intialize ranker instance*/
     useEffect(() => {
         if(tracks.length > 0) {
-            const newMap: Map<string, TrackWithImages> = new Map();
+            const newMap: Map<string, TrackWithRelations> = new Map();
             for(const track of tracks) {
-                newMap.set(track.spotifyId, track);
+                newMap.set(track.id, track);
             }
             setTrackMap(newMap);
             initilize(Array.from(newMap.keys()));
@@ -49,8 +50,12 @@ export default function Rank(
         )
     }
 
-    const track1: TrackWithImages | undefined = trackMap.get(currentMatchup[0]);
-    const track2: TrackWithImages | undefined = trackMap.get(currentMatchup[1]);
+    const track1: TrackWithRelations | undefined = trackMap.get(currentMatchup[0]);
+    const track1Image: AlbumImage | undefined = track1 ? trackToImage.get(track1.id) : undefined;
+
+    const track2: TrackWithRelations | undefined = trackMap.get(currentMatchup[1]);
+    const track2Image: AlbumImage | undefined = track2 ? trackToImage.get(track2.id) : undefined;
+
     if(!track1 || !track2) {
         return <div>No track names</div>
     }
@@ -90,7 +95,7 @@ export default function Rank(
             <section className="flex flex-col justify-center items-center gap-4 w-full">
 
                 {/* Rank Choices */}
-                <menu className="flex gap-4 w-full">
+                <menu className="flex gap-4 w-full justify-center">
                     <motion.button
                         className="relative sm:h-80 w-[50%] sm:w-[16rem] cursor-pointer rounded-md shadow-md border-black bg-base-100 border-2 p-2"
                         onClick={() => {
@@ -103,21 +108,21 @@ export default function Rank(
                         <div className="flex flex-col items-center h-full gap-2">
                             <figure className="w-full aspect-square rounded-sm border-2 border-black overflow-hidden">
                                 <Image 
-                                    src={track1.images[0].url || ''}
-                                    width={track1.images[0].width || 300}
-                                    height={track1.images[0].height || 300}
+                                    src={track1Image?.url || ''}
+                                    width={track1Image?.width || 300}
+                                    height={track1Image?.height || 300}
                                     alt={track1.title}
                                     className="object-cover"
                                     priority={false}
                                     loading="lazy"
                                 />
                             </figure>
-                            <div className="flex flex-col items-center py-1 -mt-1">
-                                <strong className="text-sm font-bold truncate max-w-[14ch]">
+                            <div className="flex flex-col items-center py-1 -mt-1 min-w-0">
+                                <strong className="text-sm font-bold line-clamp-1 w-full text-center">
                                     {track1.title}
                                 </strong>
-                                <p className="text-xs mt-0 truncate max-w-[40ch]">
-                                    {track2.artists.map(artist => artist.name).join(', ')}
+                                <p className="text-xs mt-0 line-clamp-1 w-full text-center">
+                                    {track1.artists.map(artist => artist.artist.name).join(', ')}
                                 </p>
                             </div>
                         </div>
@@ -147,21 +152,21 @@ export default function Rank(
                         <div className="flex flex-col items-center h-full gap-2">
                             <figure className="w-full aspect-square rounded-sm border-2 border-black overflow-hidden">
                                 <Image 
-                                    src={track2.images[0].url || ''}
-                                    width={track2.images[0].width || 300}
-                                    height={track2.images[0].height || 300}
+                                    src={track2Image?.url || ''}
+                                    width={track2Image?.width || 300}
+                                    height={track2Image?.height || 300}
                                     alt={track2.title}
                                     className="object-cover"
                                     priority={false}
                                     loading="lazy"
                                 />
                             </figure>
-                            <div className="flex flex-col items-center py-1 -mt-1">
-                                <strong className="text-sm font-bold truncate max-w-[14ch]">
+                            <div className="flex flex-col items-center py-1 -mt-1 min-w-0">
+                                <strong className="text-sm font-bold line-clamp-1 w-full text-center">
                                     {track2.title}
                                 </strong>
-                                <p className="text-xs mt-0 truncate max-w-[14ch]">
-                                    {track2.artists[0].name}
+                                <p className="text-xs mt-0 line-clamp-1 w-full text-center">
+                                    {track2.artists.map(artist => artist.artist.name).join(', ')}
                                 </p>
                             </div>
                         </div>
@@ -205,7 +210,7 @@ export default function Rank(
                                         const track = trackMap.get(trackId);
                                         return track ? { trackId, track } : null;
                                     })
-                                    .filter((item): item is { trackId: string; track: TrackWithImages } => item !== null)
+                                    .filter((item): item is { trackId: string; track: TrackWithRelations } => item !== null)
                                     .slice(0, maxTracks - trackCount);
                                 
                                 trackCount += tracks.length;
@@ -226,15 +231,24 @@ export default function Rank(
                                             )}
                                         </div>
                                         
-                                        {/* Songs in this rank - Responsive grid */}
-                                        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 sm:gap-3">
-                                            {tracks.map(({ trackId, track }) => (
-                                                <SongCard 
-                                                    key={trackId}
-                                                    trackId={trackId} 
-                                                    track={track}
-                                                />
-                                            ))}
+                                        {/* Songs in this rank - Responsive flex wrap */}
+                                        <div className="flex flex-wrap gap-2 sm:gap-3">
+                                            {tracks.map(({ trackId, track }) => {
+                                                const image = trackToImage.get(track.id);
+                                                if(!image) return null;
+                                                return (
+                                                    <div 
+                                                        key={trackId}
+                                                        className="flex-[0_0_calc(50%-0.25rem)] xs:flex-[0_0_calc(33.333%-0.5rem)] sm:flex-[0_0_calc(25%-0.625rem)] lg:flex-[0_0_calc(20%-0.7rem)]"
+                                                    >
+                                                        <SongCard
+                                                            trackId={trackId}
+                                                            track={track}
+                                                            image={image}
+                                                        />
+                                                    </div>
+                                                )
+                                            })}
                                         </div>
                                     </div>
                                 );
@@ -242,16 +256,13 @@ export default function Rank(
                         })()}
                     </div>
                 </footer>
-
-                
-
             </section>
         }
     </main>
 )}
 
 function SongCard(
-    { trackId, track } : { trackId: string, track: TrackWithImages }
+    { trackId, track, image } : { trackId: string, track: TrackWithRelations, image: AlbumImage }
 ) {
     return (
         <div 
@@ -261,9 +272,9 @@ function SongCard(
             {/* Album Cover */}
             <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
                 <Image 
-                    src={track.images[0].url}
-                    width={track.images[0].width}
-                    height={track.images[0].height}
+                    src={image.url}
+                    width={image.width || 100}
+                    height={image.height || 100}
                     alt={track.title}
                     className="object-cover w-full h-full"
                     priority={false}
@@ -277,7 +288,7 @@ function SongCard(
                     {track.title}
                 </strong>
                 <p className="text-[0.65rem] truncate text-gray-500 leading-tight">
-                    {track.artists[0].name}
+                    {track.artists.map(a => a.artist.name).join(', ')}
                 </p>
             </div>
         </div>

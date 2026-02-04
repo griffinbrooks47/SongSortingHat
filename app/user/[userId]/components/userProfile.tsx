@@ -1,10 +1,10 @@
 'use client'
 
 /* Server Actions */
-import { followUser, unfollowUser } from "@/utils/serverFunctions/followUser";
+import { followUser, unfollowUser } from "@/utils/actions/followUser";
 
 /* Types */
-import { UserWithFollowersAndFollowing } from "../page";
+import { UserWithRelations } from "../page";
 
 /* React / Next */
 import Image from "next/image";
@@ -17,13 +17,16 @@ export function UserProfile(
         isFollowingInitial,
         isCurrUser
     } : {
-        user: UserWithFollowersAndFollowing,
+        user: UserWithRelations,
         isFollowingInitial: boolean,
         isCurrUser: boolean,
     }
 ) {
 
     const username = user.username;
+    const name = user.name;
+    const profilePicture = user.profilePicture;
+
     const followerCount = user.followerCount;
     const followingCount = user.followingCount;
 
@@ -57,25 +60,30 @@ export function UserProfile(
                 {/* Profile */}
                 <main className="flex flex-row items-center">
                     {/* User Avatar */}
-                    <figure className="flex flex-col justify-center items-center">
-                        <div className="avatar h-36 w-36">
-                            {user.profilePicture &&
-                                <div className={`relative ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 sm:w-full sm:h-full overflow-hidden`}>
-                                    {user.profilePicture.includes("/default_profile/") && user.name &&
-                                        <div className="absolute inset-0 flex items-center justify-center text-6xl">
-                                            {user.name.charAt(0).toUpperCase()}
-                                        </div>
-                                    }
-                                    <Image
-                                        src={user.profilePicture}
-                                        alt={user.name}
-                                        width={32}
-                                        height={32}
-                                        className={`object-cover w-full h-full`}
-                                    />
-                                </div>
+                    <figure className="avatar w-36 h-36 flex flex-col justify-center items-center">
+                        {profilePicture 
+                        ? 
+                        <div
+                            className={`ring-2 ring-offset-0 ring-black ring-offset-base-100 h-full w-full p-1 rounded-full`}
+                        >
+                            {(profilePicture.type === "UPLOADED" && profilePicture.url)
+                                ? 
+                                <Image 
+                                    src={profilePicture.url}
+                                    alt={`${name}'s profile picture`}
+                                    width={144}
+                                    height={144}
+                                    className={`object-cover h-full w-full`}
+                                />
+                                : 
+                                <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
+                                    <span className="text-4xl text-white font-bold">{profilePicture.foregroundInitials}</span>
+                                </figure>
                             }
                         </div>
+                        : 
+                        <div className="skeleton h-36 w-36 shrink-0 rounded-full"></div>
+                        }
                     </figure>
                     
                     {/* User Info */}

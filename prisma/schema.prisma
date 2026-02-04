@@ -8,223 +8,112 @@ datasource db {
   provider = "postgresql"
 }
 
-
-/**
- * Artist
- */
-model DBArtist {
-  id              String             @id @default(uuid())
-  spotifyId       String             @unique
-  last_updated    DateTime           @default(now())
-  name            String
-  external_urls   Json?
-  followers       Int
-  albums          DBAlbum[]
-  tracks          DBTrack[]
-  genres          DBGenre[]
-  images          DBArtistImg[]
-  favoriteArtists DBFavoriteArtist[]
-  sortings        DBSorting[]
+enum ImageSource {
+  EXTERNAL
+  UPLOADED
 }
 
-/**
- * Album
- */
-model DBAlbum {
-  id            String       @id @default(uuid())
-  spotifyId     String       @unique
-  last_updated  DateTime     @default(now())
-  title         String
-  total_tracks  Int
-  release_date  String
-  external_urls Json?
-  artists       DBArtist[]
-  tracks        DBTrack[]
-  images        DBAlbumImg[]
-}
+model ArtistImage {
+  id       String      @id @default(uuid())
+  url      String      @unique
+  width    Int?
+  height   Int?
+  mimeType String?
+  source   ImageSource
 
-/**
- * Track
- */
-model DBTrack {
-  id         String   @id @default(uuid())
-  spotifyId  String   @unique
-  title      String
-  updatedAt  DateTime @updatedAt
-  albumTitle String?
+  isPrimary Boolean @default(false)
 
-  artists DBArtist[]
+  artistId String? @unique
+  artist   Artist? @relation(fields: [artistId], references: [id], onDelete: Cascade)
 
-  albumId String?
-  album   DBAlbum? @relation(fields: [albumId], references: [id])
-
-  images DBAlbumImg[]
-
-  sortings       DBSorting[]
-  sortingEntries DBSortingEntry[]
-
-  @@index([spotifyId])
-  @@index([albumId])
-}
-
-/**
- * Genres
- */
-model DBGenre {
-  id      String     @id @default(uuid())
-  name    String     @unique
-  artists DBArtist[]
-}
-
-/**
- * Images
- */
-model DBArtistImg {
-  id       String   @id @default(uuid())
-  width    Int
-  height   Int
-  url      String   @unique
-  artist   DBArtist @relation(fields: [artistId], references: [id])
-  artistId String
-
-  @@index([artistId])
-}
-
-model DBAlbumImg {
-  id      String    @id @default(uuid())
-  width   Int
-  height  Int
-  url     String    @unique
-  album   DBAlbum?  @relation(fields: [albumId], references: [id])
-  albumId String?
-  tracks  DBTrack[] // Implicit many-to-many relation
-
-  @@index([albumId])
-  @@index([url])
-}
-
-enum DBRole {
-  USER
-  ADMIN
-}
-
-model DBSorting {
-  id        String   @id @default(uuid())
-  isPublic  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  published Boolean  @default(true)
 
-  /**
-   * Artist
-   */
-  artist   DBArtist @relation(fields: [artistId], references: [id])
-  artistId String
-
-  /**
-   * Ranking
-   */
-  entries DBSortingEntry[]
-
-  /**
-   * Tracks
-   */
-  tracks DBTrack[]
-
-  /**
-   * User
-   */
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-
-  @@index([userId])
-  @@index([artistId])
+  @@index([id])
 }
 
-model DBSortingEntry {
-  id        String    @id @default(uuid())
-  position  Int
-  sortingId String
-  sorting   DBSorting @relation(fields: [sortingId], references: [id])
+model AlbumImage {
+  id       String      @id @default(uuid())
+  url      String      @unique
+  width    Int?
+  height   Int?
+  mimeType String?
+  source   ImageSource
 
-  trackId String
-  track   DBTrack @relation(fields: [trackId], references: [id])
+  isPrimary Boolean @default(false)
 
-  @@unique([sortingId, position]) // one position per list
-  @@unique([sortingId, trackId]) // track can appear only once per list
-  @@index([trackId])
+  albumId String? @unique
+  album   Album?  @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id])
 }
 
-model DBFavoriteArtist {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum UserProfileImageType {
+  DEFAULT
+  UPLOADED
+}
 
-  artistId String
-  artist   DBArtist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+model UserProfileImage {
+  id   String               @id @default(uuid())
+  type UserProfileImageType @default(DEFAULT)
 
-  position Int
+  foregroundInitials String?
+  backgroundColor    String?
 
-  @@unique([userId, artistId])
-  @@index([artistId])
+  url      String?
+  width    Int?
+  height   Int?
+  mimeType String?
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id])
 }
 
 model User {
   id            String    @id
   name          String
   email         String
-  emailVerified Boolean
-  image         String
-  createdAt     DateTime
-  updatedAt     DateTime
+  emailVerified Boolean   @default(false)
+  image         String?
   sessions      Session[]
   accounts      Account[]
 
-  /**
-    * Username
-   */
-  username String? @unique
+  username       String?           @unique
+  profilePicture UserProfileImage?
   
-  /**
-   * User Profile Picture
-   */
-  profilePicture String?
+  followerCount  Int               @default(0)
+  followingCount Int               @default(0)
+  
+  sortings       Sorting[]
 
-  /**
-   * User Followers and Following
-   */
-  following User[] @relation("UserFollows")
-  followers User[] @relation("UserFollows")
-  followerCount   Int      @default(0)
-  followingCount  Int      @default(0)
-
-  /**
-   * User Favorite Artists
-   */
-  favoriteArtists DBFavoriteArtist[]
-
-  /**
-   * User Sortings
-   */
-  sortings DBSorting[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([email])
   @@map("user")
-  @@index([username])
 }
 
 model Session {
   id        String   @id
   expiresAt DateTime
   token     String
-  createdAt DateTime
-  updatedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
+  @@index([userId])
   @@map("session")
 }
 
@@ -241,19 +130,21 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
+  @@index([userId])
   @@map("account")
 }
 
 model Verification {
-  id         String    @id
+  id         String   @id
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
+  @@index([identifier])
   @@map("verification")
 }

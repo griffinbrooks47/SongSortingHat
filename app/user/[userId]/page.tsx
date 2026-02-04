@@ -16,11 +16,9 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@/prisma/generated/prisma/client";
 
 const UserIncludeFollowersAndFollowing = {
-    followers: true,
-    following: true,
+    profilePicture: true,
 } satisfies Prisma.UserInclude;
-
-export type UserWithFollowersAndFollowing = Prisma.UserGetPayload<{ include: typeof UserIncludeFollowersAndFollowing  }>;
+export type UserWithRelations = Prisma.UserGetPayload<{ include: typeof UserIncludeFollowersAndFollowing  }>;
 
 const SortingIncludeArtistAndTracks = {
     tracks: true,
@@ -29,9 +27,8 @@ const SortingIncludeArtistAndTracks = {
             images: true,
         }
     },
-} satisfies Prisma.DBSortingInclude;
-
-export type SortingWithArtistAndTracks = Prisma.DBSortingGetPayload<{ include: typeof SortingIncludeArtistAndTracks  }>;
+} satisfies Prisma.SortingInclude;
+export type SortingWithArtistAndTracks = Prisma.SortingGetPayload<{ include: typeof SortingIncludeArtistAndTracks  }>;
 
 export default async function UserProfilePage({
   params,
@@ -44,7 +41,7 @@ export default async function UserProfilePage({
     });
     
     const userId = (await params).userId;
-    const user: UserWithFollowersAndFollowing | null = await prisma.user.findUnique({
+    const user: UserWithRelations | null = await prisma.user.findUnique({
         where: { id: userId },
         include: UserIncludeFollowersAndFollowing,
     }); 
@@ -53,9 +50,9 @@ export default async function UserProfilePage({
         return <div>User not found</div>;
     }
 
-    const isFollowingUser: boolean = user.followers.some(follower => follower.id === (session?.user?.id || ""));
+    //const isFollowingUser: boolean = user.followers.some(follower => follower.id === (session?.user?.id || ""));
 
-    const sortings: SortingWithArtistAndTracks[] = await prisma.dBSorting.findMany({
+    const sortings: SortingWithArtistAndTracks[] = await prisma.sorting.findMany({
         where: { userId: userId },
         include: SortingIncludeArtistAndTracks,
     });
@@ -66,7 +63,7 @@ export default async function UserProfilePage({
             {/* Profile Section */}
             <UserProfile 
                 user={user}
-                isFollowingInitial={isFollowingUser}
+                isFollowingInitial={false}
                 isCurrUser={session?.user?.id === user.id}
             />
 

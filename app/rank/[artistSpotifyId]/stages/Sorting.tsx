@@ -9,10 +9,11 @@ import { motion, Reorder } from "motion/react";
 import { IconArrowsTransferUpDown, IconPointerFilled } from "@tabler/icons-react";
 
 /* Types */
-import { TrackWithImages } from "../page";
+import { TrackWithRelations } from "../page";
+import { AlbumImage } from "@/prisma/generated/prisma/browser";
 
 export default function Sorting(
-    { tracks, onEnd }: { tracks: TrackWithImages[], onEnd: (selectedIds: string[]) => void }
+    { tracks, trackToImage, onEnd }: { tracks: TrackWithRelations[], trackToImage: Map<string, AlbumImage>, onEnd: (selectedIds: string[]) => void }
 ) {
 
     const [isSubmit, setIsSubmit] = useState(false);
@@ -22,7 +23,7 @@ export default function Sorting(
         if(isSubmit) return;
         setIsSubmit(true);
 
-        const orderedIds = orderedTracks.map(track => track.spotifyId);
+        const orderedIds = orderedTracks.map(track => track.id);
         onEnd(orderedIds);
     };
 
@@ -72,9 +73,9 @@ export default function Sorting(
                     onReorder={setOrderedTracks}
                     className="flex flex-col gap-2 sm:gap-3"
                 >
-                    {orderedTracks.map((track: TrackWithImages, index: number) => (
+                    {orderedTracks.map((track: TrackWithRelations, index: number) => (
                         <Reorder.Item
-                            key={track.spotifyId}
+                            key={track.id}
                             value={track}
                             className="flex items-center gap-2 sm:gap-3 cursor-grab active:cursor-grabbing"
                             whileDrag={{ scale: 1.02, zIndex: 10 }}
@@ -84,7 +85,7 @@ export default function Sorting(
                                 {index + 1}
                             </div>
                             
-                            <SongCard trackId={track.spotifyId} track={track} />
+                            <SongCard trackId={track.id} track={track} image={trackToImage.get(track.id)} />
                         </Reorder.Item>
                     ))}
                 </Reorder.Group>
@@ -93,8 +94,8 @@ export default function Sorting(
     );
 }
 
-function SongCard(
-    { trackId, track } : { trackId: string, track: TrackWithImages }
+function SongCard(  
+    { trackId, track, image } : { trackId: string, track: TrackWithRelations, image: AlbumImage | undefined }
 ) {
     return (
         <div 
@@ -104,9 +105,9 @@ function SongCard(
             {/* Album Cover */}
             <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
                 <Image 
-                    src={track.images[0].url}
-                    width={track.images[0].width}
-                    height={track.images[0].height}
+                    src={image?.url || ''}
+                    width={image?.width || 300}
+                    height={image?.height || 300}
                     alt={track.title}
                     className="object-cover w-full h-full"
                     priority={false}
@@ -120,7 +121,7 @@ function SongCard(
                     {track.title}
                 </strong>
                 <p className="text-[0.6rem] sm:text-[0.65rem] truncate text-gray-500 leading-tight">
-                    {track.artists.slice(0, 2).map(a => a.name).join(', ')}
+                    {track.artists.slice(0, 2).map(a => a.artist.name).join(', ')}
                     {track.artists.length > 2 && '...'}
                 </p>
             </div>

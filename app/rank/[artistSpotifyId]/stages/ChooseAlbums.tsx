@@ -5,7 +5,7 @@ import { memo, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 
 /* Types */
-import { AlbumWithImages, TrackWithImages } from "../page";
+import { AlbumWithRelations, TrackWithRelations } from "../page";
 
 /* Framer Motion */
 import { motion, transformValue } from "framer-motion";
@@ -14,7 +14,7 @@ import { motion, transformValue } from "framer-motion";
 import { IconDisc } from "@tabler/icons-react";
 
 export default function ChooseAlbums(
-    { albums, singles, onEnd }: { albums: AlbumWithImages[], singles: TrackWithImages[], onEnd: (selectedIds: string[]) => void }  
+    { albums, onEnd }: { albums: AlbumWithRelations[], onEnd: (selectedIds: string[]) => void }  
 ) {
     const [albumSet, setAlbumSet] = useState<Set<string>>(new Set())
     const toggleAlbum = useCallback((id: string) => {
@@ -31,7 +31,7 @@ export default function ChooseAlbums(
 
     useEffect(() => {
         const allAlbumIds: Set<string> = new Set();
-        albums.forEach(album => allAlbumIds.add(album.spotifyId));
+        albums.forEach(album => allAlbumIds.add(album.id));
         setAlbumSet(allAlbumIds)
     }, [albums])
 
@@ -64,10 +64,10 @@ export default function ChooseAlbums(
             <section className="grid grid-cols-3 sm:grid-cols-4 gap-3 rounded-none">
                 {
                     [...albums]
-                    .filter((album: AlbumWithImages) => album.tracks && album.tracks.length > 2)
-                    .map((album: AlbumWithImages) => (
+                    .filter((album: AlbumWithRelations) => album.tracks && album.tracks.length > 2)
+                    .map((album: AlbumWithRelations) => (
                         <AlbumCard 
-                            key={album.spotifyId}
+                            key={album.id}
                             album={album} 
                             onClick={toggleAlbum} 
                         />))
@@ -81,15 +81,15 @@ export const AlbumCard = memo(function AlbumCard({
     album,
     onClick,
 }: {
-    album: AlbumWithImages;
+    album: AlbumWithRelations;
     onClick: (id: string) => void;
 }) {
     const [isSelected, setIsSelected] = useState(true);
 
     const handleClick = useCallback(() => {
-        onClick(album.spotifyId);
+        onClick(album.id);
         setIsSelected((prev) => !prev);
-    }, [album.spotifyId, onClick]);
+    }, [album.id, onClick]);
 
     return (
         <motion.div
@@ -109,8 +109,8 @@ export const AlbumCard = memo(function AlbumCard({
                 }`}>
                     <Image
                         src={album.images[0].url}
-                        width={album.images[0].width}
-                        height={album.images[0].height}
+                        width={album.images[0]?.width || 100}
+                        height={album.images[0]?.height || 100}
                         alt={album.title}
                         className={`w-full h-full object-cover ${isSelected ? "opacity-100" : "opacity-50"}`}
                         priority={false}

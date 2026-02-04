@@ -1,0 +1,113 @@
+/**
+ * Album Models
+ */
+enum AlbumType {
+  ALBUM
+  DELUXE_ALBUM
+  SINGLE
+  EP
+  COMPILATION
+}
+
+enum AlbumArtistsStatus {
+  INCOMPLETE
+  COMPLETE
+}
+
+enum AlbumImagesStatus {
+  INCOMPLETE
+  COMPLETE
+}
+
+enum AlbumTracksStatus {
+  INCOMPLETE
+  COMPLETE
+}
+
+model Album {
+  id           String @id @default(uuid())
+  spotifyId    String @unique
+  title        String
+  releaseDate  String
+  externalUrls Json
+  totalTracks  Int
+
+  type AlbumType @default(ALBUM)
+
+  artists       AlbumArtist[]
+  artistsStatus AlbumArtistsStatus @default(INCOMPLETE)
+
+  images       AlbumImage[]
+  imagesStatus AlbumImagesStatus @default(INCOMPLETE)
+
+  tracks       Track[]
+  tracksStatus AlbumTracksStatus @default(INCOMPLETE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+  @@index([releaseDate])
+}
+
+enum TrackArtistsStatus {
+  INCOMPLETE
+  COMPLETE
+}
+
+model Track {
+  id        String @id @default(uuid())
+  spotifyId String @unique
+  title     String
+  duration  Int?
+  position  Int
+
+  artists       TrackArtist[]
+  artistsStatus TrackArtistsStatus @default(INCOMPLETE)
+
+  albumId String
+  album   Album  @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  sortings SortingTrack[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([albumId])
+  @@index([title])
+}
+
+model Sorting {
+  id        String  @id @default(uuid())
+  isPublic  Boolean @default(true)
+  published Boolean @default(true)
+
+  artist   Artist @relation(fields: [artistId], references: [id])
+  artistId String
+
+  tracks SortingTrack[]
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([artistId])
+}
+
+model SortingTrack {
+  id       String @id @default(uuid())
+  position Int
+
+  sortingId String
+  sorting   Sorting @relation(fields: [sortingId], references: [id], onDelete: Cascade)
+
+  trackId String
+  track   Track  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@unique([sortingId, position])
+  @@unique([sortingId, trackId])
+  @@index([trackId])
+}

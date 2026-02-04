@@ -1,6 +1,6 @@
 import Navbar from "./components/secondaryNavbar";
 
-import Feed from "./components/feed2";
+import Feed from "./components/feed";
 import SecondaryNavbar from "./components/secondaryNavbar";
 
 export default function Loading() {

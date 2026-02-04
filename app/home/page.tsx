@@ -1,6 +1,6 @@
 /* Components */
 import SecondaryNavbar from "./components/secondaryNavbar";
-import Feed from "./components/feed2";
+import Feed from "./components/feed";
 
 /* Types */
 import { Prisma } from "@/prisma/generated/prisma/client";
@@ -12,35 +12,42 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { unstable_cache } from "next/cache";
 
-/* 
-  Define relational database types for home page 
-*/
-
 const trackInclude = {
-  artists: true,
-  images: true,
-} satisfies Prisma.DBTrackInclude;
-
-export type TrackWithArtistsAndImages = Prisma.DBTrackGetPayload<{ include: typeof trackInclude  }>;
+  album: {
+    include: {
+      images: true,
+    },
+  },
+  artists: {
+    include: {
+      artist: true,
+    },
+  },
+} satisfies Prisma.TrackInclude;
+export type TrackWithArtistsAndImages = Prisma.TrackGetPayload<{ include: typeof trackInclude  }>;
 
 const sortingInclude = {
   artist: true,
-  entries: {
+  tracks: {
     include: {
       track: {
         include: trackInclude
       },
     }
   },
-  user: true,
-} satisfies Prisma.DBSortingInclude;
+  user: {
+    include: {
+      profilePicture: true,
+    }
+  },
+} satisfies Prisma.SortingInclude;
 
-export type SortingWithUserArtistAndEntries = Prisma.DBSortingGetPayload<{ include: typeof sortingInclude  }>;
+export type SortingWithUserArtistAndTracks = Prisma.SortingGetPayload<{ include: typeof sortingInclude  }>;
 
 /* Cache home feed to reduce database load */
 const getCachedSortings = unstable_cache(
   async () => {
-    return await prisma.dBSorting.findMany({
+    return await prisma.sorting.findMany({
       include: sortingInclude,
     });
   },
@@ -60,7 +67,7 @@ export default async function Home() {
     redirect('/login');
   }
 
-  const feedSortings: SortingWithUserArtistAndEntries[] = await getCachedSortings();
+  const feedSortings: SortingWithUserArtistAndTracks[] = await getCachedSortings();
 
   return (
     <main className="page pb-12 relative bg-base-200 flex justify-center items-start">
