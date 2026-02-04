@@ -9,6 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: env("NEON_POSTGRES"),
+    url: env("DATABASE_URL"),
   },
 });
