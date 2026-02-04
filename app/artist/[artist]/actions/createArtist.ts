@@ -135,8 +135,8 @@ export async function createDatabaseArtist(artistSpotifyId: string) {
       /* Query 3: Create new albums */
       let newAlbumsCreated = false;
       if (newAlbums.length > 0) {
-        let newAlbumImageStatuses = new Set<string>();
-        let newAlbumArtistStatuses = new Set<string>();
+        const newAlbumImageStatuses = new Set<string>();
+        const newAlbumArtistStatuses = new Set<string>();
         try {
 
           /* ALBUMS */
@@ -255,9 +255,9 @@ export async function createDatabaseArtist(artistSpotifyId: string) {
       /* Query 4: Update existing albums */
       let existingAlbumsUpdated = false ? existingAlbumsToUpdate.length > 0 : true;
       if (existingAlbumsToUpdate.length > 0) {
-        let existingAlbumImageStatuses = new Set<string>();
-        let existingAlbumNewArtistStatuses = new Set<string>();
-        let existingAlbumExistingArtistStatuses = new Set<string>();
+        const existingAlbumImageStatuses = new Set<string>();
+        const existingAlbumNewArtistStatuses = new Set<string>();
+        const existingAlbumExistingArtistStatuses = new Set<string>();
         try {
 
           /* ALBUMS  */
