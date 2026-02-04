@@ -13,22 +13,27 @@ import Rank from "./Rank";
 import Sorting from "./Sorting";
 
 /* Types */
-import { TrackWithImages, AlbumWithImages } from "../page";
+import { TrackWithRelations, AlbumWithRelations } from "../page";
 import { Album, Track } from "@/types/artist"
 import { useRouter } from "next/navigation";
+import { AlbumImage } from "@/prisma/generated/prisma/client";
 
 export default function RankerInterface(
-    { artistSpotifyId, albums, singles }: { artistSpotifyId: string, albums: AlbumWithImages[], singles: TrackWithImages[] }
+    { artistSpotifyId, albums }: { artistSpotifyId: string, albums: AlbumWithRelations[] }
 ) {
 
     /* Current Ranking Stage */
     const [stage, setStage] = useState(0);
 
-    const [albumMap, setAlbumMap] = useState<Map<string, AlbumWithImages>>(new Map());
+    const [albumMap, setAlbumMap] = useState<Map<string, AlbumWithRelations>>(new Map());
+    const [albumList, setAlbumList] = useState<AlbumWithRelations[]>([]);
 
     /* Maps SpotifyID to Track for quick indexing. */
-    const [songMap, setSongMap] = useState<Map<string, TrackWithImages>>(new Map());
-    const [songList, setSongList] = useState<TrackWithImages[]>([]);
+    const [songMap, setSongMap] = useState<Map<string, TrackWithRelations>>(new Map());
+    const [songList, setSongList] = useState<TrackWithRelations[]>([]);
+
+    /* Track ID to Album Image */
+    const [trackToImage, setTrackToImage] = useState<Map<string, AlbumImage>>(new Map());
 
     const router = useRouter();
 
@@ -38,30 +43,34 @@ export default function RankerInterface(
     */  
     const chooseAlbums = (selectedAlbumIds: string[]) : void => {
 
-        const newSongList: TrackWithImages[] = [];
-        const newSongMap: Map<string, TrackWithImages> = songMap;
-        
-        const newAlbumMap: Map<string, AlbumWithImages> = new Map();
+        const newSongMap: Map<string, TrackWithRelations> = songMap;
+
+        const newAlbumMap: Map<string, AlbumWithRelations> = new Map();
+        const newAlbumList: AlbumWithRelations[] = [];
+
+        const newTrackToImage: Map<string, AlbumImage> = new Map();
+
         for(const albumId of selectedAlbumIds) {
             const album = albumMap.get(albumId);
-            if(!album) {
+            if(!album || album.tracks.length == 0) {
                 continue;
             }
+
+            const albumImage: AlbumImage = album.images[0];
+
             newAlbumMap.set(albumId, album);
-
+            newAlbumList.push(album);
             for(const track of album.tracks) {
-                newSongList.push(track);
-                newSongMap.set(track.spotifyId, track);
+                newSongMap.set(track.id, track);
+                newTrackToImage.set(track.id, albumImage);
             }
-
-        }
-        for(const single of singles) {
-            newSongList.push(single);
         }
 
-        setSongList(newSongList);
         setAlbumMap(newAlbumMap);
         setSongMap(newSongMap);
+        setTrackToImage(newTrackToImage);
+
+        setAlbumList(newAlbumList);
 
         setStage(prev => {
             return prev + 1;
@@ -72,10 +81,10 @@ export default function RankerInterface(
         Assemble
         - Remove the specified tracks from the ranking pool. 
     */
-    const assemble = (selectedIds: string[]) : void => {
+    const assemble = (selectedTrackIds: string[]) : void => {
 
-        const newSongList: TrackWithImages[] = [];
-        for(const newId of selectedIds) {
+        const newSongList: TrackWithRelations[] = [];
+        for(const newId of selectedTrackIds) {
             const track = songMap.get(newId);
             if (track === undefined)
                 continue;
@@ -93,11 +102,11 @@ export default function RankerInterface(
         Rank
         - Algorithmically determine the final ranking. 
     */
-    const rank = (finalList: string[]) : void => {
+    const rank = (ranking: string[]) : void => {
 
-        const newSongList: TrackWithImages[] = [];
+        const newSongList: TrackWithRelations[] = [];
 
-        for(const newId of finalList) {
+        for(const newId of ranking) {
             const track = songMap.get(newId);
             if (track === undefined)
                 continue;
@@ -126,22 +135,13 @@ export default function RankerInterface(
     
     /* Only set the songMap on page refresh. */
     useEffect(() => {
-        
-        setSongList(singles)
-        
-        const tempSingleMap: Map<string, TrackWithImages> = new Map(); 
-        for(const track of singles) {
-            tempSingleMap.set(track.spotifyId, track);
-        }
-        setSongMap(tempSingleMap);
-
-        const tempAlbumMap: Map<string, AlbumWithImages> = new Map(); 
+        const tempAlbumMap: Map<string, AlbumWithRelations> = new Map(); 
         for(const album of albums) {
-            tempAlbumMap.set(album.spotifyId, album);
+            tempAlbumMap.set(album.id, album);
         }
         setAlbumMap(tempAlbumMap);
 
-    }, [albums, singles])
+    }, [albums, setAlbumMap]);
 
     /* 
         Showdown
@@ -152,25 +152,27 @@ export default function RankerInterface(
             {(stage == 0) && 
                 <ChooseAlbums
                     albums={albums}
-                    singles={singles}
                     onEnd={chooseAlbums}
                 ></ChooseAlbums>
             }
             {(stage == 1) && 
                 <Assemble
-                    tracks={songList}
+                    albums={albumList}
+                    trackToImage={trackToImage}
                     onEnd={assemble}
                 ></Assemble>
             }
             {(stage == 2) &&
                 <Rank 
                     tracks={songList}
+                    trackToImage={trackToImage}
                     onEnd={rank}
                 ></Rank>
             }
             {(stage == 3) && 
                 <Sorting 
                     tracks={songList}
+                    trackToImage={trackToImage}
                     onEnd={handleSaveSorting}
                 />
             }

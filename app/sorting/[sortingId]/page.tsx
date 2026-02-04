@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 
 /* Types */
-import { Prisma, DBTrack, DBArtist, DBArtistImg } from "@/prisma/generated/prisma/client";
+import { Prisma, Track, Artist, ArtistImage, AlbumImage } from "@/prisma/generated/prisma/client";
 
 /* Prisma */
 import { prisma } from "@/lib/db";
@@ -16,32 +16,40 @@ import { IconArrowsTransferUpDown } from "@tabler/icons-react";
 
 const artistInclude = {
     images: true,
-} satisfies Prisma.DBArtistInclude;
+} satisfies Prisma.ArtistInclude;
 
-type ArtistWithImages = Prisma.DBArtistGetPayload<{ include: typeof artistInclude }>;
+type ArtistWithRelations = Prisma.ArtistGetPayload<{ include: typeof artistInclude }>;
 
 const trackInclude = {
-    artists: true,
-    images: true,
-} satisfies Prisma.DBTrackInclude;
+    artists: {
+        include: {
+            artist: true,
+        }
+    },
+    album: {
+        include: {
+            images: true,
+        }
+    }
+} satisfies Prisma.TrackInclude;
 
-type TrackWithArtistsAndImages = Prisma.DBTrackGetPayload<{ include: typeof trackInclude }>;
+type TrackWithRelations = Prisma.TrackGetPayload<{ include: typeof trackInclude }>;
 
 const sortingInclude = {
     user: true,
     artist: {
         include: artistInclude,
     },
-    entries: {
+    tracks: {
         include: {
             track: {
                 include: trackInclude,
             },
         },
     },
-} satisfies Prisma.DBSortingInclude;
+} satisfies Prisma.SortingInclude;
 
-type SortingWithUserArtistAndEntries = Prisma.DBSortingGetPayload<{ include: typeof sortingInclude }>;
+type SortingWithUserArtistAndEntries = Prisma.SortingGetPayload<{ include: typeof sortingInclude }>;
 
 
 export default async function SortingPage({
@@ -58,7 +66,7 @@ export default async function SortingPage({
     }
 
     const sortingId = (await params).sortingId;
-    const sorting: SortingWithUserArtistAndEntries | null = await prisma.dBSorting.findUnique({
+    const sorting: SortingWithUserArtistAndEntries | null = await prisma.sorting.findUnique({
         where: {
             id: sortingId,
         },
@@ -68,8 +76,8 @@ export default async function SortingPage({
         throw new Error("Sorting not found.");
     }
 
-    const artist: ArtistWithImages = sorting.artist;
-    const tracks: TrackWithArtistsAndImages[] = sorting.entries.sort((a, b) => a.position - b.position).map(entry => entry.track);
+    const artist: ArtistWithRelations = sorting.artist;
+    const tracks: TrackWithRelations[] = sorting.tracks.sort((a, b) => a.position - b.position).map(entry => entry.track);
 
     return (
         <main className="min-h-[calc(100vh-4rem)] w-full pt-16 mb-8 flex flex-col items-center">
@@ -116,39 +124,41 @@ export default async function SortingPage({
 
             {/* Sorted Tracks List */}
             <section className="w-200 flex flex-col items-center gap-3 pb-8 mt-8">
-                {tracks.map((track, index) => (
-                    <div
-                        key={track.spotifyId}
-                        className="flex items-center gap-3"
-                    >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-base-200 font-bold text-sm shrink-0">
-                            {index + 1}
+                {tracks.map((track, index) => {
+                    const image = track.album.images[0];
+                    if(!image) return null;
+                    return (
+                        <div
+                            key={track.spotifyId}
+                            className="flex items-center gap-3"
+                        >
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-base-200 font-bold text-sm shrink-0">
+                                {index + 1}
+                            </div>
+                            <SongCard track={track} image={image} />
                         </div>
-                        <SongCard track={track} />
-                    </div>
-                ))}
+                    )
+                })}
             </section>
         </main>
     );
 }
 
-function SongCard({ track }: { track: TrackWithArtistsAndImages }) {
+function SongCard({ track, image }: { track: TrackWithRelations, image: AlbumImage }) {
     return (
         <div className="relative h-18 w-140 shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1">
             {/* Album Cover */}
-            {track.images && track.images.length > 0 && (
-                <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
-                    <Image
-                        src={track.images[0].url}
-                        width={track.images[0].width}
-                        height={track.images[0].height}
-                        alt={track.title}
-                        className="object-cover w-full h-full"
-                        priority={false}
-                        loading="lazy"
-                    />
-                </figure>
-            )}
+            <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
+                <Image
+                    src={image.url}
+                    width={image.width || 300}
+                    height={image.height || 300}
+                    alt={track.title}
+                    className="object-cover w-full h-full"
+                    priority={false}
+                    loading="lazy"
+                />
+            </figure>
 
             {/* Track Info */}
             <div className="flex flex-col justify-center flex-1 min-w-0 gap-0.5">
@@ -156,7 +166,7 @@ function SongCard({ track }: { track: TrackWithArtistsAndImages }) {
                     {track.title}
                 </strong>
                 <p className="text-[0.65rem] truncate text-gray-500 leading-tight">
-                    {track.artists[0].name}
+                    {track.artists[0].artist.name}
                 </p>
             </div>
         </div>

@@ -107,11 +107,19 @@ class SpotifyWrapper {
     */
     public async getArtist(artistId: string): Promise<SpotifyArtist | null> {
         const token: string | null = await this.getToken();
-    
         if(!token) return null;
+        
         const spotifyArtist: SpotifyArtist = await this.queryArtist(token, artistId);
 
         return this.parseArtist(spotifyArtist);
+    }
+    public async getArtists(artistIds: string[]): Promise<SpotifyArtist[] | null> {
+        const token: string | null = await this.getToken();
+        if(!token) return null;
+
+        const artists: SpotifyArtist[] = await this.queryArtists(token, artistIds);
+
+        return artists.map(artist => this.parseArtist(artist));
     }
     private parseArtist(spotifyArtist: SpotifyArtist): SpotifyArtist {
 
@@ -423,6 +431,27 @@ class SpotifyWrapper {
         const jsonResult: SpotifyArtist = await response.json();
 
         return jsonResult;
+    }
+
+    private async queryArtists(token: string, artistIds: string[]): Promise<SpotifyArtist[]> {
+
+        let artistQuery = "";
+        for (const artistId of artistIds.slice(0, 50)) {
+            artistQuery += artistId + ",";
+        }
+        artistQuery = artistQuery.slice(0, -1);
+
+        const url = `https://api.spotify.com/v1/artists?ids=${artistQuery}`;
+
+        const headers = this.getAuthHeaders(token);
+
+        const response = await fetch(`${url}`, { headers });
+        if (!response.ok) {
+            throw new Error(`Error fetching artists: ${response.statusText}`);
+        }
+        const jsonResult = await response.json();
+
+        return jsonResult.artists as SpotifyArtist[];
     }
 
     private async querySimpleAlbums(token: string, artistId: string): Promise<SimpleSpotifyAlbumResponse>{

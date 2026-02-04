@@ -6,6 +6,13 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 
 /* Prisma */
 import { prisma } from "@/lib/db";
+import { profile } from "node:console";
+import { Prisma } from "@/prisma/generated/prisma/browser";
+
+const userInclude = {
+  profilePicture: true,
+} satisfies Prisma.UserInclude;
+type UserWithProfilePicture = Prisma.UserGetPayload<{ include: typeof userInclude }>;
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
@@ -27,35 +34,75 @@ export const auth = betterAuth({
     }, 
     user: {
         additionalFields: {
-            profilePicture: {
+            username: {
                 type: "string",
                 required: false,
-                defaultValue: null,
-                input: true,
+            },
+            role: {
+                type: "string",
+                input: false
+            },
+            followerCount: {
+                type: "number",
+                defaultValue: 0,
+                input: false
+            },
+            followingCount: {
+                type: "number",
+                defaultValue: 0,
+                input: false
             },
         },
     },
     hooks: {
         after: createAuthMiddleware(async (ctx) => {
             const newSession = ctx.context.newSession;
-            
-            // Check if this is a newly created user
             if (newSession) {
                 const user = await prisma.user.findUnique({
                     where: { id: newSession.user.id },
                     select: { username: true, createdAt: true, profilePicture: true },
-                });
-
-                // If username is not set or user was just created
-                if (user && !user.username) {
-                    await prisma.user.update({
-                        where: { id: newSession.user.id },
-                        data: {
-                            username: `user_${newSession.user.id.substring(0, 8)}`
-                        }
-                    });
+                }) as UserWithProfilePicture;
+                if(!user) {
+                    return;
                 }
+
+                const name = newSession.user.name;
+
+                await prisma.$transaction(async (tx) => {
+                    // If username is not set or user was just created
+                    if (!user.username) {
+                        await tx.user.update({
+                            where: { id: newSession.user.id },
+                            data: {
+                                username: `user_${newSession.user.id.substring(0, 8)}`
+                            }
+                        });
+                    }
+                    // If profile picture is not set, assign default profile picture
+                    if (!user.profilePicture) {
+
+                        const foregroundInitials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+                        const profileBackgroundColors = ['primary', 'secondary', 'accent', 'info', 'success'];
+                        const randomColor = profileBackgroundColors[Math.floor(Math.random() * profileBackgroundColors.length)];
+
+                        await tx.userProfileImage.upsert({
+                            where: { userId: newSession.user.id },
+                            create: {
+                                foregroundInitials: foregroundInitials,
+                                backgroundColor: randomColor,
+                                type: "DEFAULT",
+                                userId: newSession.user.id,
+                            },
+                            update: {
+                                foregroundInitials: foregroundInitials,
+                                backgroundColor: randomColor,
+                                type: "DEFAULT",
+                            }
+                        });
+                    }
+                }); 
             }
         }),
     }
 });
+export type TSession = typeof auth.$Infer.Session

@@ -16,13 +16,22 @@ import {
 import { motion } from "motion/react";
 
 /* Types */
-import { AlbumWithImages, TrackWithImages } from '../page';
+import { AlbumWithRelations, TrackWithRelations } from '../page';
 
 import { IconMusic, IconPointerFilled, IconArrowBadgeLeft, IconArrowBadgeRight } from "@tabler/icons-react";
+import { AlbumImage } from '@/prisma/generated/prisma/client';
 
 export default function Assemble(
-    { tracks, onEnd }: { tracks: TrackWithImages[], onEnd: (selectedIds: string[]) => void }
+    { albums, trackToImage, onEnd }: { albums: AlbumWithRelations[], trackToImage: Map<string, AlbumImage>, onEnd: (selectedTrackIds: string[]) => void }
 ) {
+
+    const tracks: TrackWithRelations[] = [];
+    for(const album of albums) {
+        for(const track of album.tracks) {
+            tracks.push(track);
+        }
+    }
+
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     
     // Optimized toggle function
@@ -40,7 +49,7 @@ export default function Assemble(
 
     const numTracksPerPage: number = 12;
     const slides = useMemo(() => {
-        const chunks: TrackWithImages[][] = [];
+        const chunks: TrackWithRelations[][] = [];
         for (let i = 0; i < tracks.length; i += numTracksPerPage) {
             chunks.push(tracks.slice(i, i + numTracksPerPage));
         }
@@ -49,7 +58,7 @@ export default function Assemble(
 
     useEffect(() => {
         setSelectedIds(new Set());
-    }, [tracks])
+    }, [albums])
 
     const [api, setApi] = useState<CarouselApi>();
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -68,13 +77,8 @@ export default function Assemble(
             setCurrentSlide(api.selectedScrollSnap());
             setTotalSlides(api.scrollSnapList().length);
         };
-
-        // Initial setup
         updateSlides();
-
-        // Throttle the select event if needed
         api.on("select", updateSlides);
-
         return () => {
             api.off("select", updateSlides);
         };
@@ -129,6 +133,7 @@ export default function Assemble(
                         <CarouselItem className="w-full" key={index}>
                             <MemoCarouselPage 
                                 tracks={trackChunk}
+                                trackToImage={trackToImage}
                                 toggleId={toggleIdToRemove}
                             />
                         </CarouselItem>
@@ -164,36 +169,45 @@ export default function Assemble(
 // Memoize the carousel page
 const MemoCarouselPage = memo(function CarouselPage({ 
     tracks, 
+    trackToImage,
     toggleId 
 }: { 
-    tracks: TrackWithImages[], 
+    tracks: TrackWithRelations[], 
+    trackToImage: Map<string, AlbumImage>,
     toggleId: (id: string) => void 
 }) {
     return (
         <div className="h-full w-full flex items-center justify-center py-2 px-2 sm:px-4">
             <main className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2 lg:gap-2 place-items-center w-full max-w-7xl">
-                {tracks.map((track) => (
-                    <SongCard 
-                        key={track.spotifyId} 
-                        track={track}
-                        onClick={toggleId}
-                    />
-                ))}
+                {tracks.map((track) => {
+                    const image = trackToImage.get(track.id);
+                    if(!image) return;
+                    return (
+                        <SongCard 
+                            key={track.id} 
+                            track={track}
+                            image={image}
+                            onClick={toggleId}
+                        />
+                    )
+                    
+                })}
             </main>
         </div>
     )
 });
 
-const SongCard = memo(function SongCard({ track, onClick }: {
-    track: TrackWithImages, 
+const SongCard = memo(function SongCard({ track, image, onClick }: {
+    track: TrackWithRelations,
+    image: AlbumImage,
     onClick: (id: string) => void 
 }) {
     const [isSelected, setIsSelected] = useState<boolean>(false);
 
     const handleClick = useCallback(() => {
-        onClick(track.spotifyId);
+        onClick(track.id);
         setIsSelected(prev => !prev);
-    }, [onClick, track.spotifyId]);
+    }, [onClick, track.id]);
 
     return (
         <motion.div 
@@ -214,9 +228,9 @@ const SongCard = memo(function SongCard({ track, onClick }: {
                 {/* Album Cover */}
                 <figure className={`h-full aspect-square rounded-sm border-2 border-black overflow-hidden shrink-0`}>
                     <Image 
-                        src={track.images[0].url}
-                        width={track.images[0].width}
-                        height={track.images[0].height}
+                        src={image.url}
+                        width={image.width || 100}
+                        height={image.height || 100}
                         alt={track.title}
                         className="object-cover w-full h-full"
                         priority={false}
@@ -231,7 +245,7 @@ const SongCard = memo(function SongCard({ track, onClick }: {
                     </strong>
                     {track.artists.length > 1 && (
                         <p className="text-[9px] sm:text-xs truncate text-muted-foreground">
-                            {track.artists.map(artist => artist.name).join(", ")}
+                            {track.artists.map(artist => artist.artist.name).join(", ")}
                         </p>
                     )}
                 </div>

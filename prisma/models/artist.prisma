@@ -1,0 +1,96 @@
+/**
+ * Artist Models
+ */
+enum ArtistImagesStatus {
+  INCOMPLETE
+  COMPLETE
+}
+
+enum ArtistAlbumsStatus {
+  INCOMPLETE
+  COMPLETE
+}
+
+enum ArtistTracksStatus {
+  INCOMPLETE
+  COMPLETE
+}
+
+model Artist {
+  id           String @id @default(uuid())
+  spotifyId    String @unique
+  name         String
+  followers    Int
+  externalUrls Json
+
+  images       ArtistImage[]
+  imagesStatus ArtistImagesStatus @default(INCOMPLETE)
+
+  albums       AlbumArtist[]
+  albumsStatus ArtistAlbumsStatus @default(INCOMPLETE)
+
+  tracks       TrackArtist[]
+  tracksStatus ArtistTracksStatus @default(INCOMPLETE)
+
+  genres   Genre[]
+  sortings Sorting[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+enum AlbumArtistRole {
+  SOLO
+  COLLABORATOR
+}
+
+model AlbumArtist {
+  role AlbumArtistRole @default(SOLO)
+
+  albumId String
+  album   Album  @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  artistId String
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([albumId, artistId])
+  @@index([artistId])
+  @@index([albumId])
+}
+
+enum TrackArtistRole {
+  PRIMARY
+  FEATURED
+}
+
+model TrackArtist {
+  id       String          @id @default(uuid())
+  trackId  String
+  artistId String
+  role     TrackArtistRole
+
+  track  Track  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([trackId, artistId])
+  @@index([trackId])
+  @@index([artistId])
+  @@index([role])
+}
+
+/**
+ * Genre Models
+ */
+model Genre {
+  id      String   @id @default(uuid())
+  name    String   @unique
+  artists Artist[]
+}

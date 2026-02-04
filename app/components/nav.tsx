@@ -4,31 +4,33 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import useGetCurrentUser from "@/hooks/useGetCurrentUser"
 
 /* Auth */
 import { authClient } from "@/lib/auth-client"
-import { useSession } from "@/lib/auth-client"
 
-/* Server Actions */
-import { getUser } from "@/utils/serverFunctions/getUser"
+/* Types */
+import { Prisma, UserProfileImage } from "@/prisma/generated/prisma/client";
 
 /* Components */
 import { SearchBar } from "./search"
 
 /* Icons */
 import { IconX, IconLogout2, IconSettings, IconUserCircle, IconSearch } from "@tabler/icons-react"
-import { profile } from "console"
-import { Icon } from "lucide-react"
 
 
 export default function Navbar() {
-  
-  const { data: session, isPending } = useSession();
+
+  const { name, username, userId, profilePicture, isAuthenticated } = useGetCurrentUser();
+
   const router = useRouter();
-  
+
   const [searchToggled, setSearchToggled] = useState<boolean>(false);
-  const [visible, setVisible] = useState<boolean>(true);
+
+  if(!name || !userId) {
+    return <div></div>
+  }
 
   const signOut = async () => {
     await authClient.signOut({
@@ -40,36 +42,16 @@ export default function Navbar() {
     });
   }
 
-  const authenticated = !!session;
-
-  const name = session?.user?.name;
-  const userId = session?.user?.id;
-
-  const [profilePicture, setProfilePicture] = useState<string | null>('');
-
-  useEffect(() => {
-    if (!userId) return;
-    const fetchUserData = async () => {
-      const user = await getUser(userId);
-      setProfilePicture(user?.profilePicture || null);
-    };
-    fetchUserData();
-  }, [userId])
-
-  if(!visible) return null;
-
   return (
     <nav className="h-16 w-full pl-5 pr-3 pt-2 pb-0 bg-base-200 fixed top-0 flex justify-between items-center z-10">
-
       <NavbarHeader />
       <MenuControls 
+        isAuthenticated={isAuthenticated}
         name={name}  
         userId={userId} 
         profilePicture={profilePicture}
-        authenticated={authenticated}
         signOut={signOut}
       />
-
       {searchToggled && (
         <nav className="absolute w-full h-full left-0 top-0 shadow-md bg-base-100">
           <SearchBar 
@@ -130,14 +112,12 @@ function NavbarHeader() {
   Small Screens: Hamburger Menu that toggles a side drawer with the same options
 */
 function MenuControls(
-  { name, profilePicture, authenticated, userId, signOut }: 
+  { isAuthenticated, name, profilePicture, userId, signOut }: 
   { 
-    name?: string;
-    userId?: string; 
-    profilePicture?: string | null;
-
-    authenticated: boolean;
-
+    isAuthenticated: boolean;
+    name: string;
+    userId: string; 
+    profilePicture: UserProfileImage | null;
     signOut: () => Promise<void>; 
   }
 ) {
@@ -149,7 +129,7 @@ function MenuControls(
       {/* --- Desktop Buttons (shown on lg+) --- */}
       <div className="hidden lg:flex items-center gap-4">
         
-        {authenticated ? (
+        {isAuthenticated ? (
           <>
             {/* Profile Button (opens popover) */}
             <button
@@ -158,30 +138,33 @@ function MenuControls(
               style={{ anchorName: "--profile-anchor" } as React.CSSProperties}
             >
               <div className="text-center flex items-center gap-1">
-                {name?.split(" ")[0]}
+                {name.split(" ")[0]}
               </div>
-              <div className="avatar h-10 w-10">
-                <div
-                  className={`ring-offset-base-100 w-24 p-1 rounded-full ring-offset-0`}
-                >
-                  {profilePicture &&
-                    <div className={`relative ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 w-8 h-8 sm:w-8 sm:h-8 overflow-hidden`}>
-                        {profilePicture.includes("/default_profile/") && name &&
-                            <div className="absolute inset-0 flex items-center justify-center font-bold">
-                                {name.charAt(0).toUpperCase()}
-                            </div>
-                        }
-                        <Image
-                            src={profilePicture}
-                            alt={name || 'Profile Picture'}
-                            width={32}
-                            height={32}
-                            className={`object-cover w-full h-full`}
-                        />
-                    </div>
+              <figure className="avatar w-10 h-10 flex flex-col justify-center items-center">
+                  {profilePicture 
+                  ? 
+                  <div
+                      className={`ring-2 ring-offset-0 ring-black ring-offset-base-100 h-full w-full rounded-full`}
+                  >
+                      {(profilePicture.type === "UPLOADED" && profilePicture.url)
+                          ? 
+                          <Image 
+                              src={profilePicture.url}
+                              alt={`${name}'s profile picture`}
+                              width={48}
+                              height={48}
+                              className={`object-cover h-full w-full`}
+                          />
+                          : 
+                          <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
+                              <span className="text-md text-white font-bold">{profilePicture.foregroundInitials}</span>
+                          </figure>
+                      }
+                  </div>
+                  : 
+                  <div className="skeleton h-10 w-10 shrink-0 rounded-full"></div>
                   }
-                </div>
-              </div>
+              </figure>
             </button>
 
             {/* Profile Dropdown Popover */}
@@ -201,24 +184,31 @@ function MenuControls(
                 className="py-2 bg-base-200 rounded-sm
                   flex flex-row justify-start items-center gap-3 px-2"
               >
-                <div className="avatar h-11 w-11 flex justify-center items-center">
-                  {profilePicture &&
-                    <div className={`relative ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 w-8 h-8 sm:w-8 sm:h-8 overflow-hidden`}>
-                        {profilePicture.includes("/default_profile/") && name &&
-                            <div className="absolute inset-0 flex items-center justify-center font-bold">
-                                {name.charAt(0).toUpperCase()}
-                            </div>
+                <figure className="avatar w-10 h-10 flex flex-col justify-center items-center">
+                    {profilePicture 
+                    ? 
+                    <div
+                        className={`ring-2 ring-offset-0 ring-black ring-offset-base-100 h-full w-full rounded-full`}
+                    >
+                        {(profilePicture.type === "UPLOADED" && profilePicture.url)
+                            ? 
+                            <Image 
+                                src={profilePicture.url}
+                                alt={`${name}'s profile picture`}
+                                width={48}
+                                height={48}
+                                className={`object-cover h-full w-full`}
+                            />
+                            : 
+                            <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
+                                <span className="text-md text-white font-bold">{profilePicture.foregroundInitials}</span>
+                            </figure>
                         }
-                        <Image
-                            src={profilePicture}
-                            alt={name || 'Profile Picture'}
-                            width={32}
-                            height={32}
-                            className={`object-cover w-full h-full`}
-                        />
                     </div>
-                  }
-                </div>
+                    : 
+                    <div className="skeleton h-10 w-10 shrink-0 rounded-full"></div>
+                    }
+                </figure>
                 <div className="pt-1">
                   <p className="font-semibold text-[0.9rem]">{name}</p>
                 </div>
@@ -292,7 +282,7 @@ function MenuControls(
       <div className="drawer-side">
         <label htmlFor="menu-drawer" className="drawer-overlay"></label>
         <ul className="menu bg-base-200 min-h-full w-80 px-3 pt-3">
-          {authenticated ? (
+          {isAuthenticated ? (
             <>
               {/* View Profile */}
               <Link
@@ -300,24 +290,31 @@ function MenuControls(
                 className="bg-base-200 rounded-sm
                   flex flex-row justify-start items-center gap-3 px-2"
               >
-                <div className="avatar h-11 w-11">
-                  {profilePicture &&
-                    <div className={`relative ring-black ring-offset-base-100 rounded-full ring-2 ring-offset-2 w-8 h-8 sm:w-8 sm:h-8 overflow-hidden`}>
-                        {profilePicture.includes("/default_profile/") && name &&
-                            <div className="absolute inset-0 flex items-center justify-center font-bold">
-                                {name.charAt(0).toUpperCase()}
-                            </div>
-                        }
-                        <Image
-                            src={profilePicture}
-                            alt={name || 'Profile Picture'}
-                            width={32}
-                            height={32}
-                            className={`object-cover w-full h-full`}
-                        />
-                    </div>
+                <figure className="avatar w-12 h-12 flex flex-col justify-center items-center">
+                  {profilePicture 
+                  ? 
+                  <div
+                      className={`ring-2 ring-offset-0 ring-black ring-offset-base-100 h-full w-full p-1 rounded-full`}
+                  >
+                      {(profilePicture.type === "UPLOADED" && profilePicture.url)
+                          ? 
+                          <Image 
+                              src={profilePicture.url}
+                              alt={`${name}'s profile picture`}
+                              width={48}
+                              height={48}
+                              className={`object-cover h-full w-full`}
+                          />
+                          : 
+                          <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
+                              <span className="text-md text-white font-bold">{profilePicture.foregroundInitials}</span>
+                          </figure>
+                      }
+                  </div>
+                  : 
+                  <div className="skeleton h-12 w-12 shrink-0 rounded-full"></div>
                   }
-                </div>
+                </figure>
     
                 <div className="pt-1">
                   <p className="font-semibold text-[0.9rem]">{name}</p>
