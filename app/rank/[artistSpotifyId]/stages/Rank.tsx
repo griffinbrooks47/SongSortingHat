@@ -117,11 +117,11 @@ export default function Rank(
                                     loading="lazy"
                                 />
                             </figure>
-                            <div className="flex flex-col items-center py-1 -mt-1">
-                                <strong className="text-sm font-bold truncate max-w-[14ch]">
+                            <div className="flex flex-col items-center py-1 -mt-1 min-w-0">
+                                <strong className="text-sm font-bold line-clamp-1 w-full text-center">
                                     {track1.title}
                                 </strong>
-                                <p className="text-xs mt-0 truncate max-w-[40ch]">
+                                <p className="text-xs mt-0 line-clamp-1 w-full text-center">
                                     {track1.artists.map(artist => artist.artist.name).join(', ')}
                                 </p>
                             </div>
@@ -161,11 +161,11 @@ export default function Rank(
                                     loading="lazy"
                                 />
                             </figure>
-                            <div className="flex flex-col items-center py-1 -mt-1">
-                                <strong className="text-sm font-bold truncate max-w-[14ch]">
+                            <div className="flex flex-col items-center py-1 -mt-1 min-w-0">
+                                <strong className="text-sm font-bold line-clamp-1 w-full text-center">
                                     {track2.title}
                                 </strong>
-                                <p className="text-xs mt-0 truncate max-w-[14ch]">
+                                <p className="text-xs mt-0 line-clamp-1 w-full text-center">
                                     {track2.artists.map(artist => artist.artist.name).join(', ')}
                                 </p>
                             </div>
@@ -231,18 +231,22 @@ export default function Rank(
                                             )}
                                         </div>
                                         
-                                        {/* Songs in this rank - Responsive grid */}
-                                        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 sm:gap-3">
+                                        {/* Songs in this rank - Responsive flex wrap */}
+                                        <div className="flex flex-wrap gap-2 sm:gap-3">
                                             {tracks.map(({ trackId, track }) => {
                                                 const image = trackToImage.get(track.id);
                                                 if(!image) return null;
                                                 return (
-                                                    <SongCard
+                                                    <div 
                                                         key={trackId}
-                                                        trackId={trackId}
-                                                        track={track}
-                                                        image={image}
-                                                    />
+                                                        className="flex-[0_0_calc(50%-0.25rem)] xs:flex-[0_0_calc(33.333%-0.5rem)] sm:flex-[0_0_calc(25%-0.625rem)] lg:flex-[0_0_calc(20%-0.7rem)]"
+                                                    >
+                                                        <SongCard
+                                                            trackId={trackId}
+                                                            track={track}
+                                                            image={image}
+                                                        />
+                                                    </div>
                                                 )
                                             })}
                                         </div>

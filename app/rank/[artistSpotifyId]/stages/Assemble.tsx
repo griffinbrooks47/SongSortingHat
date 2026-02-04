@@ -243,7 +243,7 @@ const SongCard = memo(function SongCard({ track, image, onClick }: {
                     <strong className="text-xs sm:text-sm font-bold truncate">
                         {track.title}
                     </strong>
-                    {track.artists.length > 1 && (
+                    {track.artists.length >= 1 && (
                         <p className="text-[9px] sm:text-xs truncate text-muted-foreground">
                             {track.artists.map(artist => artist.artist.name).join(", ")}
                         </p>

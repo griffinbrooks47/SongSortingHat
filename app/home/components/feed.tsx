@@ -77,12 +77,12 @@ function FeedSorting(
     return (
         <main className="pt-2 pb-2 px-2 sm:px-4 sm:pt-3 bg-base-100 rounded-md shadow-sm">
             {/* User Info */}
-            <section className="pl-1 sm:pl-1 h-12 w-full flex flex-row">
-                <figure className="avatar w-12 h-12 flex flex-col justify-center items-center">
+            <section className="pl-1 pb-1 sm:pl-1 h-10 w-full flex flex-row items-center justify-start">
+                <figure className="avatar w-8 h-8 sm:w-9 sm:h-9 flex flex-col justify-center items-center">
                     {profilePicture 
                     ? 
                     <div
-                        className={`ring-2 ring-offset-0 ring-black ring-offset-base-100 h-full w-full p-1 rounded-full`}
+                        className={`flex justify-center items-center ring-2 ring-offset-0 ring-black ring-offset-base-100 h-full w-full rounded-full`}
                     >
                         {(profilePicture.type === "UPLOADED" && profilePicture.url)
                             ? 
@@ -95,12 +95,12 @@ function FeedSorting(
                             />
                             : 
                             <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
-                                <span className="text-md text-white font-bold">{profilePicture.foregroundInitials}</span>
+                                <span className="text-md text-black font-bold">{profilePicture.foregroundInitials}</span>
                             </figure>
                         }
                     </div>
                     : 
-                    <div className="skeleton h-12 w-12 shrink-0 rounded-full"></div>
+                    <div className="skeleton h-10 w-10 shrink-0 rounded-full"></div>
                     }
                 </figure>
                 <div className="h-full flex flex-row items-center px-2 sm:px-3">
@@ -140,9 +140,9 @@ function FeedSorting(
                         <IconShare3 />
                     </button>
                 </div>
-                <div className="text-xs sm:text-sm opacity-70 underline cursor-pointer">
+                <Link href={`/sorting/${sorting.id}`} className="text-xs sm:text-sm opacity-70 underline cursor-pointer">
                     full ranking...
-                </div>
+                </Link>
             </section>
         </main>
     )

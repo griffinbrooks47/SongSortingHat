@@ -157,7 +157,7 @@ function MenuControls(
                           />
                           : 
                           <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
-                              <span className="text-md text-white font-bold">{profilePicture.foregroundInitials}</span>
+                              <span className="text-md text-black font-bold">{profilePicture.foregroundInitials}</span>
                           </figure>
                       }
                   </div>
@@ -201,7 +201,7 @@ function MenuControls(
                             />
                             : 
                             <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
-                                <span className="text-md text-white font-bold">{profilePicture.foregroundInitials}</span>
+                                <span className="text-md text-black font-bold">{profilePicture.foregroundInitials}</span>
                             </figure>
                         }
                     </div>
@@ -307,7 +307,7 @@ function MenuControls(
                           />
                           : 
                           <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
-                              <span className="text-md text-white font-bold">{profilePicture.foregroundInitials}</span>
+                              <span className="text-md text-black font-bold">{profilePicture.foregroundInitials}</span>
                           </figure>
                       }
                   </div>
