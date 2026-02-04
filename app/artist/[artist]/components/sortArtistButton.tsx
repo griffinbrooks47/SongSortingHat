@@ -20,9 +20,7 @@ export default function SortArtistButton(
     if (!isPolling) return;
 
     let pollTimeoutId: NodeJS.Timeout;
-    let maxTimeoutId: NodeJS.Timeout;
-
-    maxTimeoutId = setTimeout(() => {
+    const maxTimeoutId: NodeJS.Timeout = setTimeout(() => {
       setIsPolling(false);
       setTimedOut(true);
       clearTimeout(pollTimeoutId);
