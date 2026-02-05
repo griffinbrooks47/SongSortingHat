@@ -48,6 +48,10 @@ export type SortingWithUserArtistAndTracks = Prisma.SortingGetPayload<{ include:
 const getCachedSortings = unstable_cache(
   async () => {
     return await prisma.sorting.findMany({
+      orderBy: [
+        { createdAt: "desc" },
+        { id: "desc" }
+      ],
       include: sortingInclude,
     });
   },

@@ -6,19 +6,19 @@ import Image from "next/image";
 import Link from "next/link";
 
 /* Types */
-import { SortingWithArtistAndTracks } from "../page";
+import { SortingWithRelations } from "../page";
 import { Artist, ArtistImage } from "@/prisma/generated/prisma/client";
 
 export const UserSortings = memo(function UserSortings({
   sortings,
 }: {
-  sortings: SortingWithArtistAndTracks[];
+  sortings: SortingWithRelations[];
 }) {
   return (
-    <section className="mb-auto flex flex-col items-start">
+    <section className="mb-auto flex flex-col items-start w-[90%] mx-auto sm:max-w-3xl">
         <h1 className="text-md font-bold">Sortings</h1>
-        <hr className="border-black opacity-10 w-200 mt-1"></hr>
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <hr className="border-black opacity-10 w-full mt-1"></hr>
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 w-full">
             {sortings && sortings.map((sorting) => (
                 <SortingPreviewCard key={sorting.id} sorting={sorting} />
             ))}
@@ -30,7 +30,7 @@ export const UserSortings = memo(function UserSortings({
 const SortingPreviewCard = memo(function SortingPreviewCard({
   sorting,
 }: {
-  sorting: SortingWithArtistAndTracks;
+  sorting: SortingWithRelations;
 }) {
 
     const id = sorting.id;
@@ -42,12 +42,12 @@ const SortingPreviewCard = memo(function SortingPreviewCard({
     return (
         <Link
         href={`/sorting/${id}`}
-        className="group relative w-64 rounded-md overflow-hidden border-2 border-black/10 bg-base-100 shadow-xs hover:shadow-md hover:border-black transition-all duration-150"
+        className="group relative w-full rounded-md overflow-hidden border-2 border-black/10 bg-base-100 shadow-xs hover:shadow-md hover:border-black transition-all duration-150"
         >
             {/* Artist Section */}
             <section 
                 key={sorting.id}
-                className="relative h-18 w-full shrink-0 rounded-sm overflow-hidden flex flex-row gap-2 p-2"
+                className="relative h-16 sm:h-18 w-full shrink-0 rounded-sm overflow-hidden flex flex-row gap-2 p-2"
             >
                 {/* Artist Image */}
                 <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
@@ -66,10 +66,10 @@ const SortingPreviewCard = memo(function SortingPreviewCard({
             
                 {/* Artist Info */}
                 <div className="px-1 flex flex-col items-start justify-center flex-1 min-w-0">
-                    <strong className="text-md font-bold truncate leading-tight">
+                    <strong className="text-sm sm:text-md font-bold truncate leading-tight w-full">
                         {artist.name}
                     </strong>
-                    <p className="text-[0.75rem] truncate leading-tight text-gray-600">
+                    <p className="text-[0.7rem] sm:text-[0.75rem] truncate leading-tight text-gray-600 w-full">
                         {numTracks} {numTracks === 1 ? "track" : "tracks"}
                     </p>
                 </div>
@@ -79,30 +79,3 @@ const SortingPreviewCard = memo(function SortingPreviewCard({
         </Link>
     );
 });
-
-/* 
-
-<hr className="border-black opacity-10 w-200"></hr>
-
-        
-        <section className="pt-0 pb-1">
-            {topTracks.map((track, index) => (
-                <div 
-                    key={track.id}
-                    className="h-12 flex flex-row items-center transition-colors duration-150"
-                >
-                    <span className="w-14 text-sm font-bold font-medium text-center text-gray-600">
-                        {index + 1}.
-                    </span>
-                    <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-semibold max-w-[20ch] truncate leading-tight">
-                            {track.title}
-                        </span>
-                        <span className="text-xs text-gray-600 max-w-[20ch] truncate leading-tight">
-                            {track.artists.map((artist) => artist.name).join(", ")}
-                        </span>
-                    </div>
-                </div>
-            ))}
-        </section>
-*/

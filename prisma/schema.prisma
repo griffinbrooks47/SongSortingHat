@@ -88,17 +88,34 @@ model User {
 
   username       String?           @unique
   profilePicture UserProfileImage?
-  
-  followerCount  Int               @default(0)
-  followingCount Int               @default(0)
-  
-  sortings       Sorting[]
+
+  followers Follow[] @relation("followers")
+  following Follow[] @relation("following")
+
+  followersCount Int @default(0)
+  followingCount Int @default(0)
+
+  sortings Sorting[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([email])
   @@map("user")
+}
+
+model Follow {
+  followerUserId String
+  follower       User   @relation("following", fields: [followerUserId], references: [id])
+
+  followingUserId String
+  following       User   @relation("followers", fields: [followingUserId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([followerUserId, followingUserId])
+  @@index([followingUserId])
 }
 
 model Session {
