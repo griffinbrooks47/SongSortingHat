@@ -36,13 +36,13 @@ export const auth = betterAuth({
         additionalFields: {
             username: {
                 type: "string",
-                required: false,
+                defaultValue: "",
             },
             role: {
                 type: "string",
                 input: false
             },
-            followerCount: {
+            followersCount: {
                 type: "number",
                 defaultValue: 0,
                 input: false
@@ -106,3 +106,4 @@ export const auth = betterAuth({
     }
 });
 export type TSession = typeof auth.$Infer.Session
+export type TSessionUser = typeof auth.$Infer.Session.user

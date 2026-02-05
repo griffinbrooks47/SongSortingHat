@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 
 /* Auth */
-import { auth } from "@/lib/auth";
+import { auth, TSessionUser } from "@/lib/auth";
 
 /* Components */
 import { UserProfile } from "./components/userProfile";
@@ -28,7 +28,7 @@ const SortingIncludeArtistAndTracks = {
         }
     },
 } satisfies Prisma.SortingInclude;
-export type SortingWithArtistAndTracks = Prisma.SortingGetPayload<{ include: typeof SortingIncludeArtistAndTracks  }>;
+export type SortingWithRelations = Prisma.SortingGetPayload<{ include: typeof SortingIncludeArtistAndTracks  }>;
 
 export default async function UserProfilePage({
   params,
@@ -39,21 +39,34 @@ export default async function UserProfilePage({
     const session = await auth.api.getSession({
         headers: await headers(),
     });
+    if(!session?.user) {
+        return <div>Please log in to view user profiles</div>;
+    }
+
+    const sessionUserId = session.user.id;
+    const sessionUser: TSessionUser = session.user;
     
-    const userId = (await params).userId;
-    const user: UserWithRelations | null = await prisma.user.findUnique({
-        where: { id: userId },
+    const profileUserId = (await params).userId;
+    const profileUser: UserWithRelations | null = await prisma.user.findUnique({
+        where: { id: profileUserId },
         include: UserIncludeFollowersAndFollowing,
-    }); 
-    
-    if (!user) {
+    });
+    if (!profileUser) {
         return <div>User not found</div>;
     }
 
-    //const isFollowingUser: boolean = user.followers.some(follower => follower.id === (session?.user?.id || ""));
+    const existingFollow = await prisma.follow.findUnique({
+        where: {
+            followerUserId_followingUserId: {
+                followerUserId: sessionUserId,
+                followingUserId: profileUserId,
+            },
+        },
+    });
+    const isFollowingInitial = !!existingFollow;
 
-    const sortings: SortingWithArtistAndTracks[] = await prisma.sorting.findMany({
-        where: { userId: userId },
+    const sortings: SortingWithRelations[] = await prisma.sorting.findMany({
+        where: { userId: profileUserId },
         include: SortingIncludeArtistAndTracks,
     });
 
@@ -62,10 +75,10 @@ export default async function UserProfilePage({
 
             {/* Profile Section */}
             <UserProfile 
-                user={user}
-                isFollowingInitial={false}
-                isCurrUser={session?.user?.id === user.id}
-            />
+                sessionUser={sessionUser}
+                profileUser={profileUser}
+                isFollowingInitial={isFollowingInitial}
+             />
 
             {/* Favorite Artists */}
 

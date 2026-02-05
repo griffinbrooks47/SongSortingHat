@@ -95,6 +95,7 @@ model Sorting {
 
   @@index([userId])
   @@index([artistId])
+  @@index([id(sort: Desc)])
 }
 
 model SortingTrack {

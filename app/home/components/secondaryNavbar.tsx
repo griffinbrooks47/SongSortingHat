@@ -36,7 +36,7 @@ export default function SecondaryNavbar() {
                         }}
                     >
                         <IconUsers className={`${iconStyle}`} />
-                        <div className="font-semibold mx-1">Friends</div>
+                        <div className="font-semibold mx-1">Following</div>
                     </a>
                 </ul>
             </section>
