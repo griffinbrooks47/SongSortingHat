@@ -54,98 +54,94 @@ export function UserProfile(
     }
 
     return (
-        <>
-            {/* User Section */}
-            <section className="relative mt-8 sm:mt-16 mb-8 px-4 sm:px-0">
-                
-                {/* Profile */}
-                <main className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-0">
-                    {/* User Avatar */}
-                    <figure className="avatar w-24 h-24 sm:w-36 sm:h-36 flex flex-col justify-center items-center flex-shrink-0">
-                        {profilePicture 
-                        ? 
-                        <div
-                            className={`ring-2 ring-offset-0 ring-black ring-offset-base-100 h-full w-full p-1 rounded-full`}
-                        >
-                            {(profilePicture.type === "UPLOADED" && profilePicture.url)
-                                ? 
-                                <Image 
-                                    src={profilePicture.url}
-                                    alt={`${profileName}'s profile picture`}
-                                    width={144}
-                                    height={144}
-                                    className={`object-cover h-full w-full rounded-full`}
-                                />
-                                : 
-                                <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
-                                    <span className="text-2xl sm:text-4xl text-white font-bold">{profilePicture.foregroundInitials}</span>
-                                </figure>
-                            }
-                        </div>
-                        : 
-                        <div className="skeleton h-24 w-24 sm:h-36 sm:w-36 shrink-0 rounded-full"></div>
+        <section className="flex flex-col mt-8 sm:mt-16 mb-8 px-4 sm:px-0">
+            {/* Profile */}
+            <main className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-0">
+                {/* User Avatar */}
+                <figure className="avatar w-24 h-24 sm:w-36 sm:h-36 flex flex-col justify-center items-center flex-shrink-0">
+                    {profilePicture 
+                    ? 
+                    <div
+                        className={`ring-2 ring-offset-0 ring-black ring-offset-base-100 h-full w-full p-1 rounded-full`}
+                    >
+                        {(profilePicture.type === "UPLOADED" && profilePicture.url)
+                            ? 
+                            <Image 
+                                src={profilePicture.url}
+                                alt={`${profileName}'s profile picture`}
+                                width={144}
+                                height={144}
+                                className={`object-cover h-full w-full rounded-full`}
+                            />
+                            : 
+                            <figure className={`bg-${profilePicture.backgroundColor} h-full w-full rounded-full flex items-center justify-center`}>
+                                <span className="text-2xl sm:text-4xl text-white font-bold">{profilePicture.foregroundInitials}</span>
+                            </figure>
                         }
-                    </figure>
-                    
-                    {/* User Info */}
-                    <section className="sm:px-12 mb-2 flex flex-col justify-start items-center sm:items-start gap-1 w-full sm:w-auto">
-                    
-                        <div className="text-center sm:text-left w-full">
-                            {/* Name */}
-                            <div className="text-xl sm:text-[1.80rem] m-0 font-bold leading-7 sm:leading-9 line-clamp-2">
-                                {profileName}
-                            </div>
-                            {/* Username */}
-                            <div className="text-sm sm:text-[1rem] mt-[-2px] text-gray-700 leading-5 sm:leading-6 line-clamp-2 flex flex-row items-center justify-center sm:justify-start">
-                                <IconAt className="h-[1rem] sm:h-[1.15rem] pt-[0.5px] my-auto w-[0.9rem] sm:w-[1rem]"/>{profileUsername}
-                            </div>
-                        </div>
-                        
-                        {/* Followers / Following */}
-                        <div className="flex flex-row justify-center sm:justify-start w-full gap-4 mt-2">
-                            <div className="flex flex-row items-center gap-1">
-                                <span className="font-bold text-sm">{followerCount}</span>
-                                <span className="text-gray-600 text-sm">Followers</span>
-                            </div>
-                            <div className="flex flex-row items-center gap-1">
-                                <span className="font-bold text-sm">{followingCount}</span>
-                                <span className="text-gray-600 text-sm">Following</span>
-                            </div>
-                        </div>
-                
-                    </section>
-                </main>
-
-                {/* Profile Navigation */}
-                <nav className="flex flex-row justify-center my-4 sm:my-2">
-                    {isCurrUser 
-                        ? 
-                        <button className="btn btn-sm btn-outline btn-disabled bg-secondary rounded-md px-6 w-full sm:w-auto max-w-xs"
-                            onClick={() => {}}
-                        >
-                            Edit Profile
-                        </button>
-                        : 
-                        <>
-                            {isFollowing 
-                                ?
-                                <button className="btn btn-sm btn-outline bg-white rounded-md px-6 w-full sm:w-auto max-w-xs"
-                                    onClick={handleFollowClick}
-                                >
-                                    Unfollow
-                                </button>
-                                :
-                                <button className="btn btn-sm btn-outline bg-secondary rounded-md px-6 w-full sm:w-auto max-w-xs"
-                                    onClick={handleFollowClick}
-                                >
-                                    Follow
-                                </button>
-                            }
-                        </>
+                    </div>
+                    : 
+                    <div className="skeleton h-24 w-24 sm:h-36 sm:w-36 shrink-0 rounded-full"></div>
                     }
-                </nav>
-            </section>
-        </>
+                </figure>
+                
+                {/* User Info */}
+                <section className="sm:px-12 mb-2 flex flex-col justify-start items-center sm:items-start gap-1 w-full sm:w-auto">
+                
+                    <div className="text-center sm:text-left w-full">
+                        {/* Name */}
+                        <div className="text-xl sm:text-[1.80rem] m-0 font-bold leading-7 sm:leading-9 line-clamp-2">
+                            {profileName}
+                        </div>
+                        {/* Username */}
+                        <div className="text-sm sm:text-[1rem] mt-[-2px] pr-1 text-gray-700 leading-5 sm:leading-6 line-clamp-2 flex flex-row items-center justify-center sm:justify-start">
+                            <IconAt className="h-[1rem] sm:h-[1.15rem] pt-[0.5px] my-auto w-[0.9rem] sm:w-[1rem]"/>{profileUsername}
+                        </div>
+                    </div>
+                    
+                    {/* Followers / Following */}
+                    <div className="flex flex-row justify-center sm:justify-start w-full gap-4 mt-2">
+                        <div className="flex flex-row items-center gap-1">
+                            <span className="font-bold text-sm">{followerCount}</span>
+                            <span className="text-gray-600 text-sm">Followers</span>
+                        </div>
+                        <div className="flex flex-row items-center gap-1">
+                            <span className="font-bold text-sm">{followingCount}</span>
+                            <span className="text-gray-600 text-sm">Following</span>
+                        </div>
+                    </div>
+            
+                </section>
+            </main>
+
+            {/* Profile Navigation */}
+            <nav className="flex flex-row justify-center my-4 sm:my-2">
+                {isCurrUser 
+                    ? 
+                    <button className="btn btn-sm btn-outline btn-disabled bg-secondary rounded-md px-6 w-full sm:w-auto max-w-xs"
+                        onClick={() => {}}
+                    >
+                        Edit Profile
+                    </button>
+                    : 
+                    <>
+                        {isFollowing 
+                            ?
+                            <button className="btn btn-sm btn-outline bg-white rounded-md px-6 w-full sm:w-auto max-w-xs"
+                                onClick={handleFollowClick}
+                            >
+                                Unfollow
+                            </button>
+                            :
+                            <button className="btn btn-sm btn-outline bg-secondary rounded-md px-6 w-full sm:w-auto max-w-xs"
+                                onClick={handleFollowClick}
+                            >
+                                Follow
+                            </button>
+                        }
+                    </>
+                }
+            </nav>
+        </section>
     )
 }
 

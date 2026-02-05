@@ -71,7 +71,7 @@ export default async function UserProfilePage({
     });
 
     return (
-        <main className="page w-fit flex flex-col justify-center items-center mx-auto pb-16">
+        <main className="page flex flex-col justify-center items-center mx-auto pb-16">
 
             {/* Profile Section */}
             <UserProfile 
