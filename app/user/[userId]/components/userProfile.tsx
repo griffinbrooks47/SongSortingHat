@@ -1,7 +1,6 @@
 'use client'
 
 /* Server Actions */
-import { followUser, unfollowUser } from "@/utils/actions/followUser";
 
 /* Types */
 import { UserWithRelations } from "../page";
@@ -38,10 +37,10 @@ export function UserProfile(
             return;
         try {
             if(isFollowing) {
-                unfollowUser(user.id);
+                //unfollowUser(user.id);
                 
             } else {
-                followUser(user.id);
+                //followUser(user.id);
             }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
