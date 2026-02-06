@@ -80,13 +80,13 @@ export default async function SortingPage({
     const tracks: TrackWithRelations[] = sorting.tracks.sort((a, b) => a.position - b.position).map(entry => entry.track);
 
     return (
-        <main className="min-h-[calc(100vh-4rem)] w-full pt-16 mb-8 flex flex-col items-center">
+        <main className="min-h-[calc(100vh-4rem)] w-full pt-8 sm:pt-10 md:pt-16 mb-8 flex flex-col items-center px-4 sm:px-6">
             {/* Artist Header */}
-            <section className="relative w-full mt-16 mb-8 flex flex-row justify-center items-center">
+            <section className="relative w-full mt-12 sm:mt-12 md:mt-16 mb-4 sm:mb-8 flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-0">
                 {/* Artist Image */}
                 {sorting.artist.images && sorting.artist.images.length > 0 && (
                     <figure className="avatar">
-                        <div className="mask mask-squircle h-44">
+                        <div className="mask mask-squircle h-32 w-32 sm:h-36 sm:w-36 md:h-44 md:w-44">
                             <Image
                                 src={sorting.artist.images[0].url}
                                 width={280}
@@ -99,40 +99,40 @@ export default async function SortingPage({
                 )}
 
                 {/* Artist Info */}
-                <section className="px-12">
-                    <div className="mb-1 text-[2.75rem] font-bold leading-13 line-clamp-2">
+                <section className="w-full sm:w-auto sm:px-8 md:px-12 flex flex-col items-center sm:items-start text-center sm:text-left">
+                    <div className="mb-1 text-xl sm:text-3xl md:text-[2.75rem] font-bold leading-tight sm:leading-13 line-clamp-2 w-full max-w-xs sm:max-w-md md:max-w-none">
                         {sorting.artist.name.length > 40
                             ? sorting.artist.name.slice(0, 40) + "..."
                             : sorting.artist.name}
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                        <IconArrowsTransferUpDown className="opacity-60" />
-                        <p className="text-[1.15rem] font-semibold opacity-80">
+                        <IconArrowsTransferUpDown className="opacity-60 w-4 h-4 sm:w-5 sm:h-5" />
+                        <p className="text-base sm:text-md md:text-[1.15rem] font-semibold opacity-80">
                             Sorting by
                         </p>
                     </div>
-                    <span className="text-black">
-                        {sorting.user.name || "Anonymous"}
+                    <span className="text-black text-sm sm:text-base">
+                        {sorting.user.username || "Anonymous"}
                     </span>
-                    <p className="text-[0.95rem] mt-1 font-semibold uppercase opacity-60">
+                    <p className="text-[0.7rem] sm:text-[0.7rem] md:text-[0.95rem] mt-1 font-semibold uppercase opacity-60">
                         {tracks.length} tracks
                     </p>
                 </section>
             </section>
 
-            <hr className="border-black opacity-10 w-200 mx-auto"></hr>
+            <hr className="border-black opacity-10 w-full max-w-3xl sm:max-w-4xl md:w-200 mx-auto"></hr>
 
             {/* Sorted Tracks List */}
-            <section className="w-200 flex flex-col items-center gap-3 pb-8 mt-8">
+            <section className="flex flex-col items-center gap-2 sm:gap-3 pb-8 mt-6 sm:mt-8 w-full max-w-3xl sm:max-w-4xl md:max-w-none px-2 sm:px-0">
                 {tracks.map((track, index) => {
                     const image = track.album.images[0];
                     if(!image) return null;
                     return (
                         <div
                             key={track.spotifyId}
-                            className="flex items-center gap-3"
+                            className="flex items-center gap-2 sm:gap-3 w-full"
                         >
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-base-200 font-bold text-sm shrink-0">
+                            <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-base-200 font-bold text-xs sm:text-sm shrink-0">
                                 {index + 1}
                             </div>
                             <SongCard track={track} image={image} />
@@ -146,7 +146,7 @@ export default async function SortingPage({
 
 function SongCard({ track, image }: { track: TrackWithRelations, image: AlbumImage }) {
     return (
-        <div className="relative h-18 w-140 shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1">
+        <div className="wrelative h-16 sm:h-18 md:h-20 w-[90%] mx-auto sm:w-140 shrink-0 rounded-md border-2 border-black bg-base-100 overflow-hidden flex flex-row gap-2 p-1">
             {/* Album Cover */}
             <figure className="h-full aspect-square rounded-sm shrink-0 overflow-hidden">
                 <Image
@@ -161,11 +161,11 @@ function SongCard({ track, image }: { track: TrackWithRelations, image: AlbumIma
             </figure>
 
             {/* Track Info */}
-            <div className="flex flex-col justify-center flex-1 min-w-0 gap-0.5">
-                <strong className="text-sm font-bold truncate leading-tight">
+            <div className="flex flex-col justify-center flex-1 min-w-0 gap-0.5 pr-1">
+                <strong className="text-xs sm:text-sm md:text-base font-bold truncate leading-tight">
                     {track.title}
                 </strong>
-                <p className="text-[0.65rem] truncate text-gray-500 leading-tight">
+                <p className="text-[0.6rem] sm:text-[0.65rem] md:text-xs truncate text-gray-500 leading-tight">
                     {track.artists[0].artist.name}
                 </p>
             </div>
