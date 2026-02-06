@@ -4,7 +4,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from 'next/navigation'
-import { useState } from "react"
+import { useState, Suspense} from "react"
 import useGetCurrentUser from "@/hooks/useGetCurrentUser"
 
 /* Auth */
@@ -36,7 +36,7 @@ export default function Navbar() {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push('/login');
+          router.push('/');
         },
       },
     });
@@ -45,28 +45,29 @@ export default function Navbar() {
   return (
     <nav className="h-16 w-full pl-5 pr-3 pt-2 pb-0 bg-base-200 fixed top-0 flex justify-between items-center z-10">
       <NavbarHeader />
-      <MenuControls 
-        isAuthenticated={isAuthenticated}
-        name={name}  
-        userId={userId} 
-        profilePicture={profilePicture}
-        signOut={signOut}
-      />
-      {searchToggled && (
-        <nav className="absolute w-full h-full left-0 top-0 shadow-md bg-base-100">
-          <SearchBar 
-            placeholder="Search for an artist..." 
-            submit={() => setSearchToggled(false)} 
+          <MenuControls 
+            isAuthenticated={isAuthenticated}
+            name={name}  
+            userId={userId} 
+            profilePicture={profilePicture}
+            signOut={signOut}
           />
-          <button 
-            className="absolute right-4 h-full top-0 flex items-center cursor-pointer"
-            onClick={() => setSearchToggled(false)}
-            aria-label="Close search"
-          >
-            <IconX className="h-8 w-8 opacity-70" />
-          </button>
-        </nav>
-      )}
+          
+          {searchToggled && (
+            <nav className="absolute w-full h-full left-0 top-0 shadow-md bg-base-100">
+              <SearchBar 
+                placeholder="Search for an artist..." 
+                submit={() => setSearchToggled(false)} 
+              />
+              <button 
+                className="absolute right-4 h-full top-0 flex items-center cursor-pointer"
+                onClick={() => setSearchToggled(false)}
+                aria-label="Close search"
+              >
+                <IconX className="h-8 w-8 opacity-70" />
+              </button>
+            </nav>
+          )}
     </nav>
   )
 }
@@ -89,7 +90,7 @@ function NavbarHeader() {
             width={40}
             height={40}
             className="object-contain"
-            priority
+            loading="lazy"
           />
         </figure>
 
@@ -363,5 +364,13 @@ function MenuControls(
       </div>
     </div>
   );
+}
+
+function Loading() {
+  return (
+    <nav>
+
+    </nav>
+  )
 }
 
