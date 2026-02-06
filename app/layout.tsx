@@ -4,7 +4,7 @@ import Navbar from "./components/nav";
 
 import { Roboto_Flex, TikTok_Sans } from "next/font/google";
 
-const global_font = TikTok_Sans({ subsets: ["latin"], display: 'swap', weight: ["400", "300","500", "600", "700", "800", "900"] });
+const global_font = TikTok_Sans({ subsets: ["latin"], display: 'swap', weight: ["300", "400",] });
 
 import './globals.css';
 import { Suspense } from "react";
